@@ -35,6 +35,9 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      jsonc-parser:
+        specifier: ^3.3.1
+        version: 3.3.1
       lucide-react:
         specifier: ^0.486.0
         version: 0.486.0(react@19.1.0)
@@ -53,6 +56,9 @@ importers:
       react-resizable-panels:
         specifier: ^2.1.7
         version: 2.1.7(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      react-zoomable-ui:
+        specifier: ^0.11.0
+        version: 0.11.0(react@19.1.0)
       reaflow:
         specifier: ^5.3.4
         version: 5.3.4(@types/react@19.0.12)(prop-types@15.8.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -1125,6 +1131,10 @@ packages:
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
 
+  hammerjs@2.0.8:
+    resolution: {integrity: sha512-tSQXBXS/MWQOn/RKckawJ61vvsDpCom87JgxiYdGwHdOa0ht0vzUWDlfioofFCRU0L+6NGDt6XzbgoJvZkMeRQ==}
+    engines: {node: '>=0.8.0'}
+
   has-bigints@1.1.0:
     resolution: {integrity: sha512-R3pbpkcIqv2Pm3dUwgjclDRVmWpTJW2DcMzcIhEXEx1oh/CEMObMm3KLmRJOdvhM7o4uQBnwr8pzRK2sJWIqfg==}
     engines: {node: '>= 0.4'}
@@ -1274,6 +1284,9 @@ packages:
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
+
+  jsonc-parser@3.3.1:
+    resolution: {integrity: sha512-HUgH65KyejrUFPvHFPbqOY0rsFip3Bo5wb4ngvdi1EpCYWUQDC5V+Y7mZws+DLkr4M//zQJoanu1SP+87Dv1oQ==}
 
   kld-affine@2.1.1:
     resolution: {integrity: sha512-NIS9sph8ZKdnQxZa5TcggaFs/Qr9zX3brFlGwE0+0Z4EzFIvAFuqLSwNeU4GkEpaX8ndh3ggGmWV7BPPcS3vjQ==}
@@ -1597,6 +1610,11 @@ packages:
     peerDependencies:
       react: '>= 16.8.0'
 
+  react-zoomable-ui@0.11.0:
+    resolution: {integrity: sha512-2msg8DyZUToHNTek3WfvlvZ6mumWyocp7xPzUvMaYpQAwjXvenRYR9nlmmITLymJdZReNqR2nDW8I5yUC8mXiQ==}
+    peerDependencies:
+      react: '*'
+
   react@19.1.0:
     resolution: {integrity: sha512-FS+XFBNvn3GTAWq26joslQgWNoFu08F4kl0J4CgdNKADkdSGXQyTCnKteIAJy96Br6YbpEU1LSzV5dYtjMkMDg==}
     engines: {node: '>=0.10.0'}
@@ -1749,6 +1767,10 @@ packages:
   tape@4.17.0:
     resolution: {integrity: sha512-KCuXjYxCZ3ru40dmND+oCLsXyuA8hoseu2SS404Px5ouyS0A99v8X/mdiLqsR5MTAyamMBN7PRwt2Dv3+xGIxw==}
     hasBin: true
+
+  ts-invariant@0.10.3:
+    resolution: {integrity: sha512-uivwYcQaxAucv1CzRp2n/QdYPo4ILf9VXgH19zEIjFx2EJufV16P0JtJVpYHy89DItG6Kwj2oIUjrcK5au+4tQ==}
+    engines: {node: '>=8'}
 
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
@@ -2889,6 +2911,8 @@ snapshots:
 
   graceful-fs@4.2.11: {}
 
+  hammerjs@2.0.8: {}
+
   has-bigints@1.1.0: {}
 
   has-property-descriptors@1.0.2:
@@ -3043,6 +3067,8 @@ snapshots:
   jiti@2.4.2: {}
 
   js-tokens@4.0.0: {}
+
+  jsonc-parser@3.3.1: {}
 
   kld-affine@2.1.1: {}
 
@@ -3349,6 +3375,12 @@ snapshots:
     dependencies:
       react: 19.1.0
 
+  react-zoomable-ui@0.11.0(react@19.1.0):
+    dependencies:
+      hammerjs: 2.0.8
+      react: 19.1.0
+      ts-invariant: 0.10.3
+
   react@19.1.0: {}
 
   reaflow@5.3.4(@types/react@19.0.12)(prop-types@15.8.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
@@ -3585,6 +3617,10 @@ snapshots:
       object-inspect: 1.12.3
       resolve: 1.22.10
       string.prototype.trim: 1.2.10
+
+  ts-invariant@0.10.3:
+    dependencies:
+      tslib: 2.8.1
 
   tslib@2.8.1: {}
 

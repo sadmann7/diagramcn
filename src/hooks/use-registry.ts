@@ -1,11 +1,11 @@
 "use client";
 
 import { diagramActions, useDiagram } from "@/hooks/use-diagram";
+import { debounce } from "@/lib/utils";
 import {
   type RegistryItem,
   registryItemSchema,
 } from "@/lib/validations/registry";
-import { debounce } from "@/lib/utils";
 import * as React from "react";
 
 const REGISTRY_URL_KEY = "registryUrl";
@@ -42,7 +42,7 @@ function createRegistryStore() {
       registryData: getStoredItem<RegistryItem | null>(REGISTRY_DATA_KEY, null),
       registryJson: getStoredItem<string | undefined>(
         REGISTRY_JSON_KEY,
-        undefined
+        undefined,
       ),
     };
   }
@@ -69,7 +69,7 @@ function createRegistryStore() {
     const hasChanged = Object.keys(partial).some(
       (key) =>
         partial[key as keyof RegistryState] !==
-        state[key as keyof RegistryState]
+        state[key as keyof RegistryState],
     );
 
     if (!hasChanged) return;
@@ -101,7 +101,7 @@ function createRegistryStore() {
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(
-          `Failed to fetch registry data: HTTP ${response.status} ${response.statusText}`
+          `Failed to fetch registry data: HTTP ${response.status} ${response.statusText}`,
         );
       }
 
@@ -151,21 +151,21 @@ const useRegistryUrl = () =>
   React.useSyncExternalStore(
     registryStore.subscribe,
     registryStore.getRegistryUrl,
-    () => null
+    () => null,
   );
 
 const useRegistryData = () =>
   React.useSyncExternalStore(
     registryStore.subscribe,
     registryStore.getRegistryData,
-    () => null
+    () => null,
   );
 
 const useRegistryJson = () =>
   React.useSyncExternalStore(
     registryStore.subscribe,
     registryStore.getRegistryJson,
-    () => undefined
+    () => undefined,
   );
 
 function useRegistry() {
@@ -185,7 +185,7 @@ function useRegistry() {
         }
         diagramActions.setDiagram(json);
       }, 300),
-    []
+    [],
   );
 
   React.useEffect(() => {

@@ -5,9 +5,9 @@ import githubLight from "@/assets/themes/github-light.json";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEditorTheme } from "@/hooks/use-editor-theme";
 import MonacoEditor, {
+  type BeforeMount,
   type Monaco,
   type OnMount,
-  type BeforeMount,
 } from "@monaco-editor/react";
 import * as React from "react";
 
@@ -19,6 +19,7 @@ export function TextEditor({
   ...props
 }: TextEditorProps) {
   const { editorTheme } = useEditorTheme();
+  const editorRef = React.useRef<Parameters<OnMount>[0] | null>(null);
 
   const beforeMount: BeforeMount = React.useCallback((monaco: Monaco) => {
     monaco.editor.defineTheme("github-dark", {
@@ -37,14 +38,23 @@ export function TextEditor({
   }, []);
 
   const onMount: OnMount = React.useCallback((editor) => {
+    editorRef.current = editor;
     editor.onDidPaste(() => {
       editor.getAction("editor.action.formatDocument")?.run();
     });
   }, []);
 
+  React.useEffect(() => {
+    return () => {
+      if (editorRef.current) {
+        editorRef.current.dispose();
+      }
+    };
+  }, []);
+
   const currentTheme = React.useMemo(
     () => (editorTheme === "vs-dark" ? "github-dark" : "github-light"),
-    [editorTheme]
+    [editorTheme],
   );
 
   return (

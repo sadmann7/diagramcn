@@ -47,7 +47,7 @@ export function RegistryInput({ className, ...props }: RegistryInputProps) {
     <div className={cn("relative w-full max-w-2xl", className)} {...props}>
       <Textarea
         placeholder="Type registry here..."
-        className="resize-none pr-12"
+        className="max-h-40 resize-none pr-12"
         value={input}
         onChange={(event) => setInput(event.target.value)}
         onKeyDown={onKeyDown}

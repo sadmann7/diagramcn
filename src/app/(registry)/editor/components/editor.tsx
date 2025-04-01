@@ -6,14 +6,22 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { useRegistry } from "@/hooks/use-registry";
+import { RegistryInput } from "../../components/registry-input";
 import { Diagram } from "./diagram";
 import { TextEditor } from "./text-editor";
 
 export function Editor() {
   const { registryUrl, registryJson, onRegistryJsonChange } = useRegistry();
 
-  if (!registryUrl) {
-    return <div>No registry URL found</div>;
+  if (!registryUrl || !registryJson) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 pt-40">
+        <h1 className="max-w-lg text-pretty text-center font-semibold text-2xl tracking-tighter sm:text-3xl md:text-5xl">
+          Type a shadcn/ui registry command or url
+        </h1>
+        <RegistryInput />
+      </div>
+    );
   }
 
   return (
@@ -21,8 +29,6 @@ export function Editor() {
       <ResizablePanelGroup direction="horizontal">
         <ResizablePanel defaultSize={25} minSize={0} maxSize={50}>
           <TextEditor
-            height="100%"
-            width="100%"
             language="json"
             value={registryJson}
             onChange={onRegistryJsonChange}

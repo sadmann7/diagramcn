@@ -47,7 +47,7 @@ export function useEditorTheme() {
   const themeState = React.useSyncExternalStore(
     themeStore.subscribeToThemeChanges,
     getSnapshot,
-    getSnapshot
+    getSnapshot,
   );
   const { resolvedTheme } = useNextTheme();
 

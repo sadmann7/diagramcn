@@ -4,7 +4,7 @@ import { Editor } from "./components/editor";
 
 export default function EditorPage() {
   return (
-    <ClientOnly fallback={<Skeleton className="h-[calc(100vh-100px)]" />}>
+    <ClientOnly fallback={<Skeleton className="h-screen w-full" />}>
       <Editor />
     </ClientOnly>
   );

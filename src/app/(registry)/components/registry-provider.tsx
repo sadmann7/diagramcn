@@ -9,8 +9,10 @@ import * as React from "react";
 
 interface RegistryContextValue {
   registryUrl: string | null;
-  setRegistryUrl: (url: string | null) => void;
+  onRegistryUrlChange: (url: string | null) => void;
   registryData: RegistryItem | null;
+  registryJson: string | undefined;
+  onRegistryJsonChange: (json: string | undefined) => void;
 }
 
 const RegistryContext = React.createContext<RegistryContextValue | null>(null);
@@ -36,6 +38,10 @@ export function RegistryProvider({ children }: RegistryProviderProps) {
     "registryData",
     null,
   );
+  const [registryJson, setRegistryJson] = useLocalStorage<string | undefined>(
+    "registryJson",
+    undefined,
+  );
 
   React.useEffect(() => {
     if (!registryUrl) {
@@ -54,6 +60,7 @@ export function RegistryProvider({ children }: RegistryProviderProps) {
         const data = await response.json();
         const parsedData = registryItemSchema.parse(data);
         setRegistryData(parsedData);
+        setRegistryJson(JSON.stringify(parsedData, null, 2));
       } catch (error) {
         console.error("Error fetching or parsing registry data:", error);
         setRegistryData(null);
@@ -61,11 +68,17 @@ export function RegistryProvider({ children }: RegistryProviderProps) {
     }
 
     getRegistryData();
-  }, [registryUrl, setRegistryData]);
+  }, [registryUrl, setRegistryData, setRegistryJson]);
 
   return (
     <RegistryContext.Provider
-      value={{ registryUrl, setRegistryUrl, registryData }}
+      value={{
+        registryUrl,
+        onRegistryUrlChange: setRegistryUrl,
+        registryData,
+        registryJson,
+        onRegistryJsonChange: setRegistryJson,
+      }}
     >
       {children}
     </RegistryContext.Provider>

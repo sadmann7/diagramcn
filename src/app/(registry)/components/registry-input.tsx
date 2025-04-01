@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useLocalStorage } from "@/hooks/use-local-storage";
 import { cn } from "@/lib/utils";
 import { Send } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -13,7 +12,7 @@ interface RegistryInputProps extends React.ComponentProps<"div"> {}
 
 export function RegistryInput({ className, ...props }: RegistryInputProps) {
   const router = useRouter();
-  const { registryUrl, setRegistryUrl } = useRegistry();
+  const { onRegistryUrlChange } = useRegistry();
   const [input, setInput] = React.useState("");
 
   const onSubmit = React.useCallback(() => {
@@ -24,14 +23,12 @@ export function RegistryInput({ className, ...props }: RegistryInputProps) {
 
     try {
       new URL(registryUrl);
-      setRegistryUrl(registryUrl);
+      onRegistryUrlChange(registryUrl);
       router.push("/editor");
     } catch (_err) {
       console.error("Invalid registry URL");
     }
-  }, [input, router, setRegistryUrl]);
-
-  console.log({ registryUrl });
+  }, [input, router, onRegistryUrlChange]);
 
   const onKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLTextAreaElement>) => {

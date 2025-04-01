@@ -27,6 +27,7 @@
     "next-themes": "^0.4.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-resizable-panels": "^2.1.7",
     "reaflow": "^5.3.4",
     "sonner": "^2.0.2",
     "tailwind-merge": "^3.1.0",

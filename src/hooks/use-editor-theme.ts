@@ -1,3 +1,5 @@
+import githubDark from "@/assets/themes/github-dark.json";
+import githubLight from "@/assets/themes/github-light.json";
 import type { Theme } from "@monaco-editor/react";
 import { useTheme as useNextTheme } from "next-themes";
 import * as React from "react";

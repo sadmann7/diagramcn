@@ -16,21 +16,25 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
   });
 
   const setValue = React.useCallback(
-    (value: T | ((val: T) => T)) => {
+    (updatorOrValue: T | ((val: T) => T)) => {
       try {
-        const valueToStore =
-          value instanceof Function ? value(storedValue) : value;
+        setStoredValue((prevValue) => {
+          const valueToStore =
+            updatorOrValue instanceof Function
+              ? updatorOrValue(prevValue)
+              : updatorOrValue;
 
-        setStoredValue(valueToStore);
+          if (typeof window !== "undefined") {
+            window.localStorage.setItem(key, JSON.stringify(valueToStore));
+          }
 
-        if (typeof window !== "undefined") {
-          window.localStorage.setItem(key, JSON.stringify(valueToStore));
-        }
+          return valueToStore;
+        });
       } catch (error) {
         console.warn(`Error setting localStorage key "${key}":`, error);
       }
     },
-    [key, storedValue],
+    [key],
   );
 
   return [storedValue, setValue] as const;

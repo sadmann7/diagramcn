@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocalStorage } from "@/hooks/use-local-storage";
 import {
   type RegistryItem,
   registryItemSchema,
@@ -27,8 +28,12 @@ interface RegistryProviderProps {
 }
 
 export function RegistryProvider({ children }: RegistryProviderProps) {
-  const [registryUrl, setRegistryUrl] = React.useState<string | null>(null);
-  const [registryData, setRegistryData] = React.useState<RegistryItem | null>(
+  const [registryUrl, setRegistryUrl] = useLocalStorage<string | null>(
+    "registryUrl",
+    null,
+  );
+  const [registryData, setRegistryData] = useLocalStorage<RegistryItem | null>(
+    "registryData",
     null,
   );
 
@@ -53,7 +58,7 @@ export function RegistryProvider({ children }: RegistryProviderProps) {
     }
 
     fetchRegistryData();
-  }, [registryUrl]);
+  }, [registryUrl, setRegistryData]);
 
   return (
     <RegistryContext.Provider

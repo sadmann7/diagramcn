@@ -9,5 +9,7 @@ export function Editor() {
     return <div>No registry URL found</div>;
   }
 
+  console.log({ registryData });
+
   return <div>Editor with URL: {registryUrl}</div>;
 }

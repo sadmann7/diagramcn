@@ -20,13 +20,13 @@ export function TextEditor({
   const { resolvedTheme } = useTheme();
   const [editorTheme, setEditorTheme] = React.useState<Theme>("light");
 
-  const updateTheme = useCallbackRef(() => {
+  const onThemeChange = useCallbackRef(() => {
     setEditorTheme(resolvedTheme === "dark" ? "vs-dark" : "light");
   });
 
   React.useEffect(() => {
-    updateTheme();
-  }, [updateTheme]);
+    onThemeChange();
+  }, [onThemeChange]);
 
   const onMount: OnMount = React.useCallback((editor) => {
     editor.onDidPaste(() => {

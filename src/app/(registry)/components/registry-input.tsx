@@ -2,11 +2,11 @@
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { useRegistry } from "@/hooks/use-registry";
 import { cn } from "@/lib/utils";
 import { Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
-import { useRegistry } from "./registry-provider";
 
 interface RegistryInputProps extends React.ComponentProps<"div"> {}
 

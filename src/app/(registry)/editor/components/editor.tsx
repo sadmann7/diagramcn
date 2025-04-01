@@ -1,11 +1,11 @@
 "use client";
 
-import { useRegistry } from "@/app/(registry)/components/registry-provider";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import { useRegistry } from "@/hooks/use-registry";
 import * as React from "react";
 import { TextEditor } from "./text-editor";
 

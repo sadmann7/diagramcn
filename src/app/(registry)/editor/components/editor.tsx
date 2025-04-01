@@ -6,7 +6,6 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { useRegistry } from "@/hooks/use-registry";
-import * as React from "react";
 import { Diagram } from "./diagram";
 import { TextEditor } from "./text-editor";
 
@@ -18,7 +17,7 @@ export function Editor() {
   }
 
   return (
-    <div className="h-[calc(100vh-56px)]">
+    <div className="h-[calc(100vh-60px)]">
       <ResizablePanelGroup direction="horizontal">
         <ResizablePanel defaultSize={25} minSize={0} maxSize={50}>
           <TextEditor
@@ -29,12 +28,9 @@ export function Editor() {
             onChange={onRegistryJsonChange}
           />
         </ResizablePanel>
-        <ResizableHandle
-          withHandle
-          className="hover:bg-blue-500 hover:after:w-1 hover:after:bg-blue-500"
-        />
+        <ResizableHandle />
         <ResizablePanel defaultSize={75}>
-          <Diagram jsonData={registryJson} />
+          <Diagram />
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>

@@ -21,7 +21,7 @@ function initializeStates(): JsonParserStates {
   };
 }
 
-export function parser(jsonStr: string): Diagram {
+export function jsonParser(jsonStr: string): Diagram {
   try {
     const states = initializeStates();
     const parsedJsonTree = parseTree(jsonStr);

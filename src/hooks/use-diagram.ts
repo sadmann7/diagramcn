@@ -1,6 +1,5 @@
-import { useJson } from "@/hooks/use-json";
 import { getChildrenEdges, getOutgoers } from "@/lib/diagram";
-import { parser } from "@/lib/json-parser";
+import { jsonParser } from "@/lib/json-parser";
 import type { Edge, Node } from "@/types";
 import * as React from "react";
 import type { ViewPort } from "react-zoomable-ui/dist/ViewPort";
@@ -9,7 +8,7 @@ import type { CanvasDirection } from "reaflow";
 export interface Diagram {
   viewPort: ViewPort | null;
   direction: CanvasDirection;
-  loading: boolean;
+  isPending: boolean;
   diagramCollapsed: boolean;
   fullscreen: boolean;
   collapseAll: boolean;
@@ -25,7 +24,7 @@ export interface Diagram {
 const initialState: Diagram = {
   viewPort: null,
   direction: "RIGHT",
-  loading: true,
+  isPending: true,
   diagramCollapsed: false,
   fullscreen: false,
   collapseAll: false,
@@ -38,7 +37,6 @@ const initialState: Diagram = {
   path: "",
 };
 
-// Create store
 const createStore = (initialState: Diagram) => {
   let state = initialState;
   const listeners = new Set<() => void>();
@@ -66,14 +64,14 @@ const createStore = (initialState: Diagram) => {
 
 const store = createStore(initialState);
 
-// Actions
 export const actions = {
   toggleCollapseAll: (collapseAll: boolean) => {
     store.setState({ collapseAll });
     actions.collapseDiagram();
   },
 
-  clearDiagram: () => store.setState({ nodes: [], edges: [], loading: false }),
+  clearDiagram: () =>
+    store.setState({ nodes: [], edges: [], isPending: false }),
 
   getCollapsedNodeIds: () => store.getState().collapsedNodes,
 
@@ -81,24 +79,25 @@ export const actions = {
 
   setSelectedNode: (Node: Node) => store.setState({ selectedNode: Node }),
 
-  setDiagram: (data?: string, options?: Partial<Diagram>) => {
-    const { nodes, edges } = parser(data ?? useJson().json);
+  setDiagram: (data: string, options?: Partial<Diagram>) => {
+    const { nodes, edges } = jsonParser(data);
     const state = store.getState();
 
     if (state.collapseAll) {
       store.setState({ nodes, edges, ...options });
       actions.collapseDiagram();
-    } else {
-      store.setState({
-        nodes,
-        edges,
-        collapsedParents: [],
-        collapsedNodes: [],
-        collapsedEdges: [],
-        diagramCollapsed: false,
-        ...options,
-      });
+      return;
     }
+
+    store.setState({
+      nodes,
+      edges,
+      collapsedParents: [],
+      collapsedNodes: [],
+      collapsedEdges: [],
+      diagramCollapsed: false,
+      ...options,
+    });
   },
 
   setDirection: (direction: CanvasDirection = "RIGHT") => {
@@ -106,7 +105,7 @@ export const actions = {
     setTimeout(() => actions.centerView(), 200);
   },
 
-  setLoading: (loading: boolean) => store.setState({ loading }),
+  setIsPending: (isPending: boolean) => store.setState({ isPending }),
 
   expandNodes: (nodeId: string) => {
     const state = store.getState();
@@ -286,6 +285,13 @@ export const actions = {
 };
 
 export function useDiagram() {
-  const state = React.useSyncExternalStore(store.subscribe, store.getSnapshot);
+  const getSnapshot = React.useCallback(() => store.getState(), []);
+
+  const state = React.useSyncExternalStore(
+    store.subscribe,
+    getSnapshot,
+    getSnapshot,
+  );
+
   return { ...state, ...actions };
 }

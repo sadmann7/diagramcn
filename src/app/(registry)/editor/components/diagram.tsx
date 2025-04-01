@@ -1,77 +1,59 @@
 "use client";
 
 import { Edge } from "@/components/edge";
-import { ObjectNode } from "@/components/object-node";
-import { TextNode } from "@/components/text-node";
 import { useDiagram } from "@/hooks/use-diagram";
-import { cn, debounce } from "@/lib/utils";
-import type { Node as DiagramNode } from "@/types";
+import { debounce } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import * as React from "react";
 import { Space } from "react-zoomable-ui";
-import { Canvas, type EdgeProps, type NodeProps } from "reaflow";
+import { Canvas, type EdgeProps } from "reaflow";
 import type { LongPressCallback, LongPressOptions } from "use-long-press";
 import { useLongPress } from "use-long-press";
 
-const SUPPORTED_LIMIT = 1000;
-
-interface DiagramProps {
-  isWidget?: boolean;
-  jsonData?: string;
-}
+const MAX_NODE_COUNT = 1000;
 
 const layoutOptions = {
   "elk.layered.compaction.postCompaction.strategy": "EDGE_LENGTH",
   "elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
 };
 
-export function Diagram({ isWidget = false, jsonData }: DiagramProps) {
+interface DiagramProps {
+  isWidget?: boolean;
+}
+
+export function Diagram({ isWidget = false }: DiagramProps) {
   const {
     nodes,
     edges,
-    loading,
     direction,
     viewPort,
     setViewPort,
     centerView,
-    setLoading,
-    setDiagram,
+    isPending,
+    setIsPending,
   } = useDiagram();
   const { resolvedTheme } = useTheme();
-  const [paneWidth, setPaneWidth] = React.useState(2000);
-  const [paneHeight, setPaneHeight] = React.useState(2000);
-
-  React.useEffect(() => {
-    if (!jsonData) return;
-
-    try {
-      setDiagram(jsonData, { loading: false });
-    } catch (error) {
-      console.error("Error parsing JSON:", error);
-      setLoading(false);
-    }
-  }, [jsonData, setDiagram, setLoading]);
+  const [width, setWidth] = React.useState(2000);
+  const [height, setHeight] = React.useState(2000);
 
   const onLayoutChange = React.useCallback(
     (layout: { width?: number; height?: number }) => {
       if (layout.width && layout.height) {
         const areaSize = layout.width * layout.height;
-        const changeRatio = Math.abs(
-          (areaSize * 100) / (paneWidth * paneHeight) - 100,
-        );
+        const changeRatio = Math.abs((areaSize * 100) / (width * height) - 100);
 
-        setPaneWidth(layout.width + 50);
-        setPaneHeight(layout.height + 50);
+        setWidth(layout.width + 50);
+        setHeight(layout.height + 50);
 
         setTimeout(() => {
           window.requestAnimationFrame(() => {
             if (changeRatio > 70 || isWidget) centerView();
-            setLoading(false);
+            setIsPending(false);
           });
         });
       }
     },
-    [isWidget, paneHeight, paneWidth, centerView, setLoading],
+    [isWidget, height, width, centerView, setIsPending],
   );
 
   const callback = React.useCallback<LongPressCallback>(() => {
@@ -96,14 +78,14 @@ export function Diagram({ isWidget = false, jsonData }: DiagramProps) {
       (document.activeElement as HTMLElement)?.blur();
   }, []);
 
-  const debouncedOnZoomChangeHandler = React.useCallback(
+  const debouncedSetViewPort = React.useCallback(
     debounce(() => {
       if (viewPort) setViewPort(viewPort);
     }, 300),
     [],
   );
 
-  if (nodes.length > SUPPORTED_LIMIT) {
+  if (nodes.length > MAX_NODE_COUNT) {
     return (
       <div className="flex h-full items-center justify-center">
         <p className="text-foreground">
@@ -116,18 +98,18 @@ export function Diagram({ isWidget = false, jsonData }: DiagramProps) {
 
   return (
     <div
-      className="relative h-full w-full"
+      className="relative size-full"
       onContextMenu={(event) => event.preventDefault()}
       onClick={blurOnClick}
       {...bindLongPress()}
     >
-      {loading && (
+      {isPending && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/50">
           <div className="text-foreground">Loading...</div>
         </div>
       )}
       <Space
-        onUpdated={debouncedOnZoomChangeHandler}
+        onUpdated={debouncedSetViewPort}
         onCreate={setViewPort}
         onContextMenu={(e) => e.preventDefault()}
         treatTwoFingerTrackPadGesturesLikeTouch={true}
@@ -135,26 +117,26 @@ export function Diagram({ isWidget = false, jsonData }: DiagramProps) {
         className="diagram-space"
       >
         <Canvas
-          className="diagram-canvas"
-          onLayoutChange={onLayoutChange}
+          key={[direction, resolvedTheme].join("-")}
           nodes={nodes}
           edges={edges}
           edge={(props: EdgeProps) => <Edge {...props} />}
-          maxHeight={paneHeight}
-          maxWidth={paneWidth}
-          height={paneHeight}
-          width={paneWidth}
+          maxHeight={height}
+          maxWidth={width}
+          height={height}
+          width={width}
           direction={direction}
+          onLayoutChange={onLayoutChange}
           layoutOptions={layoutOptions}
-          key={[direction, resolvedTheme].join("-")}
+          dragEdge={null}
+          dragNode={null}
+          arrow={null}
           pannable={false}
           zoomable={false}
           animated={false}
           readonly={true}
-          dragEdge={null}
-          dragNode={null}
-          fit={true}
-          arrow={null}
+          fit
+          className="diagram-canvas"
         />
       </Space>
     </div>

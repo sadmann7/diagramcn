@@ -42,9 +42,12 @@ function createEditorThemeStore(initialState: EditorThemeState) {
 const themeStore = createEditorThemeStore(initialThemeState);
 
 export function useEditorTheme() {
+  const getSnapshot = React.useCallback(() => themeStore.getThemeState(), []);
+
   const themeState = React.useSyncExternalStore(
     themeStore.subscribeToThemeChanges,
-    themeStore.getThemeState,
+    getSnapshot,
+    getSnapshot,
   );
   const { resolvedTheme } = useNextTheme();
 

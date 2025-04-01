@@ -1,5 +1,6 @@
 "use client";
 
+import { actions } from "@/hooks/use-diagram";
 import {
   type RegistryItem,
   registryItemSchema,
@@ -105,17 +106,20 @@ function createRegistryStore() {
 
       const data = await response.json();
       const parsedData = registryItemSchema.parse(data);
+      const jsonData = JSON.stringify(parsedData, null, 2);
 
       setState({
         registryData: parsedData,
-        registryJson: JSON.stringify(parsedData, null, 2),
+        registryJson: jsonData,
       });
+      actions.setDiagram(jsonData);
     } catch (error) {
       console.error("Error fetching or parsing registry data:", error);
       setState({
         registryData: null,
         registryJson: undefined,
       });
+      actions.clearDiagram();
     }
   }
 
@@ -144,21 +148,26 @@ function createRegistryStore() {
 
 const registryStore = createRegistryStore();
 
-function useExternalStore<T>(selector: () => T, defaultValue: T) {
-  return () =>
-    React.useSyncExternalStore(
-      registryStore.subscribe,
-      selector,
-      () => defaultValue,
-    );
-}
+const useRegistryUrl = () =>
+  React.useSyncExternalStore(
+    registryStore.subscribe,
+    registryStore.getRegistryUrl,
+    () => null,
+  );
 
-const useRegistryUrl = useExternalStore(registryStore.getRegistryUrl, null);
-const useRegistryData = useExternalStore(registryStore.getRegistryData, null);
-const useRegistryJson = useExternalStore(
-  registryStore.getRegistryJson,
-  undefined,
-);
+const useRegistryData = () =>
+  React.useSyncExternalStore(
+    registryStore.subscribe,
+    registryStore.getRegistryData,
+    () => null,
+  );
+
+const useRegistryJson = () =>
+  React.useSyncExternalStore(
+    registryStore.subscribe,
+    registryStore.getRegistryJson,
+    () => undefined,
+  );
 
 function useRegistry() {
   const registryUrl = useRegistryUrl();
@@ -174,4 +183,4 @@ function useRegistry() {
   };
 }
 
-export { useRegistryUrl, useRegistryData, useRegistryJson, useRegistry };
+export { useRegistry, useRegistryData, useRegistryJson, useRegistryUrl };

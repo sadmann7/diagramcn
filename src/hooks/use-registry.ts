@@ -27,10 +27,9 @@ function createRegistryStore() {
     }
 
     function getStoredItem<T>(key: string, defaultValue: T): T {
-      const item = localStorage.getItem(key);
-      if (!item) return defaultValue;
       try {
-        return JSON.parse(item) as T;
+        const item = localStorage.getItem(key);
+        return item ? JSON.parse(item) : defaultValue;
       } catch {
         return defaultValue;
       }
@@ -49,25 +48,40 @@ function createRegistryStore() {
   let state = getInitialState();
   const listeners = new Set<() => void>();
 
-  const setState = (partial: Partial<RegistryState>) => {
-    state = { ...state, ...partial };
+  function updateStorage(key: string, value: unknown) {
+    if (typeof window === "undefined") return;
 
-    if (typeof window !== "undefined") {
-      if (partial.registryUrl !== undefined) {
-        localStorage.setItem("registryUrl", JSON.stringify(state.registryUrl));
-      }
-      if (partial.registryData !== undefined) {
-        localStorage.setItem(
-          "registryData",
-          JSON.stringify(state.registryData),
-        );
-      }
-      if (partial.registryJson !== undefined) {
-        localStorage.setItem(
-          "registryJson",
-          JSON.stringify(state.registryJson),
-        );
-      }
+    try {
+      const valueToStore = JSON.stringify(value);
+      setTimeout(() => {
+        localStorage.setItem(key, valueToStore);
+      }, 0);
+    } catch (error) {
+      console.error(`Failed to store ${key} in localStorage:`, error);
+    }
+  }
+
+  const setState = (partial: Partial<RegistryState>) => {
+    const newState = { ...state, ...partial };
+
+    const hasChanged = Object.keys(partial).some(
+      (key) =>
+        partial[key as keyof RegistryState] !==
+        state[key as keyof RegistryState],
+    );
+
+    if (!hasChanged) return;
+
+    state = newState;
+
+    if (partial.registryUrl !== undefined) {
+      updateStorage(REGISTRY_URL_KEY, state.registryUrl);
+    }
+    if (partial.registryData !== undefined) {
+      updateStorage(REGISTRY_DATA_KEY, state.registryData);
+    }
+    if (partial.registryJson !== undefined) {
+      updateStorage(REGISTRY_JSON_KEY, state.registryJson);
     }
 
     for (const listener of listeners) {
@@ -77,26 +91,37 @@ function createRegistryStore() {
 
   async function fetchRegistryData(url: string | null) {
     if (!url) {
-      setState({ registryData: null });
+      setState({ registryData: null, registryJson: undefined });
       return;
     }
 
     try {
       const response = await fetch(url);
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(
+          `Failed to fetch registry data: HTTP ${response.status} ${response.statusText}`,
+        );
       }
+
       const data = await response.json();
       const parsedData = registryItemSchema.parse(data);
+
       setState({
         registryData: parsedData,
         registryJson: JSON.stringify(parsedData, null, 2),
       });
     } catch (error) {
       console.error("Error fetching or parsing registry data:", error);
-      setState({ registryData: null });
+      setState({
+        registryData: null,
+        registryJson: undefined,
+      });
     }
   }
+
+  const getRegistryUrl = () => state.registryUrl;
+  const getRegistryData = () => state.registryData;
+  const getRegistryJson = () => state.registryJson;
 
   return {
     subscribe: (listener: () => void) => {
@@ -104,9 +129,9 @@ function createRegistryStore() {
       return () => listeners.delete(listener);
     },
     getSnapshot: () => state,
-    getRegistryUrl: () => state.registryUrl,
-    getRegistryData: () => state.registryData,
-    getRegistryJson: () => state.registryJson,
+    getRegistryUrl,
+    getRegistryData,
+    getRegistryJson,
     onRegistryUrlChange: (url: string | null) => {
       setState({ registryUrl: url });
       fetchRegistryData(url);
@@ -119,31 +144,21 @@ function createRegistryStore() {
 
 const registryStore = createRegistryStore();
 
-function useRegistryUrl() {
-  return React.useSyncExternalStore(
-    registryStore.subscribe,
-    () => registryStore.getRegistryUrl(),
-    () => null,
-  );
+function useExternalStore<T>(selector: () => T, defaultValue: T) {
+  return () =>
+    React.useSyncExternalStore(
+      registryStore.subscribe,
+      selector,
+      () => defaultValue,
+    );
 }
 
-function useRegistryData() {
-  return React.useSyncExternalStore(
-    registryStore.subscribe,
-    () => registryStore.getRegistryData(),
-    () => null,
-  );
-}
-
-function useRegistryJson() {
-  const getSnapshot = () => registryStore.getRegistryJson();
-
-  return React.useSyncExternalStore(
-    registryStore.subscribe,
-    getSnapshot,
-    getSnapshot,
-  );
-}
+const useRegistryUrl = useExternalStore(registryStore.getRegistryUrl, null);
+const useRegistryData = useExternalStore(registryStore.getRegistryData, null);
+const useRegistryJson = useExternalStore(
+  registryStore.getRegistryJson,
+  undefined,
+);
 
 function useRegistry() {
   const registryUrl = useRegistryUrl();

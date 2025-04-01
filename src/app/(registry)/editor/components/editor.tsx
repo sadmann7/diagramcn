@@ -26,13 +26,6 @@ export function Editor() {
             language="json"
             value={registryJson}
             onValueChange={onRegistryJsonChange}
-            options={{
-              minimap: { enabled: false },
-              scrollBeyondLastLine: false,
-              fontSize: 14,
-              tabSize: 2,
-              automaticLayout: true,
-            }}
           />
         </ResizablePanel>
         <ResizableHandle withHandle />

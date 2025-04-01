@@ -2,7 +2,7 @@ export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
   name: "diagramcn",
-  description: "Visualize shadcn registry components in diagrams",
+  description: "Visualize shadcn registries in diagrams",
   url:
     process.env.NODE_ENV === "development"
       ? "http://localhost:3000"

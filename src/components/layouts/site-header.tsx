@@ -1,4 +1,3 @@
-import { LayoutGrid } from "lucide-react";
 import Link from "next/link";
 
 import { Icons } from "@/components/icons";
@@ -10,8 +9,7 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 w-full border-border/40 border-b bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60">
       <div className="container flex h-14 items-center">
-        <Link href="/" className="mr-2 flex items-center md:mr-6 md:space-x-2">
-          <LayoutGrid className="size-4" aria-hidden="true" />
+        <Link href="/" className="mr-2 flex items-center md:mr-6 md:gap-2">
           <span className="hidden font-bold md:inline-block">
             {siteConfig.name}
           </span>

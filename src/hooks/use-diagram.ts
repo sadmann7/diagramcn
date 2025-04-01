@@ -2,7 +2,7 @@ import { useJson } from "@/hooks/use-json";
 import { getChildrenEdges, getOutgoers } from "@/lib/diagram";
 import { parser } from "@/lib/json-parser";
 import type { Edge, Node } from "@/types";
-import { useSyncExternalStore } from "react";
+import * as React from "react";
 import type { ViewPort } from "react-zoomable-ui/dist/ViewPort";
 import type { CanvasDirection } from "reaflow";
 
@@ -70,10 +70,10 @@ const store = createStore(initialState);
 export const actions = {
   toggleCollapseAll: (collapseAll: boolean) => {
     store.setState({ collapseAll });
-    actions.collapseGraph();
+    actions.collapseDiagram();
   },
 
-  clearGraph: () => store.setState({ nodes: [], edges: [], loading: false }),
+  clearDiagram: () => store.setState({ nodes: [], edges: [], loading: false }),
 
   getCollapsedNodeIds: () => store.getState().collapsedNodes,
 
@@ -87,7 +87,7 @@ export const actions = {
 
     if (state.collapseAll) {
       store.setState({ nodes, edges, ...options });
-      actions.collapseGraph();
+      actions.collapseDiagram();
     } else {
       store.setState({
         nodes,
@@ -179,7 +179,7 @@ export const actions = {
     });
   },
 
-  collapseGraph: () => {
+  collapseDiagram: () => {
     const state = store.getState();
     const edges = state.edges;
     const tos = edges.map((edge: Edge) => edge.to);
@@ -286,6 +286,6 @@ export const actions = {
 };
 
 export function useDiagram() {
-  const state = useSyncExternalStore(store.subscribe, store.getSnapshot);
+  const state = React.useSyncExternalStore(store.subscribe, store.getSnapshot);
   return { ...state, ...actions };
 }

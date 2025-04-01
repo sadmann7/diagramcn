@@ -7,12 +7,10 @@ import { siteConfig } from "@/config/site";
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-50 w-full border-border/40 border-b bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60">
-      <div className="container flex h-14 items-center">
-        <Link href="/" className="mr-2 flex items-center md:mr-6 md:gap-2">
-          <span className="hidden font-bold md:inline-block">
-            {siteConfig.name}
-          </span>
+    <header className="sticky top-0 z-50 w-full border-border/40 border-b bg-background/95 px-4 backdrop-blur-sm supports-backdrop-filter:bg-background/60">
+      <div className="flex h-14 items-center gap-6">
+        <Link href="/" className="font-semibold">
+          {siteConfig.name}
         </Link>
         <nav className="flex w-full items-center gap-6 text-sm">
           <Link

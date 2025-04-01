@@ -1,4 +1,5 @@
-import { useSyncExternalStore } from "react";
+import { useDiagram } from "@/hooks/use-diagram";
+import * as React from "react";
 
 interface JsonState {
   json: string;
@@ -31,11 +32,11 @@ function createStore(initialState: JsonState) {
     getJson: () => state.json,
     setJson: (json: string) => {
       setState({ json, loading: false });
-      //   useGraph.getState().setGraph(json);
+      useDiagram().setDiagram(json);
     },
     clear: () => {
       setState({ json: "", loading: false });
-      //   useGraph.getState().clearGraph();
+      useDiagram().clearDiagram();
     },
   };
 }
@@ -43,7 +44,7 @@ function createStore(initialState: JsonState) {
 const store = createStore(initialState);
 
 export function useJson() {
-  const state = useSyncExternalStore(store.subscribe, store.getState);
+  const state = React.useSyncExternalStore(store.subscribe, store.getState);
 
   return {
     ...state,

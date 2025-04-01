@@ -1,9 +1,8 @@
 "use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { useCallbackRef } from "@/hooks/use-callback-ref";
-import MonacoEditor, { type OnMount, type Theme } from "@monaco-editor/react";
-import { useTheme } from "next-themes";
+import { useEditorTheme } from "@/hooks/use-editor-theme";
+import MonacoEditor, { type OnMount } from "@monaco-editor/react";
 import * as React from "react";
 
 interface TextEditorProps extends React.ComponentProps<typeof MonacoEditor> {}
@@ -13,16 +12,7 @@ export function TextEditor({
   width = "100%",
   ...props
 }: TextEditorProps) {
-  const { resolvedTheme } = useTheme();
-  const [editorTheme, setEditorTheme] = React.useState<Theme>("light");
-
-  const onThemeChange = useCallbackRef(() => {
-    setEditorTheme(resolvedTheme === "dark" ? "vs-dark" : "light");
-  });
-
-  React.useEffect(() => {
-    onThemeChange();
-  }, [onThemeChange]);
+  const { editorTheme } = useEditorTheme();
 
   const onMount: OnMount = React.useCallback((editor) => {
     editor.onDidPaste(() => {
@@ -34,8 +24,8 @@ export function TextEditor({
     <MonacoEditor
       height={height}
       width={width}
-      theme={editorTheme}
       onMount={onMount}
+      theme={editorTheme}
       options={{
         minimap: { enabled: false },
         scrollBeyondLastLine: false,

@@ -1,6 +1,6 @@
 "use client";
 
-import { Edge as CustomEdge } from "@/components/edge";
+import { Edge } from "@/components/edge";
 import { ObjectNode } from "@/components/object-node";
 import { TextNode } from "@/components/text-node";
 import { useDiagram } from "@/hooks/use-diagram";
@@ -116,21 +116,8 @@ export function Diagram({ isWidget = false, jsonData }: DiagramProps) {
 
   return (
     <div
-      className={cn(
-        "absolute h-full w-full",
-        isWidget ? "h-screen" : "h-[calc(100vh-67px)]",
-        "bg-background",
-        // Grid pattern classes
-        "bg-[length:100px_100px,100px_100px,20px_20px,20px_20px]",
-        "bg-[-1.5px_-1.5px,-1.5px_-1.5px,-1px_-1px,-1px_-1px]",
-        "[background-image:linear-gradient(var(--grid-primary)_1.5px,transparent_1.5px),linear-gradient(90deg,var(--grid-primary)_1.5px,transparent_1.5px),linear-gradient(var(--grid-secondary)_1px,transparent_1px),linear-gradient(90deg,var(--grid-secondary)_1px,transparent_1px)]",
-        // Additional styles
-        "[&_.diagram-space]:cursor-[url('/assets/cursor.svg'),auto]",
-        "[&:active]:cursor-move",
-        "[&_.dragging]:pointer-events-none",
-        "[&_.dragging_button]:pointer-events-none",
-      )}
-      onContextMenu={(e) => e.preventDefault()}
+      className="relative h-full w-full"
+      onContextMenu={(event) => event.preventDefault()}
       onClick={blurOnClick}
       {...bindLongPress()}
     >
@@ -150,42 +137,9 @@ export function Diagram({ isWidget = false, jsonData }: DiagramProps) {
         <Canvas
           className="diagram-canvas"
           onLayoutChange={onLayoutChange}
-          node={(props: NodeProps) => {
-            const node = props.properties as DiagramNode;
-            const commonProps = {
-              ...props,
-              node,
-              rx: 4,
-              ry: 4,
-              style: {
-                fill:
-                  node.data?.type === "property"
-                    ? "#EBF5FF"
-                    : node.data?.type === "array"
-                      ? "#FFF5EB"
-                      : node.data?.type === "object"
-                        ? "#F0FFF4"
-                        : "#FFFFFF",
-                stroke:
-                  node.data?.type === "property"
-                    ? "#3B82F6"
-                    : node.data?.type === "array"
-                      ? "#F97316"
-                      : node.data?.type === "object"
-                        ? "#10B981"
-                        : "#9CA3AF",
-                strokeWidth: 1.5,
-              },
-            };
-            return node.data?.type === "object" ? (
-              <ObjectNode {...commonProps} />
-            ) : (
-              <TextNode {...commonProps} hasCollapse />
-            );
-          }}
-          edge={(props: EdgeProps) => <CustomEdge {...props} />}
           nodes={nodes}
           edges={edges}
+          edge={(props: EdgeProps) => <Edge {...props} />}
           maxHeight={paneHeight}
           maxWidth={paneWidth}
           height={paneHeight}

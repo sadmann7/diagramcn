@@ -44,7 +44,7 @@ export function TextEditor({
 
   const currentTheme = React.useMemo(
     () => (editorTheme === "vs-dark" ? "github-dark" : "github-light"),
-    [editorTheme],
+    [editorTheme]
   );
 
   return (

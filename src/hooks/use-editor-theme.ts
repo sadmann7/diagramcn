@@ -1,5 +1,3 @@
-import githubDark from "@/assets/themes/github-dark.json";
-import githubLight from "@/assets/themes/github-light.json";
 import type { Theme } from "@monaco-editor/react";
 import { useTheme as useNextTheme } from "next-themes";
 import * as React from "react";
@@ -49,7 +47,7 @@ export function useEditorTheme() {
   const themeState = React.useSyncExternalStore(
     themeStore.subscribeToThemeChanges,
     getSnapshot,
-    getSnapshot,
+    getSnapshot
   );
   const { resolvedTheme } = useNextTheme();
 

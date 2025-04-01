@@ -1,9 +1,9 @@
 "use client";
 
+import { useTheme } from "next-themes";
 import * as React from "react";
 import type { EdgeProps } from "reaflow";
 import { Edge as ReaflowEdge } from "reaflow";
-import { useTheme } from "next-themes";
 
 function EdgeImpl(props: EdgeProps) {
   const { resolvedTheme } = useTheme();

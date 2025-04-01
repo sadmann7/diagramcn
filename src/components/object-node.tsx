@@ -1,8 +1,8 @@
-import React from "react";
-import { NODE_DIMENSIONS } from "@/lib/constants";
 import { TextRenderer } from "@/components/text-renderer";
+import { NODE_DIMENSIONS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import type { Node } from "@/types";
+import React from "react";
 
 export interface CustomNodeProps {
   node: Node;
@@ -45,7 +45,7 @@ const Row = ({ val, x, y, index }: RowProps) => {
         "block h-[24px] overflow-hidden text-ellipsis whitespace-nowrap px-2.5 py-0.5",
         "border-border border-b last:border-b-0",
         "leading-[18px]",
-        getTextColor(rowValue)
+        getTextColor(rowValue),
       )}
     >
       <span className="font-medium font-mono text-blue-600 text-sm dark:text-blue-400">
@@ -61,7 +61,7 @@ const ObjectNodeImpl = ({ node, x, y }: CustomNodeProps) => (
     className={cn(
       "pointer-events-none overflow-hidden font-medium font-mono text-xs",
       "searched:rounded searched:border-2 searched:border-green-500 searched:bg-green-500/10",
-      "[&_.highlight]:bg-yellow-500/15"
+      "[&_.highlight]:bg-yellow-500/15",
     )}
     style={{
       width: node.width,

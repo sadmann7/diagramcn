@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useRegistry } from "@/hooks/use-registry";
 import { cn } from "@/lib/utils";
-import { Send } from "lucide-react";
+import { Loader, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 
@@ -12,6 +12,7 @@ interface RegistryInputProps extends React.ComponentProps<"div"> {}
 
 export function RegistryInput({ className, ...props }: RegistryInputProps) {
   const router = useRouter();
+  const [isPending, startTransition] = React.useTransition();
   const { onRegistryUrlChange } = useRegistry();
   const [input, setInput] = React.useState("");
 
@@ -22,9 +23,11 @@ export function RegistryInput({ className, ...props }: RegistryInputProps) {
     const registryUrl = parseShadcnCommand(command) ?? command;
 
     try {
-      new URL(registryUrl);
-      onRegistryUrlChange(registryUrl);
-      router.push("/editor");
+      startTransition(() => {
+        new URL(registryUrl);
+        onRegistryUrlChange(registryUrl);
+        router.push("/editor");
+      });
     } catch (_err) {
       console.error("Invalid registry URL");
     }
@@ -55,8 +58,9 @@ export function RegistryInput({ className, ...props }: RegistryInputProps) {
         size="icon"
         className="absolute right-2 bottom-2 size-7 rounded-sm"
         onClick={onSubmit}
+        disabled={isPending}
       >
-        <Send />
+        {isPending ? <Loader className="animate-spin" /> : <Send />}
       </Button>
     </div>
   );

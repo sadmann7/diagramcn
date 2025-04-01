@@ -1,19 +1,19 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
-import { Canvas, Edge, type EdgeProps, Node, type NodeProps } from "reaflow";
-import { Space, type ViewPort } from "react-zoomable-ui";
+import { Edge as CustomEdge } from "@/components/edge";
+import { ObjectNode } from "@/components/object-node";
+import { TextNode } from "@/components/text-node";
+import { useDiagram } from "@/hooks/use-diagram";
+import { cn, debounce } from "@/lib/utils";
+import type { Node as DiagramNode } from "@/types";
+import { useTheme } from "next-themes";
+import * as React from "react";
+import { Space } from "react-zoomable-ui";
+import { Canvas, type EdgeProps, type NodeProps } from "reaflow";
 import type { LongPressCallback, LongPressOptions } from "use-long-press";
 import { useLongPress } from "use-long-press";
-import { cn, debounce } from "@/lib/utils";
-import { TextNode } from "@/components/text-node";
-import { ObjectNode } from "@/components/object-node";
-import { Edge as CustomEdge } from "@/components/edge";
-import { useDiagram } from "@/hooks/use-diagram";
-import { useTheme } from "next-themes";
-import type { Node as DiagramNode } from "@/types";
 
-const SUPPORTED_LIMIT = 1000; // Adjust based on your needs
+const SUPPORTED_LIMIT = 1000;
 
 interface DiagramProps {
   isWidget?: boolean;
@@ -38,10 +38,10 @@ export function Diagram({ isWidget = false, jsonData }: DiagramProps) {
     setDiagram,
   } = useDiagram();
   const { resolvedTheme } = useTheme();
-  const [paneWidth, setPaneWidth] = useState(2000);
-  const [paneHeight, setPaneHeight] = useState(2000);
+  const [paneWidth, setPaneWidth] = React.useState(2000);
+  const [paneHeight, setPaneHeight] = React.useState(2000);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!jsonData) return;
 
     try {
@@ -52,12 +52,12 @@ export function Diagram({ isWidget = false, jsonData }: DiagramProps) {
     }
   }, [jsonData, setDiagram, setLoading]);
 
-  const onLayoutChange = useCallback(
+  const onLayoutChange = React.useCallback(
     (layout: { width?: number; height?: number }) => {
       if (layout.width && layout.height) {
         const areaSize = layout.width * layout.height;
         const changeRatio = Math.abs(
-          (areaSize * 100) / (paneWidth * paneHeight) - 100
+          (areaSize * 100) / (paneWidth * paneHeight) - 100,
         );
 
         setPaneWidth(layout.width + 50);
@@ -71,12 +71,12 @@ export function Diagram({ isWidget = false, jsonData }: DiagramProps) {
         });
       }
     },
-    [isWidget, paneHeight, paneWidth, centerView, setLoading]
+    [isWidget, paneHeight, paneWidth, centerView, setLoading],
   );
 
-  const callback = useCallback<LongPressCallback>(() => {
+  const callback = React.useCallback<LongPressCallback>(() => {
     const canvas = document.querySelector(
-      ".diagram-canvas"
+      ".diagram-canvas",
     ) as HTMLDivElement | null;
     canvas?.classList.add("dragging");
   }, []);
@@ -85,22 +85,22 @@ export function Diagram({ isWidget = false, jsonData }: DiagramProps) {
     threshold: 150,
     onFinish: () => {
       const canvas = document.querySelector(
-        ".diagram-canvas"
+        ".diagram-canvas",
       ) as HTMLDivElement | null;
       canvas?.classList.remove("dragging");
     },
   } as LongPressOptions);
 
-  const blurOnClick = useCallback(() => {
+  const blurOnClick = React.useCallback(() => {
     if ("activeElement" in document)
       (document.activeElement as HTMLElement)?.blur();
   }, []);
 
-  const debouncedOnZoomChangeHandler = useCallback(
+  const debouncedOnZoomChangeHandler = React.useCallback(
     debounce(() => {
       if (viewPort) setViewPort(viewPort);
     }, 300),
-    []
+    [],
   );
 
   if (nodes.length > SUPPORTED_LIMIT) {
@@ -128,7 +128,7 @@ export function Diagram({ isWidget = false, jsonData }: DiagramProps) {
         "[&_.diagram-space]:cursor-[url('/assets/cursor.svg'),auto]",
         "[&:active]:cursor-move",
         "[&_.dragging]:pointer-events-none",
-        "[&_.dragging_button]:pointer-events-none"
+        "[&_.dragging_button]:pointer-events-none",
       )}
       onContextMenu={(e) => e.preventDefault()}
       onClick={blurOnClick}
@@ -162,18 +162,18 @@ export function Diagram({ isWidget = false, jsonData }: DiagramProps) {
                   node.data?.type === "property"
                     ? "#EBF5FF"
                     : node.data?.type === "array"
-                    ? "#FFF5EB"
-                    : node.data?.type === "object"
-                    ? "#F0FFF4"
-                    : "#FFFFFF",
+                      ? "#FFF5EB"
+                      : node.data?.type === "object"
+                        ? "#F0FFF4"
+                        : "#FFFFFF",
                 stroke:
                   node.data?.type === "property"
                     ? "#3B82F6"
                     : node.data?.type === "array"
-                    ? "#F97316"
-                    : node.data?.type === "object"
-                    ? "#10B981"
-                    : "#9CA3AF",
+                      ? "#F97316"
+                      : node.data?.type === "object"
+                        ? "#10B981"
+                        : "#9CA3AF",
                 strokeWidth: 1.5,
               },
             };

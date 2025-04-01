@@ -29,7 +29,7 @@ function traverseWithoutChildren(
   diagram: Diagram,
   myParentId?: string,
   parentType?: string,
-  nextType?: string
+  nextType?: string,
 ) {
   if (value === undefined) return;
 
@@ -67,7 +67,7 @@ function traverseWithChildren(
   diagram: Diagram,
   children: Node[],
   myParentId?: string,
-  parentType?: string
+  parentType?: string,
 ) {
   let parentId: string | undefined;
 
@@ -79,12 +79,12 @@ function traverseWithChildren(
         (e) =>
           e.parentId === states.brothersParentId &&
           e.objectsFromArrayId ===
-            states.objectsFromArray[states.objectsFromArray.length - 1]
+            states.objectsFromArray[states.objectsFromArray.length - 1],
       );
 
       if (findBrothersNode) {
         const findNodeIndex = diagram.nodes.findIndex(
-          (e) => e.id === findBrothersNode?.id
+          (e) => e.id === findBrothersNode?.id,
         );
 
         if (findNodeIndex !== -1) {
@@ -156,7 +156,7 @@ function traverseWithChildren(
       (e) =>
         e.parentId === myParentId &&
         e.objectsFromArrayId ===
-          states.objectsFromArray[states.objectsFromArray.length - 1]
+          states.objectsFromArray[states.objectsFromArray.length - 1],
     );
 
     if (
@@ -213,13 +213,13 @@ function traverseWithChildren(
         (e) =>
           e.parentId === states.brothersParentId &&
           e.objectsFromArrayId ===
-            states.objectsFromArray[states.objectsFromArray.length - 1]
+            states.objectsFromArray[states.objectsFromArray.length - 1],
       );
 
       if (findBrothersNode) {
         const modifyNodes = [...diagram.nodes];
         const findNodeIndex = modifyNodes.findIndex(
-          (e) => e.id === findBrothersNode?.id
+          (e) => e.id === findBrothersNode?.id,
         );
 
         if (
@@ -285,7 +285,7 @@ function traverseWithChildren(
     if (parentId) {
       const myChildren = diagram.edges.filter((edge) => edge.from === parentId);
       const parentIndex = diagram.nodes.findIndex(
-        (node) => node.id === parentId
+        (node) => node.id === parentId,
       );
 
       diagram.nodes = diagram.nodes.map((node, index) => {
@@ -325,7 +325,7 @@ export function traverse({
       diagram,
       myParentId,
       parentType,
-      nextType
+      nextType,
     );
     return;
   }

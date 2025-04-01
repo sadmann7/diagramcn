@@ -53,7 +53,10 @@ export const metadata: Metadata = {
   icons: {
     icon: "/icon.png",
   },
-  manifest: `${siteConfig.url}/site.webmanifest`,
+  manifest:
+    process.env.NODE_ENV === "production"
+      ? `${siteConfig.url}/site.webmanifest`
+      : undefined,
 };
 
 export const viewport: Viewport = {

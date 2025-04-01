@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { useLocalStorage } from "@/hooks/use-local-storage";
 import { cn } from "@/lib/utils";
 import { Send } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -12,7 +13,7 @@ interface RegistryInputProps extends React.ComponentProps<"div"> {}
 
 export function RegistryInput({ className, ...props }: RegistryInputProps) {
   const router = useRouter();
-  const { setRegistryUrl } = useRegistry();
+  const { registryUrl, setRegistryUrl } = useRegistry();
   const [input, setInput] = React.useState("");
 
   const onSubmit = React.useCallback(() => {
@@ -29,6 +30,8 @@ export function RegistryInput({ className, ...props }: RegistryInputProps) {
       console.error("Invalid registry URL");
     }
   }, [input, router, setRegistryUrl]);
+
+  console.log({ registryUrl });
 
   const onKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -81,8 +84,8 @@ function parseShadcnCommand(command: string): string | null {
       );
       if (!match) continue;
 
-      const [, version, component] = match;
-      return `https://ui.shadcn.com/r/styles/${version}/${component}.json`;
+      const [, , component] = match;
+      return `https://ui.shadcn.com/r/styles/default/${component}.json`;
     }
   }
 

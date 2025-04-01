@@ -51,13 +51,9 @@ export function RegistryProvider({ children }: RegistryProviderProps) {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        const safeRegistryData = registryItemSchema.safeParse(
-          await response.json(),
-        );
-        if (!safeRegistryData.success) {
-          throw new Error("Invalid registry data");
-        }
-        setRegistryData(safeRegistryData.data);
+        const data = await response.json();
+        const parsedData = registryItemSchema.parse(data);
+        setRegistryData(parsedData);
       } catch (error) {
         console.error("Error fetching or parsing registry data:", error);
         setRegistryData(null);

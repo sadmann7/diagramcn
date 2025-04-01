@@ -2,7 +2,7 @@ import * as React from "react";
 
 function useLocalStorage<T>(key: string, initialValue: T) {
   const [storedValue, setStoredValue] = React.useState<T>(() => {
-    if (typeof globalThis.window === "undefined") {
+    if (typeof window === "undefined") {
       return initialValue;
     }
 

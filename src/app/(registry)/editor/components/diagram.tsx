@@ -1,208 +1,208 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Canvas, Edge, type EdgeProps, Node, type NodeProps } from "reaflow";
+import { Space, type ViewPort } from "react-zoomable-ui";
+import type { LongPressCallback, LongPressOptions } from "use-long-press";
+import { useLongPress } from "use-long-press";
+import { cn, debounce } from "@/lib/utils";
+import { TextNode } from "@/components/text-node";
+import { ObjectNode } from "@/components/object-node";
+import { Edge as CustomEdge } from "@/components/edge";
+import { useDiagram } from "@/hooks/use-diagram";
+import { useTheme } from "next-themes";
+import type { Node as DiagramNode } from "@/types";
 
-type NodeData = {
-  id: string;
-  text: string;
-  width: number;
-  height: number;
-  data: {
-    type: string;
-    isParent: boolean;
-    childrenCount: number;
-  };
-};
+const SUPPORTED_LIMIT = 1000; // Adjust based on your needs
 
-type EdgeData = {
-  id: string;
-  from: string;
-  to: string;
-};
-
-type DiagramProps = {
+interface DiagramProps {
+  isWidget?: boolean;
   jsonData?: string;
+}
+
+const layoutOptions = {
+  "elk.layered.compaction.postCompaction.strategy": "EDGE_LENGTH",
+  "elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
 };
 
-export function Diagram({ jsonData }: DiagramProps) {
-  const [nodes, setNodes] = useState<NodeData[]>([]);
-  const [edges, setEdges] = useState<EdgeData[]>([]);
+export function Diagram({ isWidget = false, jsonData }: DiagramProps) {
+  const {
+    nodes,
+    edges,
+    loading,
+    direction,
+    viewPort,
+    setViewPort,
+    centerView,
+    setLoading,
+    setDiagram,
+  } = useDiagram();
+  const { resolvedTheme } = useTheme();
+  const [paneWidth, setPaneWidth] = useState(2000);
+  const [paneHeight, setPaneHeight] = useState(2000);
 
   useEffect(() => {
     if (!jsonData) return;
 
     try {
-      const parsed = JSON.parse(jsonData);
-      const { nodes, edges } = parseJsonToGraph(parsed);
-      setNodes(nodes);
-      setEdges(edges);
+      setDiagram(jsonData, { loading: false });
     } catch (error) {
       console.error("Error parsing JSON:", error);
+      setLoading(false);
     }
-  }, [jsonData]);
+  }, [jsonData, setDiagram, setLoading]);
 
-  return (
-    <div className="relative h-full w-full bg-gray-50">
-      <div className="h-full w-full">
-        {nodes.length > 0 ? (
-          <Canvas
-            nodes={nodes}
-            edges={edges}
-            maxZoom={2}
-            minZoom={0.3}
-            zoomable
-            pannable
-            animated
-            readonly
-            direction="RIGHT"
-            className="h-full w-full"
-            fit
-            node={(props: NodeProps) => (
-              <Node
-                {...props}
-                style={{
-                  fill:
-                    props.properties.data.type === "key"
-                      ? "#EBF5FF" // Light blue for keys
-                      : props.properties.data.type === "array"
-                        ? "#FFF5EB" // Light orange for arrays
-                        : props.properties.data.type === "object"
-                          ? "#F0FFF4" // Light green for objects
-                          : "#FFFFFF", // White for primitive values
-                  stroke:
-                    props.properties.data.type === "key"
-                      ? "#3B82F6" // Blue for keys
-                      : props.properties.data.type === "array"
-                        ? "#F97316" // Orange for arrays
-                        : props.properties.data.type === "object"
-                          ? "#10B981" // Green for objects
-                          : "#9CA3AF", // Gray for primitive values
-                  strokeWidth: 1.5,
-                }}
-                label={
-                  <div
-                    className={`
-                      font-mono text-xs
-                      ${
-                        props.properties.data.type === "key"
-                          ? "font-semibold text-blue-600"
-                          : ""
-                      }
-                      ${
-                        props.properties.data.type === "array"
-                          ? "font-semibold text-orange-600"
-                          : ""
-                      }
-                      ${
-                        props.properties.data.type === "object"
-                          ? "font-semibold text-green-600"
-                          : ""
-                      }
-                    `}
-                  >
-                    {props.properties.text}
-                  </div>
-                }
-              />
-            )}
-            edge={(props: EdgeProps) => (
-              <Edge
-                {...props}
-                style={{
-                  stroke: "#CBD5E1",
-                  strokeWidth: 1.5,
-                }}
-              />
-            )}
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center text-gray-500">
-            {jsonData ? "Processing data..." : "No data to visualize"}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+  const onLayoutChange = useCallback(
+    (layout: { width?: number; height?: number }) => {
+      if (layout.width && layout.height) {
+        const areaSize = layout.width * layout.height;
+        const changeRatio = Math.abs(
+          (areaSize * 100) / (paneWidth * paneHeight) - 100
+        );
 
-// Function to parse JSON into graph nodes and edges
-function parseJsonToGraph(json: unknown): {
-  nodes: NodeData[];
-  edges: EdgeData[];
-} {
-  const nodes: NodeData[] = [];
-  const edges: EdgeData[] = [];
-  let nodeId = 1;
+        setPaneWidth(layout.width + 50);
+        setPaneHeight(layout.height + 50);
 
-  function traverse(obj: unknown, parentId?: string) {
-    const currentId = String(nodeId++);
-
-    // Create node for current object/value
-    const isObject = obj !== null && typeof obj === "object";
-    const isArray = Array.isArray(obj);
-    const type = isArray ? "array" : isObject ? "object" : typeof obj;
-
-    let text: string;
-    if (isObject) {
-      text = isArray ? "[]" : "{}";
-    } else {
-      text = String(obj);
-    }
-
-    nodes.push({
-      id: currentId,
-      text,
-      width: Math.max(text.length * 8, 80),
-      height: 40,
-      data: {
-        type,
-        isParent: isObject,
-        childrenCount: isObject ? Object.keys(obj).length : 0,
-      },
-    });
-
-    // Connect to parent if exists
-    if (parentId) {
-      edges.push({
-        id: `e${parentId}-${currentId}`,
-        from: parentId,
-        to: currentId,
-      });
-    }
-
-    // Traverse children for objects and arrays
-    if (isObject) {
-      for (const key in obj as Record<string, unknown>) {
-        const value = (obj as Record<string, unknown>)[key];
-        const childId = String(nodeId++);
-
-        // Create node for the key (for objects)
-        nodes.push({
-          id: childId,
-          text: key,
-          width: Math.max(key.length * 8, 60),
-          height: 30,
-          data: {
-            type: "key",
-            isParent: false,
-            childrenCount: 0,
-          },
+        setTimeout(() => {
+          window.requestAnimationFrame(() => {
+            if (changeRatio > 70 || isWidget) centerView();
+            setLoading(false);
+          });
         });
-
-        // Connect current object to key
-        edges.push({
-          id: `e${currentId}-${childId}`,
-          from: currentId,
-          to: childId,
-        });
-
-        // Recursively traverse the value
-        traverse(value, childId);
       }
-    }
+    },
+    [isWidget, paneHeight, paneWidth, centerView, setLoading]
+  );
+
+  const callback = useCallback<LongPressCallback>(() => {
+    const canvas = document.querySelector(
+      ".diagram-canvas"
+    ) as HTMLDivElement | null;
+    canvas?.classList.add("dragging");
+  }, []);
+
+  const bindLongPress = useLongPress(callback, {
+    threshold: 150,
+    onFinish: () => {
+      const canvas = document.querySelector(
+        ".diagram-canvas"
+      ) as HTMLDivElement | null;
+      canvas?.classList.remove("dragging");
+    },
+  } as LongPressOptions);
+
+  const blurOnClick = useCallback(() => {
+    if ("activeElement" in document)
+      (document.activeElement as HTMLElement)?.blur();
+  }, []);
+
+  const debouncedOnZoomChangeHandler = useCallback(
+    debounce(() => {
+      if (viewPort) setViewPort(viewPort);
+    }, 300),
+    []
+  );
+
+  if (nodes.length > SUPPORTED_LIMIT) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <p className="text-foreground">
+          The diagram is too large to display. Please reduce the size of your
+          data.
+        </p>
+      </div>
+    );
   }
 
-  traverse(json);
-  return { nodes, edges };
+  return (
+    <div
+      className={cn(
+        "absolute h-full w-full",
+        isWidget ? "h-screen" : "h-[calc(100vh-67px)]",
+        "bg-background",
+        // Grid pattern classes
+        "bg-[length:100px_100px,100px_100px,20px_20px,20px_20px]",
+        "bg-[-1.5px_-1.5px,-1.5px_-1.5px,-1px_-1px,-1px_-1px]",
+        "[background-image:linear-gradient(var(--grid-primary)_1.5px,transparent_1.5px),linear-gradient(90deg,var(--grid-primary)_1.5px,transparent_1.5px),linear-gradient(var(--grid-secondary)_1px,transparent_1px),linear-gradient(90deg,var(--grid-secondary)_1px,transparent_1px)]",
+        // Additional styles
+        "[&_.diagram-space]:cursor-[url('/assets/cursor.svg'),auto]",
+        "[&:active]:cursor-move",
+        "[&_.dragging]:pointer-events-none",
+        "[&_.dragging_button]:pointer-events-none"
+      )}
+      onContextMenu={(e) => e.preventDefault()}
+      onClick={blurOnClick}
+      {...bindLongPress()}
+    >
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-background/50">
+          <div className="text-foreground">Loading...</div>
+        </div>
+      )}
+      <Space
+        onUpdated={debouncedOnZoomChangeHandler}
+        onCreate={setViewPort}
+        onContextMenu={(e) => e.preventDefault()}
+        treatTwoFingerTrackPadGesturesLikeTouch={true}
+        pollForElementResizing
+        className="diagram-space"
+      >
+        <Canvas
+          className="diagram-canvas"
+          onLayoutChange={onLayoutChange}
+          node={(props: NodeProps) => {
+            const node = props.properties as DiagramNode;
+            const commonProps = {
+              ...props,
+              node,
+              rx: 4,
+              ry: 4,
+              style: {
+                fill:
+                  node.data?.type === "property"
+                    ? "#EBF5FF"
+                    : node.data?.type === "array"
+                    ? "#FFF5EB"
+                    : node.data?.type === "object"
+                    ? "#F0FFF4"
+                    : "#FFFFFF",
+                stroke:
+                  node.data?.type === "property"
+                    ? "#3B82F6"
+                    : node.data?.type === "array"
+                    ? "#F97316"
+                    : node.data?.type === "object"
+                    ? "#10B981"
+                    : "#9CA3AF",
+                strokeWidth: 1.5,
+              },
+            };
+            return node.data?.type === "object" ? (
+              <ObjectNode {...commonProps} />
+            ) : (
+              <TextNode {...commonProps} hasCollapse />
+            );
+          }}
+          edge={(props: EdgeProps) => <CustomEdge {...props} />}
+          nodes={nodes}
+          edges={edges}
+          maxHeight={paneHeight}
+          maxWidth={paneWidth}
+          height={paneHeight}
+          width={paneWidth}
+          direction={direction}
+          layoutOptions={layoutOptions}
+          key={[direction, resolvedTheme].join("-")}
+          pannable={false}
+          zoomable={false}
+          animated={false}
+          readonly={true}
+          dragEdge={null}
+          dragNode={null}
+          fit={true}
+          arrow={null}
+        />
+      </Space>
+    </div>
+  );
 }

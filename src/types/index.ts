@@ -42,6 +42,4 @@ export interface JsonParserStates {
   diagram: Diagram;
 }
 
-export type Direction = "left" | "right" | "down" | "up";
-
 export type PrimitiveOrNull = "boolean" | "string" | "number" | "null";

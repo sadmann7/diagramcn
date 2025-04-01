@@ -26,7 +26,7 @@ export function Editor() {
             width="100%"
             language="json"
             value={registryJson}
-            onValueChange={onRegistryJsonChange}
+            onChange={onRegistryJsonChange}
           />
         </ResizablePanel>
         <ResizableHandle

@@ -6,16 +6,10 @@ import {
 import type { Diagram, JsonParserStates, PrimitiveOrNull } from "@/types";
 import type { Node, NodeType } from "jsonc-parser";
 
-interface TraverseProps {
-  states: JsonParserStates;
-  objectToTraverse: Node;
-  parentType?: string;
-  myParentId?: string;
-  nextType?: string;
-}
-
 function isPrimitiveOrNull(type: unknown): type is PrimitiveOrNull {
-  return ["boolean", "string", "number", "null"].includes(type as string);
+  if (!(typeof type === "string")) return false;
+
+  return ["boolean", "string", "number", "null"].includes(type);
 }
 
 function alignChildren(nodeA: Node, nodeB: Node): number {
@@ -29,13 +23,13 @@ function alignChildren(nodeA: Node, nodeB: Node): number {
   return 0;
 }
 
-function handleNoChildren(
+function traverseWithoutChildren(
   value: string | undefined,
   states: JsonParserStates,
   diagram: Diagram,
   myParentId?: string,
   parentType?: string,
-  nextType?: string,
+  nextType?: string
 ) {
   if (value === undefined) return;
 
@@ -67,13 +61,13 @@ function handleNoChildren(
   }
 }
 
-function handleHasChildren(
+function traverseWithChildren(
   type: NodeType,
   states: JsonParserStates,
   diagram: Diagram,
   children: Node[],
   myParentId?: string,
-  parentType?: string,
+  parentType?: string
 ) {
   let parentId: string | undefined;
 
@@ -85,12 +79,12 @@ function handleHasChildren(
         (e) =>
           e.parentId === states.brothersParentId &&
           e.objectsFromArrayId ===
-            states.objectsFromArray[states.objectsFromArray.length - 1],
+            states.objectsFromArray[states.objectsFromArray.length - 1]
       );
 
       if (findBrothersNode) {
         const findNodeIndex = diagram.nodes.findIndex(
-          (e) => e.id === findBrothersNode?.id,
+          (e) => e.id === findBrothersNode?.id
         );
 
         if (findNodeIndex !== -1) {
@@ -162,7 +156,7 @@ function handleHasChildren(
       (e) =>
         e.parentId === myParentId &&
         e.objectsFromArrayId ===
-          states.objectsFromArray[states.objectsFromArray.length - 1],
+          states.objectsFromArray[states.objectsFromArray.length - 1]
     );
 
     if (
@@ -219,13 +213,13 @@ function handleHasChildren(
         (e) =>
           e.parentId === states.brothersParentId &&
           e.objectsFromArrayId ===
-            states.objectsFromArray[states.objectsFromArray.length - 1],
+            states.objectsFromArray[states.objectsFromArray.length - 1]
       );
 
       if (findBrothersNode) {
         const modifyNodes = [...diagram.nodes];
         const findNodeIndex = modifyNodes.findIndex(
-          (e) => e.id === findBrothersNode?.id,
+          (e) => e.id === findBrothersNode?.id
         );
 
         if (
@@ -291,7 +285,7 @@ function handleHasChildren(
     if (parentId) {
       const myChildren = diagram.edges.filter((edge) => edge.from === parentId);
       const parentIndex = diagram.nodes.findIndex(
-        (node) => node.id === parentId,
+        (node) => node.id === parentId
       );
 
       diagram.nodes = diagram.nodes.map((node, index) => {
@@ -306,6 +300,14 @@ function handleHasChildren(
   }
 }
 
+interface TraverseProps {
+  states: JsonParserStates;
+  objectToTraverse: Node;
+  parentType?: string;
+  myParentId?: string;
+  nextType?: string;
+}
+
 export function traverse({
   objectToTraverse,
   states,
@@ -317,8 +319,16 @@ export function traverse({
   const { type, children, value } = objectToTraverse;
 
   if (!children) {
-    handleNoChildren(value, states, diagram, myParentId, parentType, nextType);
-  } else if (children) {
-    handleHasChildren(type, states, diagram, children, myParentId, parentType);
+    traverseWithoutChildren(
+      value,
+      states,
+      diagram,
+      myParentId,
+      parentType,
+      nextType
+    );
+    return;
   }
+
+  traverseWithChildren(type, states, diagram, children, myParentId, parentType);
 }

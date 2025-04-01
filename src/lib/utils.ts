@@ -5,15 +5,16 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function debounce(func: (...args: unknown[]) => void, wait: number) {
-  let timeout: NodeJS.Timeout;
-  return function executedFunction(...args: unknown[]) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
+export function debounce<T extends (...args: unknown[]) => void>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout | null = null;
 
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
+  return (...args: Parameters<T>) => {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      func(...args);
+    }, wait);
   };
 }

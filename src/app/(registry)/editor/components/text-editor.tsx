@@ -6,13 +6,9 @@ import MonacoEditor, { type OnMount, type Theme } from "@monaco-editor/react";
 import { useTheme } from "next-themes";
 import * as React from "react";
 
-interface TextEditorProps
-  extends Omit<React.ComponentProps<typeof MonacoEditor>, "onChange"> {
-  onValueChange?: (value: string | undefined) => void;
-}
+interface TextEditorProps extends React.ComponentProps<typeof MonacoEditor> {}
 
 export function TextEditor({
-  onValueChange,
   height = "100%",
   width = "100%",
   ...props
@@ -39,7 +35,6 @@ export function TextEditor({
       height={height}
       width={width}
       theme={editorTheme}
-      onChange={onValueChange}
       onMount={onMount}
       options={{
         minimap: { enabled: false },

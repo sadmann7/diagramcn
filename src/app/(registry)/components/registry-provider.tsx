@@ -38,26 +38,33 @@ export function RegistryProvider({ children }: RegistryProviderProps) {
   );
 
   React.useEffect(() => {
-    async function fetchRegistryData() {
-      if (registryUrl) {
-        try {
-          const response = await fetch(registryUrl);
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          const rawData = await response.json();
-          const parsedData = registryItemSchema.parse(rawData);
-          setRegistryData(parsedData);
-        } catch (error) {
-          console.error("Error fetching or parsing registry data:", error);
-          setRegistryData(null);
+    if (!registryUrl) {
+      setRegistryData(null);
+      return;
+    }
+
+    async function getRegistryData() {
+      if (!registryUrl) return;
+
+      try {
+        const response = await fetch(registryUrl);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-      } else {
+        const safeRegistryData = registryItemSchema.safeParse(
+          await response.json(),
+        );
+        if (!safeRegistryData.success) {
+          throw new Error("Invalid registry data");
+        }
+        setRegistryData(safeRegistryData.data);
+      } catch (error) {
+        console.error("Error fetching or parsing registry data:", error);
         setRegistryData(null);
       }
     }
 
-    fetchRegistryData();
+    getRegistryData();
   }, [registryUrl, setRegistryData]);
 
   return (

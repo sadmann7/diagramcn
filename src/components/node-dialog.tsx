@@ -16,104 +16,37 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useDiagram } from "@/hooks/use-diagram";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNode } from "@/hooks/use-node";
 import { cn } from "@/lib/utils";
 import { Slot } from "@radix-ui/react-slot";
-import * as React from "react";
 
 const packageManagers = ["pnpm", "npm", "yarn", "bun"];
 
 export function NodeDialog() {
-  const { isNodeOpen, onNodeOpenChange, selectedNode } = useNode();
-  const [name, setName] = React.useState<string | null>(null);
-  const [description, setDescription] = React.useState<string | null>(null);
-  const [childrenCount, setChildrenCount] = React.useState(0);
-  const [jsonPath, setJsonPath] = React.useState<string | null>(null);
-  const [path, setPath] = React.useState<string | null>(null);
-  const [content, setContent] = React.useState<string | null>(null);
-  const [type, setType] = React.useState<string | null>(null);
-  const [target, setTarget] = React.useState("");
-  const [packageManager, setPackageManager] = React.useState("pnpm");
+  const {
+    isNodeOpen,
+    onNodeOpenChange,
+    selectedNode,
+    name,
+    description,
+    childrenCount,
+    jsonPath,
+    path,
+    content,
+    type,
+    target,
+    packageManager,
+    setPackageManager,
+  } = useNode();
   const isMobile = useIsMobile();
-
-  React.useEffect(() => {
-    if (!selectedNode || !isNodeOpen) return;
-
-    setName(null);
-    setDescription(null);
-    setJsonPath(null);
-    setChildrenCount(0);
-    setPath(null);
-    setContent(null);
-    setType(null);
-    setTarget("");
-
-    if (selectedNode.path === "{Root}" && Array.isArray(selectedNode.text)) {
-      const schemaEntry = selectedNode.text.find(([key]) => key === "$schema");
-      const nameEntry = selectedNode.text.find(([key]) => key === "name");
-      const typeEntry = selectedNode.text.find(([key]) => key === "type");
-      const descriptionEntry = selectedNode.text.find(
-        ([key]) => key === "description"
-      );
-
-      setContent(
-        schemaEntry ? `pnpm dlx shadcn@latest add "${schemaEntry[1]}"` : null
-      );
-      setJsonPath(selectedNode.path ?? null);
-
-      setName(nameEntry ? nameEntry[1] : null);
-      setType(typeEntry ? typeEntry[1] : null);
-      setDescription(descriptionEntry ? descriptionEntry[1] : null);
-      return;
-    }
-
-    if (selectedNode.data.isParent) {
-      setContent(JSON.stringify(selectedNode.text, null, 2));
-      setJsonPath(selectedNode.path ?? null);
-      setChildrenCount(selectedNode.data.childrenCount ?? 0);
-      return;
-    }
-
-    if (selectedNode.path?.includes("{Root}.registryDependencies")) {
-      const componentName =
-        typeof selectedNode.text === "string" ? selectedNode.text : null;
-      setContent(
-        componentName ? `pnpm dlx shadcn@latest add ${componentName}` : null
-      );
-      return;
-    }
-
-    if (selectedNode.path?.includes("{Root}.dependencies")) {
-      const packageName =
-        typeof selectedNode.text === "string" ? selectedNode.text : null;
-      setContent(packageName ? `pnpm add ${packageName}` : null);
-      return;
-    }
-
-    if (selectedNode.path?.includes("{Root}.files")) {
-      if (Array.isArray(selectedNode.text) && selectedNode.text.length >= 4) {
-        const [path, content, type, target] = selectedNode.text;
-        setPath(String(path).replace(/^path,\s*/, ""));
-        setContent(String(content).replace(/^content,\s*/, ""));
-        setType(String(type).replace(/^type,\s*/, ""));
-        setTarget(String(target).replace(/^target,\s*/, ""));
-        return;
-      }
-    }
-
-    setContent(
-      selectedNode.text ? JSON.stringify(selectedNode.text, null, 2) : null
-    );
-    setJsonPath(selectedNode.path ?? null);
-    setChildrenCount(selectedNode.data.childrenCount ?? 0);
-  }, [selectedNode, isNodeOpen]);
 
   if (!selectedNode) return null;
 
   const nodeTitle =
-    typeof selectedNode.text === "string" ? selectedNode.text : name ?? "Node";
+    typeof selectedNode.text === "string"
+      ? selectedNode.text
+      : (name ?? "Node");
 
   const nodeDescription = description ?? "No description available";
 

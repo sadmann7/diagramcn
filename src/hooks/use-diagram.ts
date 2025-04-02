@@ -42,7 +42,7 @@ const createStore = (initialState: DiagramState) => {
   const setState = (
     partial:
       | Partial<DiagramState>
-      | ((state: DiagramState) => Partial<DiagramState>)
+      | ((state: DiagramState) => Partial<DiagramState>),
   ) => {
     const nextState = typeof partial === "function" ? partial(state) : partial;
     state = { ...state, ...nextState };
@@ -124,11 +124,11 @@ export const diagramActions = {
         if (edge.to && !nodes.includes(edge.to)) nodes.push(edge.to);
         return nodes;
       },
-      []
+      [],
     );
 
     const matchingNodesConnectedToParent = matchingNodes.filter(
-      (node: string) => nodesConnectedToParent.includes(node)
+      (node: string) => nodesConnectedToParent.includes(node),
     );
     const nodeIds = childrenNodes
       .map((node: Node) => node.id)
@@ -136,13 +136,13 @@ export const diagramActions = {
     const edgeIds = childrenEdges.map((edge: Edge) => edge.id);
 
     const collapsedParents = state.collapsedParents.filter(
-      (cp) => cp !== nodeId
+      (cp) => cp !== nodeId,
     );
     const collapsedNodes = state.collapsedNodes.filter(
-      (nodeId) => !nodeIds.includes(nodeId)
+      (nodeId) => !nodeIds.includes(nodeId),
     );
     const collapsedEdges = state.collapsedEdges.filter(
-      (edgeId) => !edgeIds.includes(edgeId)
+      (edgeId) => !edgeIds.includes(edgeId),
     );
 
     store.setState({
@@ -188,7 +188,8 @@ export const diagramActions = {
 
     const collapsedParents = state.nodes
       .filter(
-        (node: Node) => !parentNodesIds.includes(node.id) && node.data?.isParent
+        (node: Node) =>
+          !parentNodesIds.includes(node.id) && node.data?.isParent,
       )
       .map((node: Node) => node.id);
 
@@ -196,7 +197,7 @@ export const diagramActions = {
       .filter(
         (node: Node) =>
           !parentNodesIds.includes(node.id) &&
-          !secondDegreeNodesIds.includes(node.id)
+          !secondDegreeNodesIds.includes(node.id),
       )
       .map((node: Node) => node.id);
 
@@ -249,7 +250,7 @@ export const diagramActions = {
     viewPort?.camera?.recenter(
       viewPort.centerX,
       viewPort.centerY,
-      viewPort.zoomFactor + 0.1
+      viewPort.zoomFactor + 0.1,
     );
   },
 
@@ -259,7 +260,7 @@ export const diagramActions = {
     viewPort?.camera?.recenter(
       viewPort.centerX,
       viewPort.centerY,
-      viewPort.zoomFactor - 0.1
+      viewPort.zoomFactor - 0.1,
     );
   },
 
@@ -269,7 +270,7 @@ export const diagramActions = {
     viewPort?.updateContainerSize();
 
     const canvas = document.querySelector(
-      ".jsoncrack-canvas"
+      ".jsoncrack-canvas",
     ) as HTMLElement | null;
     if (canvas) {
       viewPort?.camera?.centerFitElementIntoView(canvas);
@@ -287,7 +288,7 @@ export function useDiagram() {
   const state = React.useSyncExternalStore(
     store.subscribe,
     getSnapshot,
-    getSnapshot
+    getSnapshot,
   );
 
   return { ...state, ...diagramActions };

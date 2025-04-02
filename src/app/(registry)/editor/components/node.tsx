@@ -106,7 +106,7 @@ function NodeImpl(props: NodeProps<ExtendedNodeData>) {
       onLeave={onLeave}
       animated={false}
       style={{
-        fill: "var(--card)",
+        fill: "var(--canvas)",
         stroke: "var(--border)",
         strokeWidth: 1,
       }}

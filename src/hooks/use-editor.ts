@@ -1,16 +1,15 @@
 import * as React from "react";
 
 const EDITOR_COOKIE_NAME = "editor_state";
-const EDITOR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
+const EDITOR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 
 interface EditorState {
-  isEditorVisible: boolean;
+  editorOpen: boolean;
 }
 
-// Helper to get initial state from cookie
 function getInitialState(): EditorState {
   if (typeof document === "undefined") {
-    return { isEditorVisible: true };
+    return { editorOpen: true };
   }
 
   const cookie = document.cookie
@@ -19,7 +18,7 @@ function getInitialState(): EditorState {
 
   const savedState = cookie ? cookie.split("=")[1] : null;
   return {
-    isEditorVisible: savedState ? savedState === "true" : true,
+    editorOpen: savedState ? savedState === "true" : true,
   };
 }
 
@@ -31,9 +30,8 @@ function createEditorStore(initialState: EditorState) {
 
   function setState(partial: Partial<EditorState>) {
     state = { ...state, ...partial };
-    // Update cookie whenever state changes
     if (typeof document !== "undefined") {
-      document.cookie = `${EDITOR_COOKIE_NAME}=${state.isEditorVisible}; path=/; max-age=${EDITOR_COOKIE_MAX_AGE}`;
+      document.cookie = `${EDITOR_COOKIE_NAME}=${state.editorOpen}; path=/; max-age=${EDITOR_COOKIE_MAX_AGE}`;
     }
     for (const listener of listeners) {
       listener();
@@ -48,8 +46,8 @@ function createEditorStore(initialState: EditorState) {
       return () => listeners.delete(listener);
     },
     getSnapshot: () => state,
-    onEditorToggle: () => {
-      setState({ isEditorVisible: !state.isEditorVisible });
+    onEditorOpenChange: () => {
+      setState({ editorOpen: !state.editorOpen });
     },
   };
 }
@@ -67,6 +65,6 @@ export function useEditor() {
 
   return {
     ...state,
-    onEditorToggle: editorStore.onEditorToggle,
+    onEditorOpenChange: editorStore.onEditorOpenChange,
   };
 }

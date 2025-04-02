@@ -31,7 +31,12 @@ export function SiteHeader() {
           </ActiveLink>
         </nav>
         <nav className="flex flex-1 items-center md:justify-end">
-          <Button variant="ghost" size="icon" className="size-8" asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8 rounded-sm"
+            asChild
+          >
             <Link
               aria-label="GitHub repo"
               href={siteConfig.links.github}

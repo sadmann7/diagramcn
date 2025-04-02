@@ -20,8 +20,8 @@ import { TextEditor } from "./text-editor";
 
 export function Editor() {
   const { registryUrl, registryJson, onRegistryJsonChange } = useRegistry();
+  const { editorOpen, onEditorOpenChange } = useEditor();
   const isMobile = useIsMobile();
-  const { isEditorVisible, onEditorToggle } = useEditor();
 
   if (!registryUrl || !registryJson) {
     return (
@@ -37,7 +37,7 @@ export function Editor() {
   if (isMobile) {
     return (
       <div className="h-[calc(100vh-60px)]">
-        <Sheet open={isEditorVisible} onOpenChange={onEditorToggle}>
+        <Sheet open={editorOpen} onOpenChange={onEditorOpenChange}>
           <SheetContent className="w-full gap-0">
             <SheetHeader className="h-14">
               <SheetTitle>Edit Registry</SheetTitle>
@@ -57,7 +57,7 @@ export function Editor() {
   return (
     <div className="h-[calc(100vh-60px)]">
       <ResizablePanelGroup direction="horizontal">
-        {isEditorVisible && (
+        {editorOpen && (
           <>
             <ResizablePanel defaultSize={30} minSize={25} maxSize={50}>
               <TextEditor
@@ -69,7 +69,7 @@ export function Editor() {
             <ResizableHandle />
           </>
         )}
-        <ResizablePanel defaultSize={isEditorVisible ? 70 : 100}>
+        <ResizablePanel defaultSize={editorOpen ? 70 : 100}>
           <Diagram withToolbar />
         </ResizablePanel>
       </ResizablePanelGroup>

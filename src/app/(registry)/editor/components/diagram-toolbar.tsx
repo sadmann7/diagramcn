@@ -26,7 +26,7 @@ export function DiagramToolbar({
         role="toolbar"
         aria-orientation={orientation}
         className={cn(
-          "absolute right-4 bottom-4 flex rounded-sm border border-border/70 bg-canvas shadow-md backdrop-blur-md",
+          "absolute right-4 bottom-4 flex rounded bg-accent/60 shadow-md backdrop-blur-sm",
           orientation === "vertical" && "flex-col",
         )}
       >
@@ -36,7 +36,7 @@ export function DiagramToolbar({
               variant="ghost"
               size="icon"
               className={cn(
-                "size-8",
+                "size-8 dark:hover:bg-accent/80",
                 orientation === "horizontal"
                   ? "rounded-r-none"
                   : "rounded-b-none",
@@ -58,7 +58,7 @@ export function DiagramToolbar({
             <Button
               variant="ghost"
               size="icon"
-              className={cn("size-8 rounded-none")}
+              className="size-8 rounded-none dark:hover:bg-accent/80"
               onClick={() => zoomOut()}
             >
               <Minus />
@@ -76,7 +76,7 @@ export function DiagramToolbar({
             <Button
               variant="ghost"
               size="icon"
-              className={cn("size-8 rounded-none")}
+              className="size-8 rounded-none dark:hover:bg-accent/80"
               onClick={() => centerView()}
             >
               <Maximize />
@@ -95,7 +95,7 @@ export function DiagramToolbar({
               variant="ghost"
               size="icon"
               className={cn(
-                "size-8",
+                "size-8 dark:hover:bg-accent/80",
                 orientation === "horizontal"
                   ? "rounded-l-none"
                   : "rounded-t-none",

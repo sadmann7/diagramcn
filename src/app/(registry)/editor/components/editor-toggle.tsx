@@ -15,20 +15,20 @@ import * as React from "react";
 const EDITOR_SHORTCUT = "e";
 
 export function EditorToggle() {
-  const { isEditorVisible, onEditorToggle } = useEditor();
+  const { editorOpen, onEditorOpenChange } = useEditor();
   const isMac = getIsMac();
 
   React.useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === EDITOR_SHORTCUT && (event.metaKey || event.ctrlKey)) {
         event.preventDefault();
-        onEditorToggle();
+        onEditorOpenChange();
       }
     }
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [onEditorToggle]);
+  }, [onEditorOpenChange]);
 
   return (
     <Tooltip>
@@ -37,9 +37,9 @@ export function EditorToggle() {
           variant="ghost"
           size="icon"
           className="size-7 rounded-sm"
-          onClick={onEditorToggle}
+          onClick={onEditorOpenChange}
         >
-          {isEditorVisible ? <ChevronsLeft /> : <ChevronsRight />}
+          {editorOpen ? <ChevronsLeft /> : <ChevronsRight />}
         </Button>
       </TooltipTrigger>
       <TooltipContent
@@ -47,8 +47,8 @@ export function EditorToggle() {
         sideOffset={6}
         className="flex items-center gap-2 rounded border bg-background text-accent-foreground [&>span]:hidden"
       >
-        <p>{isEditorVisible ? "Hide editor" : "Show editor"}</p>
-        <Kbd size="sm" className="rounded border px-1.5">
+        <p>{editorOpen ? "Hide editor" : "Show editor"}</p>
+        <Kbd size="sm" className="rounded border bg-canvas px-1.5">
           <Key>{isMac ? "⌘" : "Ctrl"}</Key>
           <Key>E</Key>
         </Kbd>

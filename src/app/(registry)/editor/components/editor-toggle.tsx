@@ -10,11 +10,13 @@ import {
 import { useEditor } from "@/hooks/use-editor";
 import { getIsMac } from "@/lib/utils";
 import { ChevronsLeft, ChevronsRight } from "lucide-react";
+import { useSelectedLayoutSegments } from "next/navigation";
 import * as React from "react";
 
 const EDITOR_SHORTCUT = "e";
 
 export function EditorToggle() {
+  const segments = useSelectedLayoutSegments();
   const { editorOpen, onEditorOpenChange } = useEditor();
   const isMac = getIsMac();
 
@@ -29,6 +31,8 @@ export function EditorToggle() {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [onEditorOpenChange]);
+
+  if (segments.length === 1) return null;
 
   return (
     <Tooltip>

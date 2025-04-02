@@ -51,8 +51,6 @@ export function NodeDialog() {
 
   const isCommand = getIsPackageManagerCommand(content);
 
-  console.log({ selectedNode, path, content, type, target });
-
   const dialogContent = (
     <div className="overflow-auto">
       {path ? (

@@ -2,7 +2,7 @@ import type { Node } from "@/types";
 import * as React from "react";
 
 interface NodeState {
-  isNodeOpen: boolean;
+  nodeOpen: boolean;
   selectedNode: Node | null;
   name: string | null;
   description: string | null;
@@ -16,7 +16,7 @@ interface NodeState {
 }
 
 const initialState: NodeState = {
-  isNodeOpen: false,
+  nodeOpen: false,
   selectedNode: null,
   name: null,
   description: null,
@@ -107,7 +107,7 @@ function createNodeStore(initialState: NodeState) {
     },
     getSnapshot: () => state,
     onNodeOpenChange: (open: boolean) => {
-      setState({ isNodeOpen: open });
+      setState({ nodeOpen: open });
     },
     onSelectedNodeChange: (node: Node) => {
       const newState: Partial<NodeState> = { selectedNode: node };
@@ -165,7 +165,7 @@ function createNodeStore(initialState: NodeState) {
 
       setState(newState);
     },
-    setPackageManager: (packageManager: string) => {
+    onPackageManagerChange: (packageManager: string) => {
       // Update the package manager
       setState({ packageManager });
 
@@ -196,6 +196,6 @@ export function useNode() {
     ...state,
     onNodeOpenChange: nodeStore.onNodeOpenChange,
     onSelectedNodeChange: nodeStore.onSelectedNodeChange,
-    setPackageManager: nodeStore.setPackageManager,
+    onPackageManagerChange: nodeStore.onPackageManagerChange,
   };
 }

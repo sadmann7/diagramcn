@@ -13,8 +13,15 @@ interface RegistryInputProps extends React.ComponentProps<"div"> {}
 export function RegistryInput({ className, ...props }: RegistryInputProps) {
   const router = useRouter();
   const [isPending, startTransition] = React.useTransition();
-  const { setRegistryUrl } = useRegistry();
+  const { onRegistryUrlChange } = useRegistry();
   const [input, setInput] = React.useState("");
+
+  const onInputChange = React.useCallback(
+    (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+      setInput(event.target.value);
+    },
+    [],
+  );
 
   const onSubmit = React.useCallback(() => {
     if (!input.trim()) return;
@@ -25,13 +32,13 @@ export function RegistryInput({ className, ...props }: RegistryInputProps) {
     try {
       startTransition(() => {
         new URL(registryUrl);
-        setRegistryUrl(registryUrl);
+        onRegistryUrlChange(registryUrl);
         router.push("/editor");
       });
     } catch (_err) {
       console.error("Invalid registry URL");
     }
-  }, [input, router, setRegistryUrl]);
+  }, [input, router, onRegistryUrlChange]);
 
   const onKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -49,7 +56,7 @@ export function RegistryInput({ className, ...props }: RegistryInputProps) {
         placeholder="Type registry here..."
         className="max-h-40 resize-none pr-12"
         value={input}
-        onChange={(event) => setInput(event.target.value)}
+        onChange={onInputChange}
         onKeyDown={onKeyDown}
         autoFocus
       />

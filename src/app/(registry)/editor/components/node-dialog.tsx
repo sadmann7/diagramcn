@@ -56,7 +56,7 @@ function isPackageManagerCommand(content: string | null | undefined): boolean {
 
 export function NodeDialog() {
   const {
-    isNodeOpen,
+    nodeOpen,
     onNodeOpenChange,
     selectedNode,
     name,
@@ -68,7 +68,7 @@ export function NodeDialog() {
     type,
     target,
     packageManager,
-    setPackageManager,
+    onPackageManagerChange,
   } = useNode();
   const isMobile = useIsMobile();
 
@@ -122,7 +122,10 @@ export function NodeDialog() {
           {isCommand ? (
             <div className="relative flex flex-col">
               <div className="rounded-t-md border-b bg-canvas px-4 pt-1.5">
-                <Tabs value={packageManager} onValueChange={setPackageManager}>
+                <Tabs
+                  value={packageManager}
+                  onValueChange={onPackageManagerChange}
+                >
                   <TabsList className="gap-3 bg-transparent p-0">
                     {packageManagers.map((packageManager) => (
                       <TabsTrigger
@@ -189,7 +192,7 @@ export function NodeDialog() {
 
   if (isMobile) {
     return (
-      <Drawer open={isNodeOpen} onOpenChange={onNodeOpenChange}>
+      <Drawer open={nodeOpen} onOpenChange={onNodeOpenChange}>
         <DrawerContent className="gap-6">
           <DrawerHeader>
             <DrawerTitle>{nodeTitle}</DrawerTitle>
@@ -204,7 +207,7 @@ export function NodeDialog() {
   }
 
   return (
-    <Dialog open={isNodeOpen} onOpenChange={onNodeOpenChange}>
+    <Dialog open={nodeOpen} onOpenChange={onNodeOpenChange}>
       <DialogContent className="gap-6 sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>{nodeTitle}</DialogTitle>

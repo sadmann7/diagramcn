@@ -22,7 +22,7 @@ import { Diagram } from "./diagram";
 import { TextEditor } from "./text-editor";
 
 export function Editor() {
-  const { registryUrl, registryJson, setRegistryJson } = useRegistry();
+  const { registryUrl, registryJson, onRegistryJsonChange } = useRegistry();
   const isMobile = useIsMobile();
   const { isEditorVisible } = useEditor();
 
@@ -57,7 +57,7 @@ export function Editor() {
             <TextEditor
               language="json"
               value={registryJson}
-              onChange={setRegistryJson}
+              onChange={onRegistryJsonChange}
             />
           </SheetContent>
         </Sheet>
@@ -75,7 +75,7 @@ export function Editor() {
               <TextEditor
                 language="json"
                 value={registryJson}
-                onChange={setRegistryJson}
+                onChange={onRegistryJsonChange}
               />
             </ResizablePanel>
             <ResizableHandle />

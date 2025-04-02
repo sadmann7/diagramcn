@@ -122,24 +122,20 @@ function createRegistryStore() {
     }
   }
 
-  const getRegistryUrl = () => state.registryUrl;
-  const getRegistryData = () => state.registryData;
-  const getRegistryJson = () => state.registryJson;
-
   return {
     subscribe: (listener: () => void) => {
       listeners.add(listener);
       return () => listeners.delete(listener);
     },
     getSnapshot: () => state,
-    getRegistryUrl,
-    getRegistryData,
-    getRegistryJson,
-    setRegistryUrl: (url: string | null) => {
+    getRegistryUrl: () => state.registryUrl,
+    getRegistryData: () => state.registryData,
+    getRegistryJson: () => state.registryJson,
+    onRegistryUrlChange: (url: string | null) => {
       setState({ registryUrl: url });
       fetchRegistryData(url);
     },
-    setRegistryJson: (json: string | undefined) => {
+    onRegistryJsonChange: (json: string | undefined) => {
       setState({ registryJson: json });
     },
   };
@@ -147,62 +143,48 @@ function createRegistryStore() {
 
 const registryStore = createRegistryStore();
 
-const useRegistryUrl = () =>
-  React.useSyncExternalStore(
-    registryStore.subscribe,
-    registryStore.getRegistryUrl,
-    () => null,
-  );
+const debouncedDiagramUpdate = debounce(function updateDiagram(json: unknown) {
+  if (typeof json !== "string" && json !== undefined) {
+    return;
+  }
+  if (!json) {
+    diagramActions.clearDiagram();
+    return;
+  }
+  diagramActions.setDiagram(json);
+}, 300);
 
-const useRegistryData = () =>
-  React.useSyncExternalStore(
-    registryStore.subscribe,
-    registryStore.getRegistryData,
-    () => null,
-  );
+export function useRegistry() {
+  const getSnapshot = React.useCallback(() => registryStore.getSnapshot(), []);
 
-const useRegistryJson = () =>
-  React.useSyncExternalStore(
-    registryStore.subscribe,
-    registryStore.getRegistryJson,
-    () => undefined,
-  );
-
-function useRegistry() {
-  const registryUrl = useRegistryUrl();
-  const registryData = useRegistryData();
-  const registryJson = useRegistryJson();
-
-  const debouncedDiagramUpdate = React.useMemo(
-    () =>
-      debounce(function updateDiagram(json: unknown) {
-        if (typeof json !== "string" && json !== undefined) {
-          return;
-        }
-        if (!json) {
-          diagramActions.clearDiagram();
-          return;
-        }
-        diagramActions.setDiagram(json);
-      }, 300),
+  const serverSnapshot = React.useMemo(
+    () => ({
+      registryUrl: null,
+      registryData: null,
+      registryJson: undefined,
+    }),
     [],
   );
 
+  const state = React.useSyncExternalStore(
+    registryStore.subscribe,
+    getSnapshot,
+    () => serverSnapshot,
+  );
+
   React.useEffect(() => {
-    debouncedDiagramUpdate(registryJson);
+    debouncedDiagramUpdate(state.registryJson);
 
     return () => {
       diagramActions.clearDiagram();
     };
-  }, [registryJson, debouncedDiagramUpdate]);
+  }, [state.registryJson]);
 
   return {
-    registryUrl,
-    setRegistryUrl: registryStore.setRegistryUrl,
-    registryData,
-    registryJson,
-    setRegistryJson: registryStore.setRegistryJson,
+    registryUrl: state.registryUrl,
+    onRegistryUrlChange: registryStore.onRegistryUrlChange,
+    registryData: state.registryData,
+    registryJson: state.registryJson,
+    onRegistryJsonChange: registryStore.onRegistryJsonChange,
   };
 }
-
-export { useRegistry, useRegistryData, useRegistryJson, useRegistryUrl };

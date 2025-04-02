@@ -221,7 +221,7 @@ export const diagramActions = {
     }
   },
 
-  expandGraph: () => {
+  expandDiagram: () => {
     store.setState({
       collapsedNodes: [],
       collapsedEdges: [],
@@ -270,7 +270,7 @@ export const diagramActions = {
     viewPort?.updateContainerSize();
 
     const canvas = document.querySelector(
-      ".jsoncrack-canvas",
+      ".diagram-canvas",
     ) as HTMLElement | null;
     if (canvas) {
       viewPort?.camera?.centerFitElementIntoView(canvas);

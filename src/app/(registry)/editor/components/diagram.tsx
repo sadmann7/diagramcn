@@ -1,5 +1,6 @@
 "use client";
 
+import { DiagramToolbar } from "@/app/(registry)/editor/components/diagram-toolbar";
 import { Edge } from "@/app/(registry)/editor/components/edge";
 import { Node } from "@/app/(registry)/editor/components/node";
 import { NodeDialog } from "@/app/(registry)/editor/components/node-dialog";
@@ -18,10 +19,10 @@ const layoutOptions = {
 };
 
 interface DiagramProps {
-  isWidget?: boolean;
+  withToolbar?: boolean;
 }
 
-export function Diagram({ isWidget = false }: DiagramProps) {
+export function Diagram({ withToolbar }: DiagramProps) {
   const {
     nodes,
     edges,
@@ -47,13 +48,13 @@ export function Diagram({ isWidget = false }: DiagramProps) {
 
         setTimeout(() => {
           window.requestAnimationFrame(() => {
-            if (changeRatio > 70 || isWidget) centerView();
+            if (changeRatio > 70 || withToolbar) centerView();
             setIsPending(false);
           });
         });
       }
     },
-    [isWidget, height, width, centerView, setIsPending],
+    [withToolbar, height, width, centerView, setIsPending],
   );
 
   const onLongPressStart = React.useCallback<LongPressCallback>(() => {
@@ -141,6 +142,7 @@ export function Diagram({ isWidget = false }: DiagramProps) {
         />
       </Space>
       <NodeDialog />
+      {withToolbar && <DiagramToolbar />}
     </div>
   );
 }

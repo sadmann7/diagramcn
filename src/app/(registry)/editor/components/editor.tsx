@@ -61,7 +61,7 @@ export function Editor() {
             />
           </SheetContent>
         </Sheet>
-        <Diagram />
+        <Diagram withToolbar />
       </div>
     );
   }
@@ -82,7 +82,7 @@ export function Editor() {
           </>
         )}
         <ResizablePanel defaultSize={isEditorVisible ? 70 : 100}>
-          <Diagram />
+          <Diagram withToolbar />
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>

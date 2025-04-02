@@ -5,7 +5,7 @@ import * as React from "react";
 import type { ViewPort } from "react-zoomable-ui/dist/ViewPort";
 import type { CanvasDirection } from "reaflow";
 
-interface Diagram {
+interface DiagramState {
   viewPort: ViewPort | null;
   direction: CanvasDirection;
   isPending: boolean;
@@ -21,7 +21,7 @@ interface Diagram {
   path: string;
 }
 
-const initialState: Diagram = {
+const initialState: DiagramState = {
   viewPort: null,
   direction: "RIGHT",
   isPending: true,
@@ -37,12 +37,14 @@ const initialState: Diagram = {
   path: "",
 };
 
-const createStore = (initialState: Diagram) => {
+const createStore = (initialState: DiagramState) => {
   let state = initialState;
   const listeners = new Set<() => void>();
 
   const setState = (
-    partial: Partial<Diagram> | ((state: Diagram) => Partial<Diagram>),
+    partial:
+      | Partial<DiagramState>
+      | ((state: DiagramState) => Partial<DiagramState>),
   ) => {
     const nextState = typeof partial === "function" ? partial(state) : partial;
     state = { ...state, ...nextState };
@@ -79,7 +81,7 @@ export const diagramActions = {
 
   setSelectedNode: (Node: Node) => store.setState({ selectedNode: Node }),
 
-  setDiagram: (data: string, options?: Partial<Diagram>) => {
+  setDiagram: (data: string, options?: Partial<DiagramState>) => {
     const { nodes, edges } = jsonParser(data);
     const state = store.getState();
 

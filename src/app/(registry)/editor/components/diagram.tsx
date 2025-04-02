@@ -1,6 +1,7 @@
 "use client";
 
 import { Edge } from "@/components/edge";
+import { Node } from "@/components/node";
 import { useDiagram } from "@/hooks/use-diagram";
 import { debounce } from "@/lib/utils";
 import { useTheme } from "next-themes";
@@ -118,9 +119,10 @@ export function Diagram({ isWidget = false }: DiagramProps) {
       >
         <Canvas
           key={[direction, resolvedTheme].join("-")}
-          nodes={nodes}
           edges={edges}
-          edge={(props: EdgeProps) => <Edge {...props} />}
+          nodes={nodes}
+          edge={(props) => <Edge {...props} />}
+          node={(props) => <Node {...props} />}
           maxHeight={height}
           maxWidth={width}
           height={height}

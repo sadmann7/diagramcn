@@ -1,5 +1,6 @@
 "use client";
 
+import { CodeBlock } from "@/components/code-block";
 import {
   Dialog,
   DialogContent,
@@ -7,19 +8,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDiagram } from "@/hooks/use-diagram";
 import { useDialog } from "@/hooks/use-dialog";
 import * as React from "react";
-import { CodeBlock } from "./code-block";
+
+const packageManagers = ["pnpm", "npm", "yarn", "bun"];
 
 export function NodeDialog() {
   const { open, variant, onOpenChange } = useDialog();
   const { selectedNode } = useDiagram();
-  const [textContent, setTextContent] = React.useState<string>("");
-  const [path, setPath] = React.useState<string>("");
-  const [content, setContent] = React.useState<string>("");
-  const [type, setType] = React.useState<string>("");
-  const [target, setTarget] = React.useState<string>("");
+  const [textContent, setTextContent] = React.useState("");
+  const [path, setPath] = React.useState("");
+  const [content, setContent] = React.useState("");
+  const [type, setType] = React.useState("");
+  const [target, setTarget] = React.useState("");
+  const [packageManager, setPackageManager] = React.useState("pnpm");
 
   React.useEffect(() => {
     if (!selectedNode || !open || variant !== "node") return;
@@ -35,7 +39,9 @@ export function NodeDialog() {
       const schemaName = selectedNode.text.find(([key]) => key === "$schema");
       const schemaNameValue = schemaName ? schemaName[1] : "";
       console.log({ schemaName, schemaNameValue });
-      setTextContent(`pnpm dlx shadcn@latest add "${schemaNameValue}"`);
+      setTextContent(
+        `${packageManager} dlx shadcn@latest add "${schemaNameValue}"`,
+      );
       return;
     }
 
@@ -55,7 +61,9 @@ export function NodeDialog() {
       const componentName =
         typeof selectedNode.text === "string" ? selectedNode.text : "";
       console.log({ componentName });
-      setTextContent(`pnpm dlx shadcn@latest add ${componentName}`);
+      setTextContent(
+        `${packageManager} dlx shadcn@latest add ${componentName}`,
+      );
       return;
     }
 
@@ -63,7 +71,7 @@ export function NodeDialog() {
     if (selectedNode.path?.includes("{Root}.dependencies")) {
       const packageName =
         typeof selectedNode.text === "string" ? selectedNode.text : "";
-      setTextContent(`pnpm add ${packageName}`);
+      setTextContent(`${packageManager} add ${packageName}`);
       return;
     }
 
@@ -78,13 +86,15 @@ export function NodeDialog() {
         return;
       }
     }
-  }, [selectedNode, open, variant]);
+  }, [selectedNode, open, variant, packageManager]);
+
+  const isInstaller = textContent.includes("add");
 
   if (!selectedNode || variant !== "node") return null;
 
   return (
     <Dialog open={open} onOpenChange={(open) => onOpenChange(variant, open)}>
-      <DialogContent className="gap-6 sm:max-w-3xl">
+      <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>
             {typeof selectedNode.text === "string" ? selectedNode.text : "Node"}
@@ -126,18 +136,44 @@ export function NodeDialog() {
               </div>
               <div className="flex flex-col gap-2">
                 <h3 className="font-medium text-sm">Content:</h3>
-                <div className="max-h-[50svh] overflow-auto">
-                  <CodeBlock
-                    code={content}
-                    language={path.split(".").pop()}
-                    className="rounded-lg"
-                  />
-                </div>
+                <CodeBlock
+                  code={content}
+                  language={path.split(".").pop()}
+                  className="max-h-[50svh] overflow-auto rounded-lg"
+                />
               </div>
             </div>
           ) : (
-            <div className="prose dark:prose-invert mt-4 max-h-[60svh] overflow-auto">
-              <CodeBlock code={textContent} className="rounded-lg" />
+            <div className="relative">
+              {isInstaller ? (
+                <div className="rounded-t-md border-b bg-canvas px-4 pt-1.5">
+                  <Tabs
+                    value={packageManager}
+                    onValueChange={setPackageManager}
+                  >
+                    <TabsList className="gap-3 bg-transparent p-0">
+                      {packageManagers.map((packageManager) => (
+                        <TabsTrigger
+                          key={packageManager}
+                          value={packageManager}
+                          className="rounded-none border-0 border-transparent border-b p-0 data-[state=active]:border-b-foreground data-[state=active]:bg-transparent dark:data-[state=active]:border-b-foreground dark:data-[state=active]:bg-transparent"
+                        >
+                          {packageManager}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                  </Tabs>
+                </div>
+              ) : null}
+              <CodeBlock
+                code={textContent}
+                className="max-h-[60svh] overflow-auto"
+                style={{
+                  borderTopLeftRadius: isInstaller ? "0" : "0.5rem",
+                  borderTopRightRadius: isInstaller ? "0" : "0.5rem",
+                }}
+                isInstaller={isInstaller}
+              />
             </div>
           )}
         </div>

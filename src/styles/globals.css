@@ -3,8 +3,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@plugin "@tailwindcss/typography";
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -39,6 +37,12 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-subtle-foreground: var(--subtle-foreground);
+  --color-subtle-background: var(--subtle-background);
+  --color-canvas-foreground: var(--canvas-foreground);
+  --color-canvas: var(--canvas);
+  --color-dark-foreground: var(--dark-foreground);
+  --color-dark: var(--dark);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -51,6 +55,8 @@
   --foreground: oklch(0.141 0.005 285.823);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.141 0.005 285.823);
+  --canvas: oklch(0.98 0.0011 17.18);
+  --canvas-foreground: oklch(0.28 0.0117 248.25);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.141 0.005 285.823);
   --primary: oklch(0.21 0.006 285.885);
@@ -78,6 +84,8 @@
   --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
   --sidebar-border: oklch(0.92 0.004 286.32);
   --sidebar-ring: oklch(0.705 0.015 286.067);
+  --subtle-background: oklch(0.98 0.0011 17.18);
+  --subtle-foreground: oklch(0.28 0.0117 248.25);
 }
 
 .dark {
@@ -85,6 +93,8 @@
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.21 0.006 285.885);
   --card-foreground: oklch(0.985 0 0);
+  --canvas: oklch(0.2 0.002 286.22);
+  --canvas-foreground: oklch(0.92 0.0063 255.48);
   --popover: oklch(0.21 0.006 285.885);
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.92 0.004 286.32);
@@ -112,6 +122,8 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.552 0.016 285.938);
+  --subtle-background: oklch(0.2 0.002 286.22);
+  --subtle-foreground: oklch(0.92 0.0063 255.48);
 }
 
 @layer base {

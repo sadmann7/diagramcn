@@ -16,7 +16,7 @@ export function parseRegistryCommand(command: string): string | null {
   for (const { prefix } of packageManagers) {
     if (command.startsWith(prefix)) {
       const match = command.match(
-        new RegExp(`${prefix}@?([^\\s]+)\\s+add\\s+([^\\s]+)`)
+        new RegExp(`${prefix}@?([^\\s]+)\\s+add\\s+([^\\s]+)`),
       );
       if (!match) continue;
 
@@ -54,13 +54,13 @@ export function getPackageManagerCommands(packageManager: string) {
 }
 
 export function getIsPackageManagerCommand(
-  content: string | null | undefined
+  content: string | null | undefined,
 ): boolean {
   if (!content) return false;
   const words = content.toLowerCase().split(" ");
 
   const startsWithPackageManager = packageManagers.some(
-    (pm) => words[0] === pm
+    (pm) => words[0] === pm,
   );
 
   const packageManagerCommands = [

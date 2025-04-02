@@ -102,7 +102,8 @@ export const CodeBlock = React.memo(CodeBlockImpl, (prev, next) => {
   return (
     prev.code === next.code &&
     prev.language === next.language &&
-    prev.style === next.style &&
-    prev.className === next.className
+    prev.isInstaller === next.isInstaller &&
+    prev.className === next.className &&
+    prev.style === next.style
   );
 });

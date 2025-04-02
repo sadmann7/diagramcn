@@ -54,7 +54,7 @@ export function TextEditor({
 
   const currentTheme = React.useMemo(
     () => (editorTheme === "vs-dark" ? "github-dark" : "github-light"),
-    [editorTheme],
+    [editorTheme]
   );
 
   return (
@@ -76,6 +76,7 @@ export function TextEditor({
           verticalScrollbarSize: 10,
           horizontalScrollbarSize: 10,
         },
+        overviewRulerBorder: false,
         padding: {
           top: 16,
           bottom: 16,

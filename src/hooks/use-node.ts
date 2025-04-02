@@ -1,11 +1,14 @@
+import type { Node } from "@/types";
 import * as React from "react";
 
 interface NodeState {
   isNodeOpen: boolean;
+  selectedNode: Node | null;
 }
 
 const initialState: NodeState = {
   isNodeOpen: false,
+  selectedNode: null,
 };
 
 function createNodeStore(initialState: NodeState) {
@@ -30,6 +33,9 @@ function createNodeStore(initialState: NodeState) {
     onNodeOpenChange: (open: boolean) => {
       setState({ isNodeOpen: open });
     },
+    onSelectedNodeChange: (node: Node) => {
+      setState({ selectedNode: node });
+    },
   };
 }
 
@@ -41,11 +47,12 @@ export function useNode() {
   const state = React.useSyncExternalStore(
     nodeStore.subscribe,
     getSnapshot,
-    getSnapshot,
+    getSnapshot
   );
 
   return {
     ...state,
     onNodeOpenChange: nodeStore.onNodeOpenChange,
+    onSelectedNodeChange: nodeStore.onSelectedNodeChange,
   };
 }

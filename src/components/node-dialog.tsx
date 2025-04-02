@@ -26,8 +26,7 @@ import * as React from "react";
 const packageManagers = ["pnpm", "npm", "yarn", "bun"];
 
 export function NodeDialog() {
-  const { isNodeOpen, onNodeOpenChange } = useNode();
-  const { selectedNode } = useDiagram();
+  const { isNodeOpen, onNodeOpenChange, selectedNode } = useNode();
   const [name, setName] = React.useState<string | null>(null);
   const [description, setDescription] = React.useState<string | null>(null);
   const [childrenCount, setChildrenCount] = React.useState(0);
@@ -56,11 +55,11 @@ export function NodeDialog() {
       const nameEntry = selectedNode.text.find(([key]) => key === "name");
       const typeEntry = selectedNode.text.find(([key]) => key === "type");
       const descriptionEntry = selectedNode.text.find(
-        ([key]) => key === "description",
+        ([key]) => key === "description"
       );
 
       setContent(
-        schemaEntry ? `pnpm dlx shadcn@latest add "${schemaEntry[1]}"` : null,
+        schemaEntry ? `pnpm dlx shadcn@latest add "${schemaEntry[1]}"` : null
       );
       setJsonPath(selectedNode.path ?? null);
 
@@ -81,7 +80,7 @@ export function NodeDialog() {
       const componentName =
         typeof selectedNode.text === "string" ? selectedNode.text : null;
       setContent(
-        componentName ? `pnpm dlx shadcn@latest add ${componentName}` : null,
+        componentName ? `pnpm dlx shadcn@latest add ${componentName}` : null
       );
       return;
     }
@@ -105,7 +104,7 @@ export function NodeDialog() {
     }
 
     setContent(
-      selectedNode.text ? JSON.stringify(selectedNode.text, null, 2) : null,
+      selectedNode.text ? JSON.stringify(selectedNode.text, null, 2) : null
     );
     setJsonPath(selectedNode.path ?? null);
     setChildrenCount(selectedNode.data.childrenCount ?? 0);
@@ -114,131 +113,115 @@ export function NodeDialog() {
   if (!selectedNode) return null;
 
   const nodeTitle =
-    typeof selectedNode.text === "string"
-      ? selectedNode.text
-      : (name ?? "Node");
+    typeof selectedNode.text === "string" ? selectedNode.text : name ?? "Node";
 
   const nodeDescription = description ?? "No description available";
 
   const isInstaller = content?.includes("add");
 
-  const dialogContent = React.useMemo(() => {
-    return (
-      <div className="overflow-auto">
-        {path ? (
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <h3 className="font-medium text-sm">Path:</h3>
-              <CodeBlock code={path} language="plaintext" />
-            </div>
-            <div className="flex items-center gap-4">
-              {type ? (
-                <div className="flex w-full flex-col gap-2">
-                  <h3 className="font-medium text-sm">Type:</h3>
-                  <CodeBlock code={type} language="plaintext" />
-                </div>
-              ) : null}
+  const dialogContent = (
+    <div className="overflow-auto">
+      {path ? (
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <h3 className="font-medium text-sm">Path:</h3>
+            <CodeBlock code={path} language="plaintext" />
+          </div>
+          <div className="flex items-center gap-4">
+            {type ? (
               <div className="flex w-full flex-col gap-2">
-                <h3 className="font-medium text-sm">Target:</h3>
-                <CodeBlock
-                  code={target === "" ? JSON.stringify("") : target}
-                  language="plaintext"
-                />
+                <h3 className="font-medium text-sm">Type:</h3>
+                <CodeBlock code={type} language="plaintext" />
               </div>
+            ) : null}
+            <div className="flex w-full flex-col gap-2">
+              <h3 className="font-medium text-sm">Target:</h3>
+              <CodeBlock
+                code={target === "" ? JSON.stringify("") : target}
+                language="plaintext"
+              />
             </div>
-            {content ? (
-              <div className="flex flex-col gap-2">
-                <h3 className="font-medium text-sm">Content:</h3>
+          </div>
+          {content ? (
+            <div className="flex flex-col gap-2">
+              <h3 className="font-medium text-sm">Content:</h3>
+              <CodeBlock
+                code={content}
+                language={path.split(".").pop()}
+                className="max-h-[50svh] overflow-auto"
+              />
+            </div>
+          ) : null}
+        </div>
+      ) : (
+        <div className="flex flex-col gap-4">
+          {isInstaller ? (
+            <div className="relative flex flex-col">
+              <div className="rounded-t-md border-b bg-canvas px-4 pt-1.5">
+                <Tabs value={packageManager} onValueChange={setPackageManager}>
+                  <TabsList className="gap-3 bg-transparent p-0">
+                    {packageManagers.map((packageManager) => (
+                      <TabsTrigger
+                        key={packageManager}
+                        value={packageManager}
+                        className="rounded-none border-0 border-transparent border-b p-0 data-[state=active]:border-b-foreground data-[state=active]:bg-transparent dark:data-[state=active]:border-b-foreground dark:data-[state=active]:bg-transparent"
+                      >
+                        {packageManager}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </Tabs>
+              </div>
+              {content ? (
                 <CodeBlock
                   code={content}
-                  language={path.split(".").pop()}
-                  className="max-h-[50svh] overflow-auto"
+                  className="max-h-[60svh] overflow-auto"
+                  style={{
+                    borderTopLeftRadius: isInstaller ? "0" : "0.5rem",
+                    borderTopRightRadius: isInstaller ? "0" : "0.5rem",
+                  }}
+                  isInstaller
                 />
-              </div>
-            ) : null}
-          </div>
-        ) : (
-          <div className="flex flex-col gap-4">
-            {isInstaller ? (
-              <div className="relative flex flex-col">
-                <div className="rounded-t-md border-b bg-canvas px-4 pt-1.5">
-                  <Tabs
-                    value={packageManager}
-                    onValueChange={setPackageManager}
-                  >
-                    <TabsList className="gap-3 bg-transparent p-0">
-                      {packageManagers.map((packageManager) => (
-                        <TabsTrigger
-                          key={packageManager}
-                          value={packageManager}
-                          className="rounded-none border-0 border-transparent border-b p-0 data-[state=active]:border-b-foreground data-[state=active]:bg-transparent dark:data-[state=active]:border-b-foreground dark:data-[state=active]:bg-transparent"
-                        >
-                          {packageManager}
-                        </TabsTrigger>
-                      ))}
-                    </TabsList>
-                  </Tabs>
+              ) : null}
+            </div>
+          ) : null}
+          {type || jsonPath || childrenCount > 0 ? (
+            <div className="flex flex-col gap-4">
+              {type && (
+                <div className="flex w-full flex-col gap-2">
+                  <h3 className="font-medium text-sm">Type:</h3>
+                  <CodeBlock code={type} />
                 </div>
-                {content ? (
-                  <CodeBlock
-                    code={content}
-                    className="max-h-[60svh] overflow-auto"
-                    style={{
-                      borderTopLeftRadius: isInstaller ? "0" : "0.5rem",
-                      borderTopRightRadius: isInstaller ? "0" : "0.5rem",
-                    }}
-                    isInstaller
-                  />
+              )}
+              <div className="flex items-center gap-4">
+                {jsonPath ? (
+                  <div className="flex w-full flex-col gap-2">
+                    <h3 className="font-medium text-sm">JSON path:</h3>
+                    <CodeBlock code={jsonPath} />
+                  </div>
+                ) : null}
+                {childrenCount > 0 ? (
+                  <div className="flex w-full flex-col gap-2">
+                    <h3 className="font-medium text-sm">Children count:</h3>
+                    <CodeBlock code={childrenCount.toString()} />
+                  </div>
                 ) : null}
               </div>
-            ) : null}
-            {type || jsonPath || childrenCount > 0 ? (
-              <div className="flex flex-col gap-4">
-                {type && (
-                  <div className="flex w-full flex-col gap-2">
-                    <h3 className="font-medium text-sm">Type:</h3>
-                    <CodeBlock code={type} />
-                  </div>
-                )}
-                <div className="flex items-center gap-4">
-                  {jsonPath ? (
-                    <div className="flex w-full flex-col gap-2">
-                      <h3 className="font-medium text-sm">JSON path:</h3>
-                      <CodeBlock code={jsonPath} />
-                    </div>
-                  ) : null}
-                  {childrenCount > 0 ? (
-                    <div className="flex w-full flex-col gap-2">
-                      <h3 className="font-medium text-sm">Children count:</h3>
-                      <CodeBlock code={childrenCount.toString()} />
-                    </div>
-                  ) : null}
+              {content && !isInstaller && (
+                <div className="flex w-full flex-col gap-2">
+                  <h3 className="font-medium text-sm">Content:</h3>
+                  <CodeBlock
+                    code={content}
+                    className="max-h-[50svh] overflow-auto"
+                  />
                 </div>
-                {content && !isInstaller && (
-                  <div className="flex w-full flex-col gap-2">
-                    <h3 className="font-medium text-sm">Content:</h3>
-                    <CodeBlock
-                      code={content}
-                      className="max-h-[50svh] overflow-auto"
-                    />
-                  </div>
-                )}
-              </div>
-            ) : null}
-          </div>
-        )}
-      </div>
-    );
-  }, [
-    path,
-    content,
-    isInstaller,
-    type,
-    jsonPath,
-    childrenCount,
-    target,
-    packageManager,
-  ]);
+              )}
+            </div>
+          ) : null}
+        </div>
+      )}
+    </div>
+  );
 
   if (isMobile) {
     return (

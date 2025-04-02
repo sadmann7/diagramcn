@@ -45,34 +45,33 @@ interface ExtendedNodeData extends NodeData {
 
 function NodeImpl(props: NodeProps<ExtendedNodeData>) {
   const data = props.properties.data;
-  const { setSelectedNode } = useDiagram();
-  const { onNodeOpenChange } = useNode();
+  const { onNodeOpenChange, onSelectedNodeChange } = useNode();
 
   const onClick = React.useCallback(
     (
       _event: React.MouseEvent<SVGGElement, MouseEvent>,
-      data: ExtendedNodeData,
+      data: ExtendedNodeData
     ) => {
       if (!getIsNode(data)) return;
 
-      setSelectedNode(data);
+      onSelectedNodeChange(data);
       onNodeOpenChange(true);
     },
-    [setSelectedNode, onNodeOpenChange],
+    [onSelectedNodeChange, onNodeOpenChange]
   );
 
   const onEnter = React.useCallback(
     (event: React.MouseEvent<SVGGElement, MouseEvent>) => {
       event.currentTarget.style.stroke = "var(--ring)";
     },
-    [],
+    []
   );
 
   const onLeave = React.useCallback(
     (event: React.MouseEvent<SVGGElement, MouseEvent>) => {
       event.currentTarget.style.stroke = "var(--border)";
     },
-    [],
+    []
   );
 
   const onChildrenRender = React.useCallback(
@@ -95,7 +94,7 @@ function NodeImpl(props: NodeProps<ExtendedNodeData>) {
         />
       );
     },
-    [props.properties.text, data?.isEmpty, data?.childrenCount, props],
+    [props.properties.text, data?.isEmpty, data?.childrenCount, props]
   );
 
   return (

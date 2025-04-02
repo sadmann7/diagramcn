@@ -41,7 +41,7 @@ export function useEditor() {
   const state = React.useSyncExternalStore(
     editorStore.subscribe,
     getSnapshot,
-    getSnapshot,
+    getSnapshot
   );
 
   return {

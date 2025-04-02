@@ -1,16 +1,26 @@
 import Link from "next/link";
 
+import { ClientOnly } from "@/components/client-only";
 import { EditorToggle } from "@/components/editor-toggle";
 import { Icons } from "@/components/icons";
 import { ModeToggle } from "@/components/layouts/mode-toggle";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { siteConfig } from "@/config/site";
 
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 w-full border-border/40 border-b bg-background/95 px-4 backdrop-blur-sm supports-backdrop-filter:bg-background/60">
       <div className="flex h-14 items-center gap-2">
-        <EditorToggle />
+        <ClientOnly
+          fallback={
+            <div className="flex aspect-square size-8 items-center justify-center">
+              <Skeleton className="size-4 rounded-sm" />
+            </div>
+          }
+        >
+          <EditorToggle />
+        </ClientOnly>
         <Link href="/" className="font-semibold">
           {siteConfig.name}
         </Link>

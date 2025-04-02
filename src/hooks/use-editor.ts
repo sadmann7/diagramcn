@@ -1,12 +1,29 @@
 import * as React from "react";
 
+const EDITOR_COOKIE_NAME = "editor_state";
+const EDITOR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
+
 interface EditorState {
   isEditorVisible: boolean;
 }
 
-const initialState: EditorState = {
-  isEditorVisible: true,
-};
+// Helper to get initial state from cookie
+function getInitialState(): EditorState {
+  if (typeof document === "undefined") {
+    return { isEditorVisible: true };
+  }
+
+  const cookie = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith(`${EDITOR_COOKIE_NAME}=`));
+
+  const savedState = cookie ? cookie.split("=")[1] : null;
+  return {
+    isEditorVisible: savedState ? savedState === "true" : true,
+  };
+}
+
+const initialState: EditorState = getInitialState();
 
 function createEditorStore(initialState: EditorState) {
   let state = initialState;
@@ -14,6 +31,10 @@ function createEditorStore(initialState: EditorState) {
 
   function setState(partial: Partial<EditorState>) {
     state = { ...state, ...partial };
+    // Update cookie whenever state changes
+    if (typeof document !== "undefined") {
+      document.cookie = `${EDITOR_COOKIE_NAME}=${state.isEditorVisible}; path=/; max-age=${EDITOR_COOKIE_MAX_AGE}`;
+    }
     for (const listener of listeners) {
       listener();
     }

@@ -29,6 +29,31 @@ const initialState: NodeState = {
   packageManager: "pnpm",
 };
 
+function getPackageManagerCommands(packageManager: string) {
+  switch (packageManager) {
+    case "npm":
+      return {
+        install: "npm install",
+        dlx: "npx",
+      };
+    case "yarn":
+      return {
+        install: "yarn add",
+        dlx: "yarn dlx",
+      };
+    case "bun":
+      return {
+        install: "bun add",
+        dlx: "bun x",
+      };
+    default:
+      return {
+        install: "pnpm add",
+        dlx: "pnpm dlx",
+      };
+  }
+}
+
 function createNodeStore(initialState: NodeState) {
   let state = initialState;
   const listeners = new Set<() => void>();
@@ -38,6 +63,39 @@ function createNodeStore(initialState: NodeState) {
     for (const listener of listeners) {
       listener();
     }
+  }
+
+  function updateNodeContent(node: Node | null, packageManager: string) {
+    if (!node) return null;
+
+    const { install, dlx } = getPackageManagerCommands(packageManager);
+
+    if (node.path === "{Root}" && Array.isArray(node.text)) {
+      const schemaEntry = node.text.find(([key]) => key === "$schema");
+      return schemaEntry
+        ? `${dlx} shadcn@latest add "${schemaEntry[1]}"`
+        : null;
+    }
+
+    if (node.path?.includes("{Root}.registryDependencies")) {
+      const componentName = typeof node.text === "string" ? node.text : null;
+      return componentName ? `${dlx} shadcn@latest add ${componentName}` : null;
+    }
+
+    if (node.path?.includes("{Root}.dependencies")) {
+      const packageName = typeof node.text === "string" ? node.text : null;
+      return packageName ? `${install} ${packageName}` : null;
+    }
+
+    if (Array.isArray(node.text)) {
+      return JSON.stringify(node.text, null, 2);
+    }
+
+    if (typeof node.text === "string") {
+      return node.text;
+    }
+
+    return null;
   }
 
   return {
@@ -59,7 +117,6 @@ function createNodeStore(initialState: NodeState) {
         return;
       }
 
-      // Reset all values first
       newState.name = null;
       newState.description = null;
       newState.jsonPath = null;
@@ -70,16 +127,13 @@ function createNodeStore(initialState: NodeState) {
       newState.target = "";
 
       if (node.path === "{Root}" && Array.isArray(node.text)) {
-        const schemaEntry = node.text.find(([key]) => key === "$schema");
         const nameEntry = node.text.find(([key]) => key === "name");
         const typeEntry = node.text.find(([key]) => key === "type");
         const descriptionEntry = node.text.find(
           ([key]) => key === "description",
         );
 
-        newState.content = schemaEntry
-          ? `pnpm dlx shadcn@latest add "${schemaEntry[1]}"`
-          : null;
+        newState.content = updateNodeContent(node, state.packageManager);
         newState.jsonPath = node.path ?? null;
         newState.name = nameEntry ? nameEntry[1] : null;
         newState.type = typeEntry ? typeEntry[1] : null;
@@ -88,14 +142,11 @@ function createNodeStore(initialState: NodeState) {
         newState.content = JSON.stringify(node.text, null, 2);
         newState.jsonPath = node.path ?? null;
         newState.childrenCount = node.data.childrenCount ?? 0;
-      } else if (node.path?.includes("{Root}.registryDependencies")) {
-        const componentName = typeof node.text === "string" ? node.text : null;
-        newState.content = componentName
-          ? `pnpm dlx shadcn@latest add ${componentName}`
-          : null;
-      } else if (node.path?.includes("{Root}.dependencies")) {
-        const packageName = typeof node.text === "string" ? node.text : null;
-        newState.content = packageName ? `pnpm add ${packageName}` : null;
+      } else if (
+        node.path?.includes("{Root}.registryDependencies") ||
+        node.path?.includes("{Root}.dependencies")
+      ) {
+        newState.content = updateNodeContent(node, state.packageManager);
       } else if (node.path?.includes("{Root}.files")) {
         if (Array.isArray(node.text) && node.text.length >= 4) {
           const [path, content, type, target] = node.text;
@@ -115,7 +166,17 @@ function createNodeStore(initialState: NodeState) {
       setState(newState);
     },
     setPackageManager: (packageManager: string) => {
+      // Update the package manager
       setState({ packageManager });
+
+      // If there's a selected node, update its content with the new package manager
+      const currentNode = state.selectedNode;
+      if (currentNode) {
+        const newContent = updateNodeContent(currentNode, packageManager);
+        if (newContent !== null) {
+          setState({ content: newContent });
+        }
+      }
     },
   };
 }

@@ -23,6 +23,37 @@ import { Slot } from "@radix-ui/react-slot";
 
 const packageManagers = ["pnpm", "npm", "yarn", "bun"];
 
+const packageManagerCommands = [
+  "add",
+  "install",
+  "remove",
+  "rm",
+  "uninstall",
+  "update",
+  "upgrade",
+  "link",
+  "unlink",
+  "audit",
+  "dlx",
+  "create",
+  "exec",
+  "nx",
+];
+
+function isPackageManagerCommand(content: string | null | undefined): boolean {
+  if (!content) return false;
+  const words = content.toLowerCase().split(" ");
+
+  const startsWithPackageManager = packageManagers.some(
+    (pm) => words[0] === pm,
+  );
+
+  return (
+    packageManagerCommands.some((cmd) => words.includes(cmd)) ||
+    startsWithPackageManager
+  );
+}
+
 export function NodeDialog() {
   const {
     isNodeOpen,
@@ -48,9 +79,9 @@ export function NodeDialog() {
       ? selectedNode.text
       : (name ?? "Node");
 
-  const nodeDescription = description ?? "No description available";
+  const nodeDescription = description ?? `View content for ${nodeTitle}`;
 
-  const isInstaller = content?.includes("add");
+  const isCommand = isPackageManagerCommand(content);
 
   const dialogContent = (
     <div className="overflow-auto">
@@ -88,7 +119,7 @@ export function NodeDialog() {
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          {isInstaller ? (
+          {isCommand ? (
             <div className="relative flex flex-col">
               <div className="rounded-t-md border-b bg-canvas px-4 pt-1.5">
                 <Tabs value={packageManager} onValueChange={setPackageManager}>
@@ -110,10 +141,10 @@ export function NodeDialog() {
                   code={content}
                   className="max-h-[60svh] overflow-auto"
                   style={{
-                    borderTopLeftRadius: isInstaller ? "0" : "0.5rem",
-                    borderTopRightRadius: isInstaller ? "0" : "0.5rem",
+                    borderTopLeftRadius: isCommand ? "0" : "0.5rem",
+                    borderTopRightRadius: isCommand ? "0" : "0.5rem",
                   }}
-                  isInstaller
+                  isCommand
                 />
               ) : null}
             </div>
@@ -140,7 +171,7 @@ export function NodeDialog() {
                   </div>
                 ) : null}
               </div>
-              {content && !isInstaller && (
+              {content && !isCommand && (
                 <div className="flex w-full flex-col gap-2">
                   <h3 className="font-medium text-sm">Content:</h3>
                   <CodeBlock

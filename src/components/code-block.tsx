@@ -17,13 +17,13 @@ import {
 interface CodeBlockImplProps extends React.ComponentProps<"div"> {
   code: string;
   language?: string;
-  isInstaller?: boolean;
+  isCommand?: boolean;
 }
 
 function CodeBlockImpl({
   code,
   language = "typescript",
-  isInstaller,
+  isCommand,
   className,
   style,
   ...props
@@ -64,17 +64,17 @@ function CodeBlockImpl({
 
   return (
     <div
-      className={cn("group", !isInstaller && "relative", className)}
+      className={cn("group", !isCommand && "relative", className)}
       {...props}
     >
-      <div className={cn(!isInstaller && "sticky top-0")}>
+      <div className={cn(!isCommand && "sticky top-0")}>
         <Button
           aria-label="Copy code"
           variant="secondary"
           size="icon"
           className={cn(
             "absolute size-6 rounded border border-border/60 opacity-0 transition-[color,opacity] duration-200 hover:bg-secondary hover:text-foreground/80 disabled:opacity-100 group-hover:opacity-100",
-            isInstaller ? "top-2 right-2" : "top-3 right-3",
+            isCommand ? "top-2 right-2" : "top-3 right-3",
           )}
           onClick={onCopy}
           disabled={isCopied}
@@ -102,7 +102,7 @@ export const CodeBlock = React.memo(CodeBlockImpl, (prev, next) => {
   return (
     prev.code === next.code &&
     prev.language === next.language &&
-    prev.isInstaller === next.isInstaller &&
+    prev.isCommand === next.isCommand &&
     prev.className === next.className &&
     prev.style === next.style
   );

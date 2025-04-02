@@ -4,14 +4,13 @@ import { Edge } from "@/app/(registry)/editor/components/edge";
 import { Node } from "@/app/(registry)/editor/components/node";
 import { NodeDialog } from "@/app/(registry)/editor/components/node-dialog";
 import { useDiagram } from "@/hooks/use-diagram";
+import { type LongPressCallback, useLongPress } from "@/hooks/use-long-press";
 import { MAX_NODE_COUNT } from "@/lib/constants";
 import { debounce } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import * as React from "react";
 import { Space } from "react-zoomable-ui";
 import { Canvas, type ElkRoot } from "reaflow";
-import type { LongPressCallback, LongPressOptions } from "use-long-press";
-import { useLongPress } from "use-long-press";
 
 const layoutOptions = {
   "elk.layered.compaction.postCompaction.strategy": "EDGE_LENGTH",
@@ -57,14 +56,14 @@ export function Diagram({ isWidget = false }: DiagramProps) {
     [isWidget, height, width, centerView, setIsPending],
   );
 
-  const callback = React.useCallback<LongPressCallback>(() => {
+  const onLongPressStart = React.useCallback<LongPressCallback>(() => {
     const canvas = document.querySelector(
       ".diagram-canvas",
     ) as HTMLDivElement | null;
     canvas?.classList.add("dragging");
   }, []);
 
-  const bindLongPress = useLongPress(callback, {
+  const onLongPressEnd = useLongPress(onLongPressStart, {
     threshold: 150,
     onFinish: () => {
       const canvas = document.querySelector(
@@ -72,9 +71,9 @@ export function Diagram({ isWidget = false }: DiagramProps) {
       ) as HTMLDivElement | null;
       canvas?.classList.remove("dragging");
     },
-  } as LongPressOptions);
+  });
 
-  const blurOnClick = React.useCallback(() => {
+  const onItemBlur = React.useCallback(() => {
     if ("activeElement" in document)
       (document.activeElement as HTMLElement)?.blur();
   }, []);
@@ -101,8 +100,8 @@ export function Diagram({ isWidget = false }: DiagramProps) {
     <div
       className="relative size-full"
       onContextMenu={(event) => event.preventDefault()}
-      onClick={blurOnClick}
-      {...bindLongPress()}
+      onClick={onItemBlur}
+      {...onLongPressEnd}
     >
       {isPending && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/50">
@@ -113,7 +112,7 @@ export function Diagram({ isWidget = false }: DiagramProps) {
         onUpdated={debouncedSetViewPort}
         onCreate={setViewPort}
         onContextMenu={(e) => e.preventDefault()}
-        treatTwoFingerTrackPadGesturesLikeTouch={true}
+        treatTwoFingerTrackPadGesturesLikeTouch
         pollForElementResizing
         className="diagram-space"
       >

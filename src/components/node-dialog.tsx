@@ -17,15 +17,16 @@ import {
 } from "@/components/ui/drawer";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDiagram } from "@/hooks/use-diagram";
-import { useDialog } from "@/hooks/use-dialog";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useNode } from "@/hooks/use-node";
 import { cn } from "@/lib/utils";
 import { Slot } from "@radix-ui/react-slot";
 import * as React from "react";
+
 const packageManagers = ["pnpm", "npm", "yarn", "bun"];
 
 export function NodeDialog() {
-  const { open, variant, onOpenChange } = useDialog();
+  const { isNodeOpen, onNodeOpenChange } = useNode();
   const { selectedNode } = useDiagram();
   const [name, setName] = React.useState<string | null>(null);
   const [description, setDescription] = React.useState<string | null>(null);
@@ -39,7 +40,7 @@ export function NodeDialog() {
   const isMobile = useIsMobile();
 
   React.useEffect(() => {
-    if (!selectedNode || !open || variant !== "node") return;
+    if (!selectedNode || !isNodeOpen) return;
 
     setName(null);
     setDescription(null);
@@ -108,9 +109,9 @@ export function NodeDialog() {
     );
     setJsonPath(selectedNode.path ?? null);
     setChildrenCount(selectedNode.data.childrenCount ?? 0);
-  }, [selectedNode, open, variant]);
+  }, [selectedNode, isNodeOpen]);
 
-  if (!selectedNode || variant !== "node") return null;
+  if (!selectedNode) return null;
 
   const nodeTitle =
     typeof selectedNode.text === "string"
@@ -121,113 +122,127 @@ export function NodeDialog() {
 
   const isInstaller = content?.includes("add");
 
-  const dialogContent = (
-    <div className="overflow-auto">
-      {path ? (
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <h3 className="font-medium text-sm">Path:</h3>
-            <CodeBlock code={path} language="plaintext" />
-          </div>
-          <div className="flex items-center gap-4">
-            {type ? (
-              <div className="flex w-full flex-col gap-2">
-                <h3 className="font-medium text-sm">Type:</h3>
-                <CodeBlock code={type} language="plaintext" />
-              </div>
-            ) : null}
-            <div className="flex w-full flex-col gap-2">
-              <h3 className="font-medium text-sm">Target:</h3>
-              <CodeBlock
-                code={target === "" ? JSON.stringify("") : target}
-                language="plaintext"
-              />
-            </div>
-          </div>
-          {content ? (
+  const dialogContent = React.useMemo(() => {
+    return (
+      <div className="overflow-auto">
+        {path ? (
+          <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <h3 className="font-medium text-sm">Content:</h3>
-              <CodeBlock
-                code={content}
-                language={path.split(".").pop()}
-                className="max-h-[50svh] overflow-auto"
-              />
+              <h3 className="font-medium text-sm">Path:</h3>
+              <CodeBlock code={path} language="plaintext" />
             </div>
-          ) : null}
-        </div>
-      ) : (
-        <div className="flex flex-col gap-4">
-          {isInstaller ? (
-            <div className="relative flex flex-col">
-              <div className="rounded-t-md border-b bg-canvas px-4 pt-1.5">
-                <Tabs value={packageManager} onValueChange={setPackageManager}>
-                  <TabsList className="gap-3 bg-transparent p-0">
-                    {packageManagers.map((packageManager) => (
-                      <TabsTrigger
-                        key={packageManager}
-                        value={packageManager}
-                        className="rounded-none border-0 border-transparent border-b p-0 data-[state=active]:border-b-foreground data-[state=active]:bg-transparent dark:data-[state=active]:border-b-foreground dark:data-[state=active]:bg-transparent"
-                      >
-                        {packageManager}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-                </Tabs>
-              </div>
-              {content ? (
-                <CodeBlock
-                  code={content}
-                  className="max-h-[60svh] overflow-auto"
-                  style={{
-                    borderTopLeftRadius: isInstaller ? "0" : "0.5rem",
-                    borderTopRightRadius: isInstaller ? "0" : "0.5rem",
-                  }}
-                  isInstaller
-                />
-              ) : null}
-            </div>
-          ) : null}
-          {type || jsonPath || childrenCount > 0 ? (
-            <div className="flex flex-col gap-4">
-              {type && (
+            <div className="flex items-center gap-4">
+              {type ? (
                 <div className="flex w-full flex-col gap-2">
                   <h3 className="font-medium text-sm">Type:</h3>
-                  <CodeBlock code={type} />
+                  <CodeBlock code={type} language="plaintext" />
                 </div>
-              )}
-              <div className="flex items-center gap-4">
-                {jsonPath ? (
-                  <div className="flex w-full flex-col gap-2">
-                    <h3 className="font-medium text-sm">JSON path:</h3>
-                    <CodeBlock code={jsonPath} />
-                  </div>
-                ) : null}
-                {childrenCount > 0 ? (
-                  <div className="flex w-full flex-col gap-2">
-                    <h3 className="font-medium text-sm">Children count:</h3>
-                    <CodeBlock code={childrenCount.toString()} />
-                  </div>
-                ) : null}
+              ) : null}
+              <div className="flex w-full flex-col gap-2">
+                <h3 className="font-medium text-sm">Target:</h3>
+                <CodeBlock
+                  code={target === "" ? JSON.stringify("") : target}
+                  language="plaintext"
+                />
               </div>
-              {content && !isInstaller && (
-                <div className="flex w-full flex-col gap-2">
-                  <h3 className="font-medium text-sm">Content:</h3>
+            </div>
+            {content ? (
+              <div className="flex flex-col gap-2">
+                <h3 className="font-medium text-sm">Content:</h3>
+                <CodeBlock
+                  code={content}
+                  language={path.split(".").pop()}
+                  className="max-h-[50svh] overflow-auto"
+                />
+              </div>
+            ) : null}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {isInstaller ? (
+              <div className="relative flex flex-col">
+                <div className="rounded-t-md border-b bg-canvas px-4 pt-1.5">
+                  <Tabs
+                    value={packageManager}
+                    onValueChange={setPackageManager}
+                  >
+                    <TabsList className="gap-3 bg-transparent p-0">
+                      {packageManagers.map((packageManager) => (
+                        <TabsTrigger
+                          key={packageManager}
+                          value={packageManager}
+                          className="rounded-none border-0 border-transparent border-b p-0 data-[state=active]:border-b-foreground data-[state=active]:bg-transparent dark:data-[state=active]:border-b-foreground dark:data-[state=active]:bg-transparent"
+                        >
+                          {packageManager}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                  </Tabs>
+                </div>
+                {content ? (
                   <CodeBlock
                     code={content}
-                    className="max-h-[50svh] overflow-auto"
+                    className="max-h-[60svh] overflow-auto"
+                    style={{
+                      borderTopLeftRadius: isInstaller ? "0" : "0.5rem",
+                      borderTopRightRadius: isInstaller ? "0" : "0.5rem",
+                    }}
+                    isInstaller
                   />
+                ) : null}
+              </div>
+            ) : null}
+            {type || jsonPath || childrenCount > 0 ? (
+              <div className="flex flex-col gap-4">
+                {type && (
+                  <div className="flex w-full flex-col gap-2">
+                    <h3 className="font-medium text-sm">Type:</h3>
+                    <CodeBlock code={type} />
+                  </div>
+                )}
+                <div className="flex items-center gap-4">
+                  {jsonPath ? (
+                    <div className="flex w-full flex-col gap-2">
+                      <h3 className="font-medium text-sm">JSON path:</h3>
+                      <CodeBlock code={jsonPath} />
+                    </div>
+                  ) : null}
+                  {childrenCount > 0 ? (
+                    <div className="flex w-full flex-col gap-2">
+                      <h3 className="font-medium text-sm">Children count:</h3>
+                      <CodeBlock code={childrenCount.toString()} />
+                    </div>
+                  ) : null}
                 </div>
-              )}
-            </div>
-          ) : null}
-        </div>
-      )}
-    </div>
-  );
+                {content && !isInstaller && (
+                  <div className="flex w-full flex-col gap-2">
+                    <h3 className="font-medium text-sm">Content:</h3>
+                    <CodeBlock
+                      code={content}
+                      className="max-h-[50svh] overflow-auto"
+                    />
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </div>
+        )}
+      </div>
+    );
+  }, [
+    path,
+    content,
+    isInstaller,
+    type,
+    jsonPath,
+    childrenCount,
+    target,
+    packageManager,
+  ]);
 
   if (isMobile) {
     return (
-      <Drawer open={open} onOpenChange={(open) => onOpenChange(variant, open)}>
+      <Drawer open={isNodeOpen} onOpenChange={onNodeOpenChange}>
         <DrawerContent className="gap-6">
           <DrawerHeader>
             <DrawerTitle>{nodeTitle}</DrawerTitle>
@@ -242,7 +257,7 @@ export function NodeDialog() {
   }
 
   return (
-    <Dialog open={open} onOpenChange={(open) => onOpenChange(variant, open)}>
+    <Dialog open={isNodeOpen} onOpenChange={onNodeOpenChange}>
       <DialogContent className="gap-6 sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>{nodeTitle}</DialogTitle>

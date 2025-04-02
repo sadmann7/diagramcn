@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { EditorToggle } from "@/components/editor-toggle";
 import { Icons } from "@/components/icons";
 import { ModeToggle } from "@/components/layouts/mode-toggle";
 import { Button } from "@/components/ui/button";
@@ -8,11 +9,12 @@ import { siteConfig } from "@/config/site";
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 w-full border-border/40 border-b bg-background/95 px-4 backdrop-blur-sm supports-backdrop-filter:bg-background/60">
-      <div className="flex h-14 items-center gap-6">
+      <div className="flex h-14 items-center gap-2">
+        <EditorToggle />
         <Link href="/" className="font-semibold">
           {siteConfig.name}
         </Link>
-        <nav className="flex w-full items-center gap-6 text-sm">
+        <nav className="ml-4 flex w-full items-center gap-6 text-sm">
           <Link
             href="/editor"
             className="text-foreground/60 transition-colors hover:text-foreground"

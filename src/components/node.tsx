@@ -3,7 +3,7 @@
 import { ObjectNode } from "@/components/object-node";
 import { TextNode } from "@/components/text-node";
 import { useDiagram } from "@/hooks/use-diagram";
-import { useDialog } from "@/hooks/use-dialog";
+import { useNode } from "@/hooks/use-node";
 import type { Node as ExtendedNode } from "@/types";
 import type { NodeType as JsonNodeType } from "jsonc-parser";
 import * as React from "react";
@@ -46,7 +46,7 @@ interface ExtendedNodeData extends NodeData {
 function NodeImpl(props: NodeProps<ExtendedNodeData>) {
   const data = props.properties.data;
   const { setSelectedNode } = useDiagram();
-  const { onOpenChange } = useDialog();
+  const { onNodeOpenChange } = useNode();
 
   const onClick = React.useCallback(
     (
@@ -56,9 +56,9 @@ function NodeImpl(props: NodeProps<ExtendedNodeData>) {
       if (!getIsNode(data)) return;
 
       setSelectedNode(data);
-      onOpenChange("node", true);
+      onNodeOpenChange(true);
     },
-    [setSelectedNode, onOpenChange],
+    [setSelectedNode, onNodeOpenChange],
   );
 
   const onEnter = React.useCallback(

@@ -13,6 +13,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useEditor } from "@/hooks/use-editor";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useRegistry } from "@/hooks/use-registry";
 import { File } from "lucide-react";
@@ -23,6 +24,7 @@ import { TextEditor } from "./text-editor";
 export function Editor() {
   const { registryUrl, registryJson, setRegistryJson } = useRegistry();
   const isMobile = useIsMobile();
+  const { isEditorVisible } = useEditor();
 
   if (!registryUrl || !registryJson) {
     return (
@@ -67,15 +69,19 @@ export function Editor() {
   return (
     <div className="h-[calc(100vh-60px)]">
       <ResizablePanelGroup direction="horizontal">
-        <ResizablePanel defaultSize={25} minSize={0} maxSize={50}>
-          <TextEditor
-            language="json"
-            value={registryJson}
-            onChange={setRegistryJson}
-          />
-        </ResizablePanel>
-        <ResizableHandle />
-        <ResizablePanel defaultSize={75}>
+        {isEditorVisible && (
+          <>
+            <ResizablePanel defaultSize={30} minSize={25} maxSize={50}>
+              <TextEditor
+                language="json"
+                value={registryJson}
+                onChange={setRegistryJson}
+              />
+            </ResizablePanel>
+            <ResizableHandle />
+          </>
+        )}
+        <ResizablePanel defaultSize={isEditorVisible ? 70 : 100}>
           <Diagram />
         </ResizablePanel>
       </ResizablePanelGroup>

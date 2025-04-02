@@ -135,11 +135,11 @@ function createRegistryStore() {
     getRegistryUrl,
     getRegistryData,
     getRegistryJson,
-    onRegistryUrlChange: (url: string | null) => {
+    setRegistryUrl: (url: string | null) => {
       setState({ registryUrl: url });
       fetchRegistryData(url);
     },
-    onRegistryJsonChange: (json: string | undefined) => {
+    setRegistryJson: (json: string | undefined) => {
       setState({ registryJson: json });
     },
   };
@@ -198,10 +198,10 @@ function useRegistry() {
 
   return {
     registryUrl,
-    onRegistryUrlChange: registryStore.onRegistryUrlChange,
+    setRegistryUrl: registryStore.setRegistryUrl,
     registryData,
     registryJson,
-    onRegistryJsonChange: registryStore.onRegistryJsonChange,
+    setRegistryJson: registryStore.setRegistryJson,
   };
 }
 

@@ -13,25 +13,25 @@ interface RegistryInputProps extends React.ComponentProps<"div"> {}
 export function RegistryInput({ className, ...props }: RegistryInputProps) {
   const router = useRouter();
   const [isPending, startTransition] = React.useTransition();
-  const { onRegistryUrlChange } = useRegistry();
+  const { setRegistryUrl } = useRegistry();
   const [input, setInput] = React.useState("");
 
   const onSubmit = React.useCallback(() => {
     if (!input.trim()) return;
 
     const command = input.trim();
-    const registryUrl = parseShadcnCommand(command) ?? command;
+    const registryUrl = parseRegistryCommand(command) ?? command;
 
     try {
       startTransition(() => {
         new URL(registryUrl);
-        onRegistryUrlChange(registryUrl);
+        setRegistryUrl(registryUrl);
         router.push("/editor");
       });
     } catch (_err) {
       console.error("Invalid registry URL");
     }
-  }, [input, router, onRegistryUrlChange]);
+  }, [input, router, setRegistryUrl]);
 
   const onKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -66,7 +66,7 @@ export function RegistryInput({ className, ...props }: RegistryInputProps) {
   );
 }
 
-function parseShadcnCommand(command: string): string | null {
+function parseRegistryCommand(command: string): string | null {
   const urlMatch = command.match(/https:\/\/[^"\s]+/);
   if (urlMatch) {
     return urlMatch[0];

@@ -11,7 +11,7 @@ import { Diagram } from "./diagram";
 import { TextEditor } from "./text-editor";
 
 export function Editor() {
-  const { registryUrl, registryJson, onRegistryJsonChange } = useRegistry();
+  const { registryUrl, registryJson, setRegistryJson } = useRegistry();
 
   if (!registryUrl || !registryJson) {
     return (
@@ -31,7 +31,7 @@ export function Editor() {
           <TextEditor
             language="json"
             value={registryJson}
-            onChange={onRegistryJsonChange}
+            onChange={setRegistryJson}
           />
         </ResizablePanel>
         <ResizableHandle />

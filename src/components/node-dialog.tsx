@@ -10,6 +10,7 @@ import {
 import { useDiagram } from "@/hooks/use-diagram";
 import { useDialog } from "@/hooks/use-dialog";
 import * as React from "react";
+import { CodeBlock } from "./code-block";
 
 export function NodeDialog() {
   const { open, variant, onOpenChange } = useDialog();
@@ -99,35 +100,45 @@ export function NodeDialog() {
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
                 <h3 className="font-medium text-sm">Path:</h3>
-                <pre className="rounded-lg bg-muted p-4">
-                  <code>{path}</code>
-                </pre>
+                <CodeBlock
+                  code={path}
+                  language="plaintext"
+                  className="rounded-lg"
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
                   <h3 className="font-medium text-sm">Type:</h3>
-                  <pre className="rounded-lg bg-muted p-4">
-                    <code>{type}</code>
-                  </pre>
+                  <CodeBlock
+                    code={type}
+                    language="plaintext"
+                    className="rounded-lg"
+                  />
                 </div>
                 <div className="flex flex-col gap-2">
                   <h3 className="font-medium text-sm">Target:</h3>
-                  <pre className="rounded-lg bg-muted p-4">
-                    <code>{target}</code>
-                  </pre>
+                  <CodeBlock
+                    code={target}
+                    language="plaintext"
+                    className="rounded-lg"
+                  />
                 </div>
               </div>
               <div className="flex flex-col gap-2">
                 <h3 className="font-medium text-sm">Content:</h3>
-                <pre className="max-h-[50svh] overflow-auto rounded-lg bg-muted p-4">
-                  <code>{content}</code>
-                </pre>
+                <div className="max-h-[50svh] overflow-auto">
+                  <CodeBlock
+                    code={content}
+                    language={path.split(".").pop()}
+                    className="rounded-lg"
+                  />
+                </div>
               </div>
             </div>
           ) : (
-            <pre className="prose dark:prose-invert mt-4 max-h-[60svh] overflow-auto rounded-lg bg-muted p-4">
-              <code>{textContent}</code>
-            </pre>
+            <div className="prose dark:prose-invert mt-4 max-h-[60svh] overflow-auto">
+              <CodeBlock code={textContent} className="rounded-lg" />
+            </div>
           )}
         </div>
       </DialogContent>

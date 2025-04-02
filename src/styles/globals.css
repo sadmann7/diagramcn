@@ -3,6 +3,8 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@plugin "@tailwindcss/typography";
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

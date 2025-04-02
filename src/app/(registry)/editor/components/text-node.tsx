@@ -1,4 +1,6 @@
-import { NodeContent } from "@/components/node-content";
+"use client";
+
+import { NodeContent } from "@/app/(registry)/editor/components/node-content";
 import { Button } from "@/components/ui/button";
 import { useBranch } from "@/hooks/use-branch";
 import { useDiagram } from "@/hooks/use-diagram";
@@ -113,10 +115,10 @@ function TextNodeImpl({ node, x, y, collapsible = false }: CustomNodeProps) {
           )}
           {node.data.isParent && collapsible && (
             <Button
-              aria-label="Toggle collapse"
+              aria-label={isCollapsed ? "Expand" : "Collapse"}
               variant="ghost"
               size="icon"
-              className="pointer-events-auto cursor-pointer rounded-none border-l"
+              className="pointer-events-auto cursor-pointer rounded-none border-l text-muted-foreground"
               onClick={onCollapseToggle}
             >
               {isCollapsed ? <Link2Off /> : <Link2 />}

@@ -1,14 +1,13 @@
 "use client";
 
-import { ObjectNode } from "@/components/object-node";
-import { TextNode } from "@/components/text-node";
-import { useDiagram } from "@/hooks/use-diagram";
 import { useNode } from "@/hooks/use-node";
 import type { Node as ExtendedNode } from "@/types";
 import type { NodeType as JsonNodeType } from "jsonc-parser";
 import * as React from "react";
 import type { NodeData, NodeProps } from "reaflow";
 import { Node as ReaflowNode } from "reaflow";
+import { ObjectNode } from "./object-node";
+import { TextNode } from "./text-node";
 
 function getIsNode(value: unknown): value is ExtendedNode {
   return (

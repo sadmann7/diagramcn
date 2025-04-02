@@ -1,9 +1,10 @@
 "use client";
 
-import { Edge } from "@/components/edge";
-import { Node } from "@/components/node";
-import { NodeDialog } from "@/components/node-dialog";
+import { Edge } from "@/app/(registry)/editor/components/edge";
+import { Node } from "@/app/(registry)/editor/components/node";
+import { NodeDialog } from "@/app/(registry)/editor/components/node-dialog";
 import { useDiagram } from "@/hooks/use-diagram";
+import { MAX_NODE_COUNT } from "@/lib/constants";
 import { debounce } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import * as React from "react";
@@ -11,8 +12,6 @@ import { Space } from "react-zoomable-ui";
 import { Canvas, type ElkRoot } from "reaflow";
 import type { LongPressCallback, LongPressOptions } from "use-long-press";
 import { useLongPress } from "use-long-press";
-
-const MAX_NODE_COUNT = 1000;
 
 const layoutOptions = {
   "elk.layered.compaction.postCompaction.strategy": "EDGE_LENGTH",

@@ -55,7 +55,7 @@ function ObjectNodeImpl({ node, x, y }: ObjectNodeImplProps) {
   return (
     <foreignObject
       className={cn(
-        "pointer-events-none overflow-hidden font-medium font-mono text-xs",
+        "pointer-events-none overflow-hidden font-medium font-mono text-[11px]",
         "searched:rounded searched:border-2 searched:border-green-500 searched:bg-green-500/10",
         "[&_.highlight]:bg-yellow-500/15",
       )}

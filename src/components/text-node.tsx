@@ -94,7 +94,8 @@ function TextNodeImpl({ node, x, y, collapsible = false }: CustomNodeProps) {
         >
           <div
             className={cn(
-              // "truncate",
+              "truncate",
+              collapsible && "px-2.5",
               node.data.type === "property" &&
                 "font-semibold text-blue-600 dark:text-blue-400",
               node.data.type === "array" &&
@@ -115,7 +116,7 @@ function TextNodeImpl({ node, x, y, collapsible = false }: CustomNodeProps) {
               aria-label="Toggle collapse"
               variant="ghost"
               size="icon"
-              className="cursor-pointer rounded-none border-l"
+              className="pointer-events-auto cursor-pointer rounded-none border-l"
               onClick={onCollapseToggle}
             >
               {isCollapsed ? <Link2Off /> : <Link2 />}

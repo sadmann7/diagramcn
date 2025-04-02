@@ -1,4 +1,4 @@
-import { TextRenderer } from "@/components/text-renderer";
+import { NodeContent } from "@/components/node-content";
 import { NODE_DIMENSIONS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import type { Node } from "@/types";
@@ -40,7 +40,7 @@ function NodeRow({ val, x, y, index }: NodeRowProps) {
       <span className="font-medium font-mono text-blue-600 text-sm dark:text-blue-400">
         {rowKey}:{" "}
       </span>
-      <TextRenderer>{rowValue}</TextRenderer>
+      <NodeContent>{rowValue}</NodeContent>
     </span>
   );
 }

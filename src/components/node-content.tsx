@@ -1,48 +1,49 @@
 import * as React from "react";
 
-function isURL(word: string) {
-  const urlPattern =
+function getIsURL(word: string) {
+  const URL_REGEX =
     /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/gm;
 
-  return word.match(urlPattern);
+  return URL_REGEX.test(word);
 }
 
-function isColorFormat(colorString: string) {
-  const hexCodeRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
-  const rgbRegex = /^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/;
-  const rgbaRegex =
+function getIsColorFormat(colorString: string) {
+  const HEX_REGEX = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
+  const RGB_REGEX = /^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/;
+  const RGBA_REGEX =
     /^rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(0|1|0\.\d+)\s*\)$/;
 
   return (
-    hexCodeRegex.test(colorString) ||
-    rgbRegex.test(colorString) ||
-    rgbaRegex.test(colorString)
+    HEX_REGEX.test(colorString) ||
+    RGB_REGEX.test(colorString) ||
+    RGBA_REGEX.test(colorString)
   );
 }
 
 function renderLink(text: string) {
-  const addMarkup = (word: string) => {
-    return isURL(word)
+  function addMarkup(word: string) {
+    return getIsURL(word)
       ? `<a onclick="event.stopPropagation()" href="${word}" style="text-decoration: underline; pointer-events: all;" target="_blank" rel="noopener noreferrer">${word}</a>`
       : word;
-  };
+  }
 
   const words = text.split(" ");
   const formatedWords = words.map((w) => addMarkup(w));
   const html = formatedWords.join(" ");
+
   return <span dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
-interface TextRendererProps {
+interface NodeContentImplProps {
   children: string;
 }
 
-export function TextRenderer({ children }: TextRendererProps) {
+function NodeContentImpl({ children }: NodeContentImplProps) {
   const text = children?.replaceAll('"', "");
 
-  if (isURL(text)) return renderLink(text);
+  if (getIsURL(text)) return renderLink(text);
 
-  if (isColorFormat(text)) {
+  if (getIsColorFormat(text)) {
     return (
       <div className="inline-flex items-center gap-2 overflow-hidden align-middle">
         <div
@@ -56,3 +57,5 @@ export function TextRenderer({ children }: TextRendererProps) {
 
   return <>{children}</>;
 }
+
+export const NodeContent = React.memo(NodeContentImpl);

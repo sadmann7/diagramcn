@@ -4,11 +4,29 @@ import { ObjectNode } from "@/components/object-node";
 import { TextNode } from "@/components/text-node";
 import { useDiagram } from "@/hooks/use-diagram";
 import { useDialog } from "@/hooks/use-dialog";
-import type { Node as NodeType } from "@/types";
+import type { Node as ExtendedNode } from "@/types";
 import type { NodeType as JsonNodeType } from "jsonc-parser";
 import * as React from "react";
 import type { NodeData, NodeProps } from "reaflow";
 import { Node as ReaflowNode } from "reaflow";
+
+function getIsNode(value: unknown): value is ExtendedNode {
+  return (
+    !!value &&
+    typeof value === "object" &&
+    "id" in value &&
+    "text" in value &&
+    "width" in value &&
+    "height" in value &&
+    "data" in value &&
+    typeof value.data === "object" &&
+    value.data !== null &&
+    "type" in value.data &&
+    "isParent" in value.data &&
+    "isEmpty" in value.data &&
+    "childrenCount" in value.data
+  );
+}
 
 interface NodeLabelProps {
   originalText: string;
@@ -35,7 +53,9 @@ function NodeImpl(props: NodeProps<ExtendedNodeData>) {
       _event: React.MouseEvent<SVGGElement, MouseEvent>,
       data: ExtendedNodeData,
     ) => {
-      setSelectedNode(data as unknown as NodeType);
+      if (!getIsNode(data)) return;
+
+      setSelectedNode(data);
       onOpenChange("node", true);
     },
     [setSelectedNode, onOpenChange],
@@ -55,6 +75,29 @@ function NodeImpl(props: NodeProps<ExtendedNodeData>) {
     [],
   );
 
+  const onChildrenRender = React.useCallback(
+    ({ node, x, y }: { node: NodeData; x: number; y: number }) => {
+      if (!getIsNode(node)) return null;
+
+      if (Array.isArray(props.properties.text)) {
+        if (data?.isEmpty) return null;
+
+        return <ObjectNode node={node} x={x} y={y} />;
+      }
+
+      return (
+        <TextNode
+          {...props}
+          node={node}
+          collapsible={!!data?.childrenCount}
+          x={x}
+          y={y}
+        />
+      );
+    },
+    [props.properties.text, data?.isEmpty, data?.childrenCount, props],
+  );
+
   return (
     <ReaflowNode
       {...props}
@@ -70,23 +113,7 @@ function NodeImpl(props: NodeProps<ExtendedNodeData>) {
         strokeWidth: 1,
       }}
     >
-      {({ node, x, y }) => {
-        if (Array.isArray(props.properties.text)) {
-          if (data?.isEmpty) return null;
-
-          return <ObjectNode node={node as unknown as NodeType} x={x} y={y} />;
-        }
-
-        return (
-          <TextNode
-            {...props}
-            node={node as unknown as NodeType}
-            collapsible={!!data?.childrenCount}
-            x={x}
-            y={y}
-          />
-        );
-      }}
+      {onChildrenRender}
     </ReaflowNode>
   );
 }

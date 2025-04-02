@@ -1,4 +1,4 @@
-import { TextRenderer } from "@/components/text-renderer";
+import { NodeContent } from "@/components/node-content";
 import { Button } from "@/components/ui/button";
 import { useBranch } from "@/hooks/use-branch";
 import { useDiagram } from "@/hooks/use-diagram";
@@ -104,7 +104,7 @@ function TextNodeImpl({ node, x, y, collapsible = false }: CustomNodeProps) {
                 "font-semibold text-green-600 dark:text-green-400",
             )}
           >
-            <TextRenderer>{value}</TextRenderer>
+            <NodeContent>{value}</NodeContent>
           </div>
           {node.data.isParent && node.data.childrenCount > 0 && (
             <span className="text-muted-foreground text-xs">

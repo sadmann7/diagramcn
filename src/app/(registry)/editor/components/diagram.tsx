@@ -7,7 +7,7 @@ import { debounce } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import * as React from "react";
 import { Space } from "react-zoomable-ui";
-import { Canvas, type EdgeProps } from "reaflow";
+import { Canvas, type ElkRoot } from "reaflow";
 import type { LongPressCallback, LongPressOptions } from "use-long-press";
 import { useLongPress } from "use-long-press";
 
@@ -38,7 +38,7 @@ export function Diagram({ isWidget = false }: DiagramProps) {
   const [height, setHeight] = React.useState(2000);
 
   const onLayoutChange = React.useCallback(
-    (layout: { width?: number; height?: number }) => {
+    (layout: ElkRoot) => {
       if (layout.width && layout.height) {
         const areaSize = layout.width * layout.height;
         const changeRatio = Math.abs((areaSize * 100) / (width * height) - 100);

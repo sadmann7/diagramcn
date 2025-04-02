@@ -181,7 +181,13 @@ function traverseWithChildren(
     ];
   }
 
-  function traverseObject(objectToTraverse: Node, nextType: string) {
+  function traverseObject({
+    objectToTraverse,
+    nextType,
+  }: {
+    objectToTraverse: Node;
+    nextType: string | undefined;
+  }) {
     traverse({
       states,
       objectToTraverse,
@@ -195,7 +201,7 @@ function traverseWithChildren(
     children.forEach((objectToTraverse, index, array) => {
       const nextType = array[index + 1]?.type;
 
-      traverseObject(objectToTraverse, nextType ?? "");
+      traverseObject({ objectToTraverse, nextType });
     });
   }
 

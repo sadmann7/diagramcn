@@ -10,7 +10,7 @@ interface ActiveLinkProps extends React.ComponentPropsWithoutRef<typeof Link> {
   children: React.ReactNode;
 }
 
-function ActiveLinkImpl({ href, className, ...props }: ActiveLinkProps) {
+export function ActiveLink({ href, className, ...props }: ActiveLinkProps) {
   const segments = useSelectedLayoutSegments();
 
   const isActive = React.useMemo(() => {
@@ -29,17 +29,13 @@ function ActiveLinkImpl({ href, className, ...props }: ActiveLinkProps) {
 
   return (
     <Link
-      {...props}
-      href={href}
       data-state={isActive ? "active" : "inactive"}
+      href={href}
       className={cn(
-        "text-muted-foreground transition-colors hover:text-foreground data-[state=active]:font-medium data-[state=active]:text-foreground",
+        "text-foreground/70 transition-colors hover:text-foreground data-[state=active]:font-medium data-[state=active]:text-foreground",
         className,
       )}
+      {...props}
     />
   );
 }
-
-export const ActiveLink = React.memo(ActiveLinkImpl, (prev, next) => {
-  return prev.href === next.href;
-});

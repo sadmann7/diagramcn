@@ -8,22 +8,19 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useEditor } from "@/hooks/use-editor";
+import { getIsMac } from "@/lib/utils";
 import { ChevronsLeft, ChevronsRight } from "lucide-react";
 import * as React from "react";
 
-const EDITOR_KEYBOARD_SHORTCUT = "e";
+const EDITOR_SHORTCUT = "e";
 
 export function EditorToggle() {
   const { isEditorVisible, onEditorToggle } = useEditor();
-  const isMac =
-    typeof window !== "undefined" && /mac/i.test(navigator.userAgent);
+  const isMac = getIsMac();
 
   React.useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      if (
-        event.key === EDITOR_KEYBOARD_SHORTCUT &&
-        (event.metaKey || event.ctrlKey)
-      ) {
+      if (event.key === EDITOR_SHORTCUT && (event.metaKey || event.ctrlKey)) {
         event.preventDefault();
         onEditorToggle();
       }
@@ -39,7 +36,7 @@ export function EditorToggle() {
         <Button
           variant="ghost"
           size="icon"
-          className="size-6 rounded-sm"
+          className="size-7 rounded-sm"
           onClick={onEditorToggle}
         >
           {isEditorVisible ? <ChevronsLeft /> : <ChevronsRight />}

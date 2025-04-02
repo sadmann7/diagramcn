@@ -1,3 +1,4 @@
+import { getPackageManagerCommands } from "@/lib/command";
 import type { Node } from "@/types";
 import * as React from "react";
 
@@ -11,7 +12,7 @@ interface NodeState {
   path: string | null;
   content: string | null;
   type: string | null;
-  target: string;
+  target: string | null;
   packageManager: string;
 }
 
@@ -25,34 +26,9 @@ const initialState: NodeState = {
   path: null,
   content: null,
   type: null,
-  target: "",
+  target: null,
   packageManager: "pnpm",
 };
-
-function getPackageManagerCommands(packageManager: string) {
-  switch (packageManager) {
-    case "npm":
-      return {
-        install: "npm install",
-        dlx: "npx",
-      };
-    case "yarn":
-      return {
-        install: "yarn add",
-        dlx: "yarn dlx",
-      };
-    case "bun":
-      return {
-        install: "bun add",
-        dlx: "bun x",
-      };
-    default:
-      return {
-        install: "pnpm add",
-        dlx: "pnpm dlx",
-      };
-  }
-}
 
 function createNodeStore(initialState: NodeState) {
   let state = initialState;
@@ -148,12 +124,16 @@ function createNodeStore(initialState: NodeState) {
       ) {
         newState.content = updateNodeContent(node, state.packageManager);
       } else if (node.path?.includes("{Root}.files")) {
-        if (Array.isArray(node.text) && node.text.length >= 4) {
+        if (Array.isArray(node.text)) {
           const [path, content, type, target] = node.text;
-          newState.path = String(path).replace(/^path,\s*/, "");
-          newState.content = String(content).replace(/^content,\s*/, "");
-          newState.type = String(type).replace(/^type,\s*/, "");
-          newState.target = String(target).replace(/^target,\s*/, "");
+          newState.path = path ? String(path).replace(/^path,\s*/, "") : null;
+          newState.content = content
+            ? String(content).replace(/^content,\s*/, "")
+            : null;
+          newState.type = type ? String(type).replace(/^type,\s*/, "") : null;
+          newState.target = target
+            ? String(target).replace(/^target,\s*/, "")
+            : null;
         }
       } else {
         newState.content = node.text
@@ -166,10 +146,8 @@ function createNodeStore(initialState: NodeState) {
       setState(newState);
     },
     onPackageManagerChange: (packageManager: string) => {
-      // Update the package manager
       setState({ packageManager });
 
-      // If there's a selected node, update its content with the new package manager
       const currentNode = state.selectedNode;
       if (currentNode) {
         const newContent = updateNodeContent(currentNode, packageManager);

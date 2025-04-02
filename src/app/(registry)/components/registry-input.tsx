@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useRegistry } from "@/hooks/use-registry";
+import { parseRegistryCommand } from "@/lib/command";
 import { cn } from "@/lib/utils";
 import { Loader, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -27,12 +28,12 @@ export function RegistryInput({ className, ...props }: RegistryInputProps) {
     if (!input.trim()) return;
 
     const command = input.trim();
-    const registryUrl = parseRegistryCommand(command) ?? command;
+    const parsedCommand = parseRegistryCommand(command) ?? command;
 
     try {
       startTransition(() => {
-        new URL(registryUrl);
-        onRegistryUrlChange(registryUrl);
+        new URL(parsedCommand);
+        onRegistryUrlChange(parsedCommand);
         router.push("/editor");
       });
     } catch (_err) {
@@ -71,32 +72,4 @@ export function RegistryInput({ className, ...props }: RegistryInputProps) {
       </Button>
     </div>
   );
-}
-
-function parseRegistryCommand(command: string): string | null {
-  const urlMatch = command.match(/https:\/\/[^"\s]+/);
-  if (urlMatch) {
-    return urlMatch[0];
-  }
-
-  const packageManagers = [
-    { prefix: "npx shadcn", command: "npx" },
-    { prefix: "yarn dlx shadcn", command: "yarn" },
-    { prefix: "pnpm dlx shadcn", command: "pnpm" },
-    { prefix: "bunx shadcn", command: "bun" },
-  ];
-
-  for (const { prefix } of packageManagers) {
-    if (command.startsWith(prefix)) {
-      const match = command.match(
-        new RegExp(`${prefix}@?([^\\s]+)\\s+add\\s+([^\\s]+)`),
-      );
-      if (!match) continue;
-
-      const [, , component] = match;
-      return `https://ui.shadcn.com/r/styles/default/${component}.json`;
-    }
-  }
-
-  return null;
 }

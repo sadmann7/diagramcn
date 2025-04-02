@@ -18,41 +18,9 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNode } from "@/hooks/use-node";
+import { getIsPackageManagerCommand, packageManagers } from "@/lib/command";
 import { cn } from "@/lib/utils";
 import { Slot } from "@radix-ui/react-slot";
-
-const packageManagers = ["pnpm", "npm", "yarn", "bun"];
-
-const packageManagerCommands = [
-  "add",
-  "install",
-  "remove",
-  "rm",
-  "uninstall",
-  "update",
-  "upgrade",
-  "link",
-  "unlink",
-  "audit",
-  "dlx",
-  "create",
-  "exec",
-  "nx",
-];
-
-function isPackageManagerCommand(content: string | null | undefined): boolean {
-  if (!content) return false;
-  const words = content.toLowerCase().split(" ");
-
-  const startsWithPackageManager = packageManagers.some(
-    (pm) => words[0] === pm,
-  );
-
-  return (
-    packageManagerCommands.some((cmd) => words.includes(cmd)) ||
-    startsWithPackageManager
-  );
-}
 
 export function NodeDialog() {
   const {
@@ -81,7 +49,9 @@ export function NodeDialog() {
 
   const nodeDescription = description ?? `View content for ${nodeTitle}`;
 
-  const isCommand = isPackageManagerCommand(content);
+  const isCommand = getIsPackageManagerCommand(content);
+
+  console.log({ selectedNode, path, content, type, target });
 
   const dialogContent = (
     <div className="overflow-auto">
@@ -101,7 +71,7 @@ export function NodeDialog() {
             <div className="flex w-full flex-col gap-2">
               <h3 className="font-medium text-sm">Target:</h3>
               <CodeBlock
-                code={target === "" ? JSON.stringify("") : target}
+                code={target ?? JSON.stringify("")}
                 language="plaintext"
               />
             </div>

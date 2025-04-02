@@ -18,3 +18,7 @@ export function debounce<T extends (...args: unknown[]) => void>(
     }, wait);
   };
 }
+
+export function getIsMac() {
+  return typeof window !== "undefined" && /mac/i.test(navigator.userAgent);
+}

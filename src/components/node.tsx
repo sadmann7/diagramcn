@@ -20,26 +20,26 @@ function NodeImpl(props: NodeProps<ExtendedNodeData>) {
   const onClick = React.useCallback(
     (
       _event: React.MouseEvent<SVGGElement, MouseEvent>,
-      data: ExtendedNodeData,
+      data: ExtendedNodeData
     ) => {
       setSelectedNode(data as unknown as NodeType);
       onOpenChange("node", true);
     },
-    [setSelectedNode, onOpenChange],
+    [setSelectedNode, onOpenChange]
   );
 
   const onEnter = React.useCallback(
     (event: React.MouseEvent<SVGGElement, MouseEvent>) => {
       event.currentTarget.style.stroke = "var(--ring)";
     },
-    [],
+    []
   );
 
   const onLeave = React.useCallback(
     (event: React.MouseEvent<SVGGElement, MouseEvent>) => {
       event.currentTarget.style.stroke = "var(--border)";
     },
-    [],
+    []
   );
 
   return (

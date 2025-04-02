@@ -54,12 +54,12 @@ export function Diagram({ isWidget = false }: DiagramProps) {
         });
       }
     },
-    [isWidget, height, width, centerView, setIsPending],
+    [isWidget, height, width, centerView, setIsPending]
   );
 
   const callback = React.useCallback<LongPressCallback>(() => {
     const canvas = document.querySelector(
-      ".diagram-canvas",
+      ".diagram-canvas"
     ) as HTMLDivElement | null;
     canvas?.classList.add("dragging");
   }, []);
@@ -68,7 +68,7 @@ export function Diagram({ isWidget = false }: DiagramProps) {
     threshold: 150,
     onFinish: () => {
       const canvas = document.querySelector(
-        ".diagram-canvas",
+        ".diagram-canvas"
       ) as HTMLDivElement | null;
       canvas?.classList.remove("dragging");
     },
@@ -83,7 +83,7 @@ export function Diagram({ isWidget = false }: DiagramProps) {
     debounce(() => {
       if (viewPort) setViewPort(viewPort);
     }, 300),
-    [],
+    []
   );
 
   if (nodes.length > MAX_NODE_COUNT) {

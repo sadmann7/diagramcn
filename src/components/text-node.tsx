@@ -62,9 +62,9 @@ function TextNodeImpl({ node, x, y, hasCollapse = false }: CustomNodeProps) {
             isParent && hasCollapse
               ? "justify-between"
               : isParent
-                ? "justify-center"
-                : "justify-start",
-            !hasCollapse && "px-2.5",
+              ? "justify-center"
+              : "justify-start",
+            !hasCollapse && "px-2.5"
           )}
         >
           <div
@@ -75,7 +75,7 @@ function TextNodeImpl({ node, x, y, hasCollapse = false }: CustomNodeProps) {
               type === "array" &&
                 "font-semibold text-orange-600 dark:text-orange-400",
               type === "object" &&
-                "font-semibold text-green-600 dark:text-green-400",
+                "font-semibold text-green-600 dark:text-green-400"
             )}
           >
             <TextRenderer>{value}</TextRenderer>
@@ -95,7 +95,7 @@ function TextNodeImpl({ node, x, y, hasCollapse = false }: CustomNodeProps) {
               }}
               className={cn(
                 "inline-flex h-full w-9 shrink-0 items-center justify-center border-border border-l",
-                "bg-black/5 text-foreground hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10",
+                "bg-black/5 text-foreground hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10"
               )}
             >
               <svg
@@ -122,11 +122,8 @@ function TextNodeImpl({ node, x, y, hasCollapse = false }: CustomNodeProps) {
 
 export const TextNode = React.memo(
   TextNodeImpl,
-  (prev: CustomNodeProps, next: CustomNodeProps) => {
-    return (
-      prev.node.text === next.node.text &&
-      prev.node.width === next.node.width &&
-      prev.node.data.childrenCount === next.node.data.childrenCount
-    );
-  },
+  (prev: CustomNodeProps, next: CustomNodeProps) =>
+    prev.node.text === next.node.text &&
+    prev.node.width === next.node.width &&
+    prev.node.data.childrenCount === next.node.data.childrenCount
 );

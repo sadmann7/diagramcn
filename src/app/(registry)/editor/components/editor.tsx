@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -11,12 +10,10 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet";
 import { useEditor } from "@/hooks/use-editor";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useRegistry } from "@/hooks/use-registry";
-import { File } from "lucide-react";
 import { RegistryInput } from "../../components/registry-input";
 import { Diagram } from "./diagram";
 import { TextEditor } from "./text-editor";
@@ -24,7 +21,7 @@ import { TextEditor } from "./text-editor";
 export function Editor() {
   const { registryUrl, registryJson, onRegistryJsonChange } = useRegistry();
   const isMobile = useIsMobile();
-  const { isEditorVisible } = useEditor();
+  const { isEditorVisible, onEditorToggle } = useEditor();
 
   if (!registryUrl || !registryJson) {
     return (
@@ -40,16 +37,7 @@ export function Editor() {
   if (isMobile) {
     return (
       <div className="h-[calc(100vh-60px)]">
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              className="fixed right-4 bottom-4 z-10"
-            >
-              <File />
-            </Button>
-          </SheetTrigger>
+        <Sheet open={isEditorVisible} onOpenChange={onEditorToggle}>
           <SheetContent className="w-full gap-0">
             <SheetHeader className="h-14">
               <SheetTitle>Edit Registry</SheetTitle>

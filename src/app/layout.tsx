@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     creator: "@sadmann17",
   },
   icons: {
-    icon: "/icon.png",
+    icon: "/favicon.ico",
   },
   manifest:
     process.env.NODE_ENV === "production"

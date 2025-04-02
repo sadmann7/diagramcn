@@ -3,6 +3,7 @@ import Link from "next/link";
 import { EditorToggle } from "@/app/(registry)/editor/components/editor-toggle";
 import { ClientOnly } from "@/components/client-only";
 import { Icons } from "@/components/icons";
+import { ActiveLink } from "@/components/layouts/active-link";
 import { ModeToggle } from "@/components/layouts/mode-toggle";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,7 +15,7 @@ export function SiteHeader() {
       <div className="flex h-14 items-center gap-2">
         <ClientOnly
           fallback={
-            <div className="flex aspect-square size-8 items-center justify-center">
+            <div className="flex aspect-square size-6 items-center justify-center">
               <Skeleton className="size-4 rounded-sm" />
             </div>
           }
@@ -24,13 +25,8 @@ export function SiteHeader() {
         <Link href="/" className="font-semibold">
           {siteConfig.name}
         </Link>
-        <nav className="ml-4 flex w-full items-center gap-6 text-sm">
-          <Link
-            href="/editor"
-            className="text-foreground/60 transition-colors hover:text-foreground"
-          >
-            Editor
-          </Link>
+        <nav className="ml-3 flex w-full items-center gap-6 text-sm">
+          <ActiveLink href="/editor">Editor</ActiveLink>
         </nav>
         <nav className="flex flex-1 items-center md:justify-end">
           <Button variant="ghost" size="icon" className="size-8" asChild>

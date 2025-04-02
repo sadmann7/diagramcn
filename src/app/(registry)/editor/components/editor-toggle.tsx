@@ -39,7 +39,7 @@ export function EditorToggle() {
         <Button
           variant="ghost"
           size="icon"
-          className="size-8"
+          className="size-6 rounded-sm"
           onClick={onEditorToggle}
         >
           {isEditorVisible ? <ChevronsLeft /> : <ChevronsRight />}

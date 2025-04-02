@@ -1,19 +1,22 @@
+import { TextRenderer } from "@/components/text-renderer";
+import { Button } from "@/components/ui/button";
+import { useBranch } from "@/hooks/use-branch";
 import { useDiagram } from "@/hooks/use-diagram";
 import { isContentImage } from "@/lib/diagram";
 import { cn } from "@/lib/utils";
 import type { Node } from "@/types";
-import React, { useMemo } from "react";
+import { Link2, Link2Off, Unlink2 } from "lucide-react";
+import * as React from "react";
 import type { NodeProps } from "reaflow";
-import { TextRenderer } from "./text-renderer";
 
 interface CustomNodeProps extends NodeProps {
   node: Node;
   x: number;
   y: number;
-  hasCollapse?: boolean;
+  collapsible?: boolean;
 }
 
-function TextNodeImpl({ node, x, y, hasCollapse = false }: CustomNodeProps) {
+function TextNodeImpl({ node, x, y, collapsible = false }: CustomNodeProps) {
   const {
     id,
     text,
@@ -21,23 +24,45 @@ function TextNodeImpl({ node, x, y, hasCollapse = false }: CustomNodeProps) {
     height,
     data: { isParent, childrenCount, type },
   } = node;
+  const { onBranchToggle } = useBranch();
+  const { collapsedParents, collapseNodes, expandNodes } = useDiagram();
 
-  const isImage = useMemo(() => {
+  const isCollapsed = React.useMemo(() => {
+    return collapsedParents.includes(id);
+  }, [collapsedParents, id]);
+
+  const isImage = React.useMemo(() => {
     return typeof text === "string" && isContentImage(text);
   }, [text]);
 
-  const value = useMemo(() => {
+  const value = React.useMemo(() => {
     if (typeof text === "string") {
       return text.replaceAll('"', "");
     }
     return text.map(([k, v]) => `${k}: ${JSON.stringify(v)}`).join("\n");
   }, [text]);
 
-  const childrenCountText = useMemo(() => {
+  const childrenCountText = React.useMemo(() => {
     if (type === "object") return `{${childrenCount}}`;
     if (type === "array") return `[${childrenCount}]`;
+
     return "";
   }, [childrenCount, type]);
+
+  const onCollapseToggle = React.useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      event.stopPropagation();
+
+      if (isCollapsed) {
+        expandNodes(id);
+      } else {
+        collapseNodes(id);
+      }
+
+      onBranchToggle();
+    },
+    [collapseNodes, expandNodes, id, isCollapsed, onBranchToggle],
+  );
 
   return (
     <foreignObject width={width} height={height} x={0} y={0}>
@@ -58,61 +83,43 @@ function TextNodeImpl({ node, x, y, hasCollapse = false }: CustomNodeProps) {
           data-y={y}
           data-key={JSON.stringify(text)}
           className={cn(
-            "flex h-full w-full items-center overflow-hidden",
-            isParent && hasCollapse
+            "flex size-full items-center overflow-hidden",
+            isParent && collapsible
               ? "justify-between"
               : isParent
-              ? "justify-center"
-              : "justify-start",
-            !hasCollapse && "px-2.5"
+                ? "justify-center"
+                : "justify-start",
+            !collapsible && "px-2.5",
           )}
         >
           <div
             className={cn(
-              "overflow-hidden text-ellipsis whitespace-nowrap font-mono text-sm",
+              "truncate font-mono text-sm",
               type === "property" &&
                 "font-semibold text-blue-600 dark:text-blue-400",
               type === "array" &&
                 "font-semibold text-orange-600 dark:text-orange-400",
               type === "object" &&
-                "font-semibold text-green-600 dark:text-green-400"
+                "font-semibold text-green-600 dark:text-green-400",
             )}
           >
             <TextRenderer>{value}</TextRenderer>
           </div>
           {isParent && childrenCount > 0 && (
-            <span className="ml-2 text-muted-foreground text-xs">
+            <span className="text-muted-foreground text-xs">
               {childrenCountText}
             </span>
           )}
-          {isParent && hasCollapse && (
-            <button
+          {isParent && collapsible && (
+            <Button
               aria-label="Toggle collapse"
-              onClick={(event) => {
-                event.stopPropagation();
-                //TODO: Handle collapse toggle
-                useDiagram().collapseNodes(id);
-              }}
-              className={cn(
-                "inline-flex h-full w-9 shrink-0 items-center justify-center border-border border-l",
-                "bg-black/5 text-foreground hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10"
-              )}
+              variant="ghost"
+              size="icon"
+              className="cursor-pointer rounded-none border-l"
+              onClick={onCollapseToggle}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="size-4"
-              >
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                <polyline points="15 3 21 3 21 9" />
-                <line x1="10" y1="14" x2="21" y2="3" />
-              </svg>
-            </button>
+              {isCollapsed ? <Link2Off /> : <Link2 />}
+            </Button>
           )}
         </div>
       )}
@@ -125,5 +132,5 @@ export const TextNode = React.memo(
   (prev: CustomNodeProps, next: CustomNodeProps) =>
     prev.node.text === next.node.text &&
     prev.node.width === next.node.width &&
-    prev.node.data.childrenCount === next.node.data.childrenCount
+    prev.node.data.childrenCount === next.node.data.childrenCount,
 );

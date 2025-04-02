@@ -63,7 +63,7 @@ function createRegistryStore() {
     }
   }
 
-  const setState = (partial: Partial<RegistryState>) => {
+  function setState(partial: Partial<RegistryState>) {
     const newState = { ...state, ...partial };
 
     const hasChanged = Object.keys(partial).some(
@@ -89,7 +89,7 @@ function createRegistryStore() {
     for (const listener of listeners) {
       listener();
     }
-  };
+  }
 
   async function fetchRegistryData(url: string | null) {
     if (!url) {

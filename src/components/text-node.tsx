@@ -17,59 +17,59 @@ interface CustomNodeProps extends NodeProps {
 }
 
 function TextNodeImpl({ node, x, y, collapsible = false }: CustomNodeProps) {
-  const {
-    id,
-    text,
-    width,
-    height,
-    data: { isParent, childrenCount, type },
-  } = node;
   const { onBranchToggle } = useBranch();
   const { collapsedParents, collapseNodes, expandNodes } = useDiagram();
 
   const isCollapsed = React.useMemo(() => {
-    return collapsedParents.includes(id);
-  }, [collapsedParents, id]);
+    return collapsedParents.includes(node.id);
+  }, [collapsedParents, node.id]);
 
   const isImage = React.useMemo(() => {
-    return typeof text === "string" && isContentImage(text);
-  }, [text]);
+    return typeof node.text === "string" && isContentImage(node.text);
+  }, [node.text]);
 
   const value = React.useMemo(() => {
-    if (typeof text === "string") {
-      return text.replaceAll('"', "");
+    if (typeof node.text === "string") {
+      return node.text.replaceAll('"', "");
     }
-    return text.map(([k, v]) => `${k}: ${JSON.stringify(v)}`).join("\n");
-  }, [text]);
+    return node.text.map(([k, v]) => `${k}: ${JSON.stringify(v)}`).join("\n");
+  }, [node.text]);
 
   const childrenCountText = React.useMemo(() => {
-    if (type === "object") return `{${childrenCount}}`;
-    if (type === "array") return `[${childrenCount}]`;
+    if (node.data.type === "object") return `{${node.data.childrenCount}}`;
+    if (node.data.type === "array") return `[${node.data.childrenCount}]`;
 
     return "";
-  }, [childrenCount, type]);
+  }, [node.data.childrenCount, node.data.type]);
 
   const onCollapseToggle = React.useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation();
 
       if (isCollapsed) {
-        expandNodes(id);
+        expandNodes(node.id);
       } else {
-        collapseNodes(id);
+        collapseNodes(node.id);
       }
 
       onBranchToggle();
     },
-    [collapseNodes, expandNodes, id, isCollapsed, onBranchToggle],
+    [collapseNodes, expandNodes, node.id, isCollapsed, onBranchToggle],
   );
 
   return (
-    <foreignObject width={width} height={height} x={0} y={0}>
+    <foreignObject
+      className={cn(
+        "pointer-events-none overflow-hidden font-medium font-mono text-[11px]",
+        "searched:rounded searched:border-2 searched:border-green-500 searched:bg-green-500/10",
+        "[&_.highlight]:bg-yellow-500/15",
+      )}
+      style={{ width: node.width, height: node.height }}
+    >
       {isImage ? (
         <div className="p-1">
           <img
-            src={text as string}
+            src={node.text as string}
             alt=""
             width={70}
             height={70}
@@ -81,12 +81,12 @@ function TextNodeImpl({ node, x, y, collapsible = false }: CustomNodeProps) {
         <div
           data-x={x}
           data-y={y}
-          data-key={JSON.stringify(text)}
+          data-key={JSON.stringify(node.text)}
           className={cn(
             "flex size-full items-center overflow-hidden",
-            isParent && collapsible
+            node.data.isParent && collapsible
               ? "justify-between"
-              : isParent
+              : node.data.isParent
                 ? "justify-center"
                 : "justify-start",
             !collapsible && "px-2.5",
@@ -94,23 +94,23 @@ function TextNodeImpl({ node, x, y, collapsible = false }: CustomNodeProps) {
         >
           <div
             className={cn(
-              "truncate font-mono text-sm",
-              type === "property" &&
+              // "truncate",
+              node.data.type === "property" &&
                 "font-semibold text-blue-600 dark:text-blue-400",
-              type === "array" &&
+              node.data.type === "array" &&
                 "font-semibold text-orange-600 dark:text-orange-400",
-              type === "object" &&
+              node.data.type === "object" &&
                 "font-semibold text-green-600 dark:text-green-400",
             )}
           >
             <TextRenderer>{value}</TextRenderer>
           </div>
-          {isParent && childrenCount > 0 && (
+          {node.data.isParent && node.data.childrenCount > 0 && (
             <span className="text-muted-foreground text-xs">
               {childrenCountText}
             </span>
           )}
-          {isParent && collapsible && (
+          {node.data.isParent && collapsible && (
             <Button
               aria-label="Toggle collapse"
               variant="ghost"

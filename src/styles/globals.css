@@ -137,3 +137,12 @@
     @apply px-4;
   }
 }
+
+.diagram-space:active {
+  cursor: move;
+}
+
+.dragging,
+.dragging button {
+  pointer-events: none;
+}

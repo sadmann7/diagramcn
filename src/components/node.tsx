@@ -1,5 +1,7 @@
 "use client";
 
+import { ObjectNode } from "@/components/object-node";
+import { TextNode } from "@/components/text-node";
 import { useDiagram } from "@/hooks/use-diagram";
 import { useDialog } from "@/hooks/use-dialog";
 import type { Node as NodeType } from "@/types";
@@ -7,8 +9,14 @@ import type { NodeType as JsonNodeType } from "jsonc-parser";
 import * as React from "react";
 import type { NodeData, NodeProps } from "reaflow";
 import { Node as ReaflowNode } from "reaflow";
-import { ObjectNode } from "./object-node";
-import { TextNode } from "./text-node";
+
+interface NodeLabelProps {
+  originalText: string;
+}
+
+function NodeLabel({ originalText }: NodeLabelProps) {
+  return <span>{originalText}</span>;
+}
 
 interface ExtendedNodeData extends NodeData {
   isEmpty?: boolean;
@@ -51,7 +59,7 @@ function NodeImpl(props: NodeProps<ExtendedNodeData>) {
     <ReaflowNode
       {...props}
       {...(data?.isEmpty && { rx: 50, ry: 50 })}
-      label={<div />}
+      label={<NodeLabel originalText={props.properties.text} />}
       onClick={onClick}
       onEnter={onEnter}
       onLeave={onLeave}

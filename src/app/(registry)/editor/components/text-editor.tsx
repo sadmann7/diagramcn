@@ -87,7 +87,7 @@ export function TextEditor({
         cursorBlinking: "smooth",
         ...props.options,
       }}
-      loading={<Skeleton className="h-dvh w-full" />}
+      loading={<Skeleton className="h-svh w-full bg-canvas" />}
       {...props}
     />
   );

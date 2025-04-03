@@ -47,10 +47,8 @@ function createNodeStore(initialState: NodeState) {
     const { install, dlx } = getPackageManagerCommands(packageManager);
 
     if (node.path === "{Root}" && Array.isArray(node.text)) {
-      const schemaEntry = node.text.find(([key]) => key === "$schema");
-      return schemaEntry
-        ? `${dlx} shadcn@latest add "${schemaEntry[1]}"`
-        : null;
+      const nameEntry = node.text.find(([key]) => key === "name");
+      return nameEntry ? `${dlx} shadcn@latest add "${nameEntry[1]}"` : null;
     }
 
     if (node.path?.includes("{Root}.registryDependencies")) {

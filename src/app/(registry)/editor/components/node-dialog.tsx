@@ -43,7 +43,9 @@ export function NodeDialog() {
   if (!selectedNode) return null;
 
   const nodeTitle =
-    typeof selectedNode.text === "string" ? selectedNode.text : name ?? "Node";
+    typeof selectedNode.text === "string"
+      ? selectedNode.text
+      : (name ?? "Node");
 
   const nodeDescription = description ?? `View content for ${nodeTitle}`;
 

@@ -43,9 +43,7 @@ export function NodeDialog() {
   if (!selectedNode) return null;
 
   const nodeTitle =
-    typeof selectedNode.text === "string"
-      ? selectedNode.text
-      : (name ?? "Node");
+    typeof selectedNode.text === "string" ? selectedNode.text : name ?? "Node";
 
   const nodeDescription = description ?? `View content for ${nodeTitle}`;
 
@@ -69,7 +67,7 @@ export function NodeDialog() {
             <div className="flex w-full flex-col gap-2">
               <h3 className="font-medium text-sm">Target:</h3>
               <CodeBlock
-                code={target ?? JSON.stringify("")}
+                code={!target || target === "" ? JSON.stringify("") : target}
                 language="plaintext"
               />
             </div>

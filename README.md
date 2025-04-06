@@ -1,4 +1,4 @@
-# [DiagramCN](https://diagramcn.vercel.app)
+# [diagramcn](https://diagramcn.com)
 
 A diagram visualization tool for shadcn/ui registry components.
 

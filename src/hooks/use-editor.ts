@@ -9,7 +9,7 @@ interface EditorState {
 
 function getInitialState(): EditorState {
   if (typeof document === "undefined") {
-    return { editorOpen: true };
+    return { editorOpen: false };
   }
 
   const cookie = document.cookie
@@ -18,7 +18,7 @@ function getInitialState(): EditorState {
 
   const savedState = cookie ? cookie.split("=")[1] : null;
   return {
-    editorOpen: savedState ? savedState === "true" : true,
+    editorOpen: savedState ? savedState === "true" : false,
   };
 }
 

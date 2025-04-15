@@ -1,9 +1,9 @@
 "use client";
 
-import { DiagramToolbar } from "@/app/(registry)/editor/components/diagram-toolbar";
-import { Edge } from "@/app/(registry)/editor/components/edge";
-import { Node } from "@/app/(registry)/editor/components/node";
-import { NodeDialog } from "@/app/(registry)/editor/components/node-dialog";
+import { DiagramToolbar } from "@/app/(registry)/registry/components/diagram-toolbar";
+import { Edge } from "@/app/(registry)/registry/components/edge";
+import { Node } from "@/app/(registry)/registry/components/node";
+import { NodeDialog } from "@/app/(registry)/registry/components/node-dialog";
 import { useDiagram } from "@/hooks/use-diagram";
 import { type LongPressCallback, useLongPress } from "@/hooks/use-long-press";
 import { MAX_NODE_COUNT } from "@/lib/constants";

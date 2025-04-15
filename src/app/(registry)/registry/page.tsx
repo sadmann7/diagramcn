@@ -1,11 +1,11 @@
 import { ClientOnly } from "@/components/client-only";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Editor } from "./components/editor";
+import { Registry } from "./components/registry";
 
-export default function EditorPage() {
+export default function RegistryPage() {
   return (
     <ClientOnly fallback={<Skeleton className="h-svh w-full bg-canvas" />}>
-      <Editor />
+      <Registry />
     </ClientOnly>
   );
 }

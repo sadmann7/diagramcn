@@ -18,7 +18,7 @@ import { RegistryInput } from "../../components/registry-input";
 import { Diagram } from "./diagram";
 import { TextEditor } from "./text-editor";
 
-export function Editor() {
+export function Registry() {
   const { registryUrl, registryJson, onRegistryJsonChange } = useRegistry();
   const { editorOpen, onEditorOpenChange } = useEditor();
   const isMobile = useIsMobile();

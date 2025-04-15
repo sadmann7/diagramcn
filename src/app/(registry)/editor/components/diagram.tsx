@@ -86,6 +86,13 @@ export function Diagram({ withToolbar }: DiagramProps) {
     [],
   );
 
+  const onContextMenu = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement> | MouseEvent) => {
+      event.preventDefault();
+    },
+    [],
+  );
+
   if (nodes.length > MAX_NODE_COUNT) {
     return (
       <div className="flex h-full items-center justify-center">
@@ -100,7 +107,7 @@ export function Diagram({ withToolbar }: DiagramProps) {
   return (
     <div
       className="relative size-full"
-      onContextMenu={(event) => event.preventDefault()}
+      onContextMenu={onContextMenu}
       onClick={onItemBlur}
       {...onLongPressEnd}
     >
@@ -112,7 +119,7 @@ export function Diagram({ withToolbar }: DiagramProps) {
       <Space
         onUpdated={debouncedSetViewPort}
         onCreate={setViewPort}
-        onContextMenu={(e) => e.preventDefault()}
+        onContextMenu={onContextMenu}
         treatTwoFingerTrackPadGesturesLikeTouch
         pollForElementResizing
         className="diagram-space"

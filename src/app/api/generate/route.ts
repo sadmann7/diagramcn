@@ -1,7 +1,6 @@
 import { registryItemSchema } from "@/lib/validations/registry";
 import { openai } from "@ai-sdk/openai";
 import { generateText } from "ai";
-import { NextResponse } from "next/server";
 import { z } from "zod";
 
 const requestSchema = z.object({

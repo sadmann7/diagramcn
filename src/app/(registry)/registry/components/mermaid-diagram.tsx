@@ -19,6 +19,7 @@ interface MermaidDiagramProps extends React.ComponentProps<"div"> {
 }
 
 export function MermaidDiagram({
+  id = crypto.randomUUID(),
   code,
   theme = "neutral",
   className,
@@ -130,10 +131,7 @@ export function MermaidDiagram({
         });
 
         if (currentContainer) {
-          const { svg } = await mermaid.render(
-            `mermaid-${crypto.randomUUID()}`,
-            code,
-          );
+          const { svg } = await mermaid.render(`mermaid-${id}`, code);
 
           if (containerRef.current === currentContainer) {
             currentContainer.innerHTML = svg;
@@ -197,8 +195,6 @@ export function MermaidDiagram({
     void onDiagramLoad();
 
     return () => {
-      console.log("Running MermaidDiagram cleanup...");
-
       if (panZoomInstance) {
         try {
           panZoomInstance.destroy();
@@ -228,7 +224,7 @@ export function MermaidDiagram({
         }
       }
     };
-  }, [code, theme]);
+  }, [code, id, theme]);
 
   const onZoomIn = React.useCallback(() => {
     panZoomRef.current?.zoomIn();

@@ -86,33 +86,42 @@ export function MermaidDiagram({
             .node circle,
             .node polygon,
             .node path {
-              transition: background-color 0.3s ease;
+              fill: var(--canvas);
+              stroke: var(--border);
+              stroke-width: 2px;
+              transition: stroke 0.3s ease;
             }
             .edgePath path {
               transition: stroke-width 0.3s ease, stroke 0.3s ease;
             }
             .node:hover rect,
             .node:hover circle,
-            .node:hover polygon {
-              fill: var(--color-muted);
+            .node:hover polygon,
+            .node:hover path {
+              stroke: var(--ring);
             }
             .edgePath:hover path {
               stroke-width: 2px;
-              stroke: var(--color-foreground);
+              stroke: var(--accent-foreground);
             }
             .cluster {
               cursor: pointer;
               user-select: none;
             }
             .cluster rect {
-              transition: background-color 0.3s ease;
+              stroke: var(--border);
+              stroke-width: 2px;
+              transition: stroke 0.3s ease;
             }
             .cluster:hover rect {
-              fill: var(--color-muted);
+              stroke: oklch(62.3% 0.214 259.815);
             }
             .label {
               font-family: var(--font-sans);
               user-select: none;
+            }
+            .nodeLabel {
+              color: var(--canvas-foreground);
             }
             .edgeLabel {
               user-select: none;

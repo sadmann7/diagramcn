@@ -7,7 +7,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { Maximize, MinusIcon, PlusIcon } from "lucide-react";
+import { Maximize, Minus, Plus } from "lucide-react";
 import mermaid, { type MermaidConfig } from "mermaid";
 import * as React from "react";
 import svgPanZoom from "svg-pan-zoom";
@@ -19,7 +19,6 @@ interface MermaidDiagramProps extends React.ComponentProps<"div"> {
 }
 
 export function MermaidDiagram({
-  id = crypto.randomUUID(),
   code,
   theme = "neutral",
   className,
@@ -131,7 +130,10 @@ export function MermaidDiagram({
         });
 
         if (currentContainer) {
-          const { svg } = await mermaid.render(`mermaid-${id}`, code);
+          const { svg } = await mermaid.render(
+            `mermaid-${crypto.randomUUID()}`,
+            code,
+          );
 
           if (containerRef.current === currentContainer) {
             currentContainer.innerHTML = svg;
@@ -224,7 +226,7 @@ export function MermaidDiagram({
         }
       }
     };
-  }, [code, id, theme]);
+  }, [code, theme]);
 
   const onZoomIn = React.useCallback(() => {
     panZoomRef.current?.zoomIn();
@@ -271,7 +273,7 @@ export function MermaidDiagram({
               onClick={onZoomOut}
               disabled={isGenerating || !!error}
             >
-              <MinusIcon />
+              <Minus />
             </Button>
           </TooltipTrigger>
           <TooltipContent
@@ -309,7 +311,7 @@ export function MermaidDiagram({
               onClick={onZoomIn}
               disabled={isGenerating || !!error}
             >
-              <PlusIcon />
+              <Plus />
             </Button>
           </TooltipTrigger>
           <TooltipContent

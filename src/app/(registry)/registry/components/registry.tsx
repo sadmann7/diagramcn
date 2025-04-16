@@ -19,9 +19,17 @@ import { Diagram } from "./diagram";
 import { TextEditor } from "./text-editor";
 
 export function Registry() {
-  const { registryUrl, registryJson, onRegistryJsonChange } = useRegistry();
+  const {
+    registryUrl,
+    registryJson,
+    onRegistryJsonChange,
+    registryMermaid,
+    isPending: isRegistryPending,
+  } = useRegistry();
   const { editorOpen, onEditorOpenChange } = useEditor();
   const isMobile = useIsMobile();
+
+  console.log({ registryMermaid });
 
   if (!registryUrl || !registryJson) {
     return (
@@ -70,7 +78,7 @@ export function Registry() {
           </>
         )}
         <ResizablePanel defaultSize={editorOpen ? 70 : 100}>
-          <Diagram withToolbar />
+          <Diagram isRegistryPending={isRegistryPending} withToolbar />
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>

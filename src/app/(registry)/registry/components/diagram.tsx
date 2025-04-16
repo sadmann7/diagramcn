@@ -20,9 +20,10 @@ const layoutOptions = {
 
 interface DiagramProps {
   withToolbar?: boolean;
+  isRegistryPending?: boolean;
 }
 
-export function Diagram({ withToolbar }: DiagramProps) {
+export function Diagram({ withToolbar, isRegistryPending }: DiagramProps) {
   const {
     nodes,
     edges,
@@ -111,11 +112,12 @@ export function Diagram({ withToolbar }: DiagramProps) {
       onClick={onItemBlur}
       {...onLongPressEnd}
     >
-      {isPending && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background/50">
-          <div className="text-foreground">Loading...</div>
-        </div>
-      )}
+      {isRegistryPending ||
+        (isPending && (
+          <div className="absolute inset-0 flex items-center justify-center bg-background/50">
+            <div className="text-foreground">Loading...</div>
+          </div>
+        ))}
       <Space
         onUpdated={debouncedSetViewPort}
         onCreate={setViewPort}

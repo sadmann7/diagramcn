@@ -21,15 +21,7 @@ export async function POST(req: Request) {
     const data = await response.json();
     const parsedData = registryItemSchema.parse(data);
 
-    const prompt = `Generate a Mermaid.js flowchart diagram (using flowchart TD) for the following registry data, focusing on the files array and their relationships: ${JSON.stringify(
-      parsedData,
-    )}`;
-
-    const { text } = await generateText({
-      model: openai("gpt-4.1-mini"),
-      temperature: 0,
-      prompt,
-      system: `Generate a Mermaid.js flowchart diagram using flowchart TD syntax based on the provided registry item data.
+    const system = `Generate a Mermaid.js flowchart diagram using flowchart TD syntax based on the provided registry item data.
 
       The diagram should represent the main registry item and its associated components, dependencies, styling, and metadata.
 
@@ -97,7 +89,17 @@ export async function POST(req: Request) {
           - Output only the raw Mermaid.js code.
           - No extra explanations, markdown formatting, or comments outside the %% Section Headers.
           - Do not include any \`classDef\` styling lines; styles are handled externally.
-          - Do not create empty sections or nodes if the corresponding data doesn't exist.`,
+          - Do not create empty sections or nodes if the corresponding data doesn't exist.`;
+
+    const prompt = `Generate a Mermaid.js flowchart diagram (using flowchart TD) for the following registry data, focusing on the files array and their relationships: ${JSON.stringify(
+      parsedData,
+    )}`;
+
+    const { text } = await generateText({
+      model: openai("gpt-4.1-mini"),
+      temperature: 0,
+      system,
+      prompt,
     });
 
     return new Response(text, {

@@ -1,8 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { MinusIcon, PlusIcon } from "lucide-react";
+import { Maximize, MinusIcon, PlusIcon } from "lucide-react";
 import mermaid, { type MermaidConfig } from "mermaid";
 import * as React from "react";
 
@@ -17,15 +22,15 @@ export function MermaidDiagram({
   className,
   ...props
 }: MermaidDiagramProps) {
-  const containerRef = React.useRef<HTMLDivElement>(null);
+  const mermaidRef = React.useRef<HTMLDivElement>(null);
   const [error, setError] = React.useState<Error | null>(null);
-  const [loading, setLoading] = React.useState(true);
+  const [isLoading, setIsLoading] = React.useState(true);
   const [zoom, setZoom] = React.useState(1);
 
   React.useEffect(() => {
     async function renderDiagram() {
       try {
-        setLoading(true);
+        setIsLoading(true);
         setError(null);
 
         mermaid.initialize({
@@ -82,16 +87,16 @@ export function MermaidDiagram({
           `,
         });
 
-        if (containerRef.current) {
+        if (mermaidRef.current) {
           const { svg } = await mermaid.render(`mermaid-${Date.now()}`, chart);
-          containerRef.current.innerHTML = svg;
+          mermaidRef.current.innerHTML = svg;
         }
 
-        setLoading(false);
+        setIsLoading(false);
       } catch (err) {
         console.error("Mermaid rendering error:", err);
         setError(err as Error);
-        setLoading(false);
+        setIsLoading(false);
       }
     }
 
@@ -110,45 +115,87 @@ export function MermaidDiagram({
 
   return (
     <div className="relative w-full">
-      {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background/50">
+      {isLoading ? (
+        <div
+          role="status"
+          className="absolute inset-0 flex items-center justify-center bg-background/50"
+        >
           <div className="h-6 w-6 animate-spin rounded-full border-current border-b-2" />
         </div>
-      )}
-      {error && (
+      ) : null}
+      {error ? (
         <div
-          className="rounded-lg border border-destructive bg-destructive/10 p-4 text-destructive"
           role="alert"
+          className="rounded-lg border border-destructive bg-destructive/10 p-4 text-destructive"
         >
           <h3 className="font-semibold">Error rendering diagram</h3>
           <p className="mt-1 text-sm">{error.message}</p>
         </div>
-      )}
-      <div className="absolute top-4 right-4 z-10 flex items-center gap-2 rounded-lg bg-background/90 p-2 shadow-sm backdrop-blur">
-        <Button
-          className="rounded p-1 hover:bg-muted"
-          onClick={onZoomOut}
-          disabled={zoom <= 0.5}
-        >
-          <MinusIcon />
-        </Button>
-        <Button
-          onClick={onResetZoom}
-          className="rounded px-2 text-sm hover:bg-muted"
-        >
-          {Math.round(zoom * 100)}%
-        </Button>
-        <Button
-          onClick={onZoomIn}
-          className="rounded p-1 hover:bg-muted"
-          aria-label="Zoom in"
-          disabled={zoom >= 2}
-        >
-          <PlusIcon />
-        </Button>
+      ) : null}
+      <div
+        role="toolbar"
+        aria-orientation="horizontal"
+        className="absolute top-4 right-4 z-10 flex items-center rounded bg-accent/60 shadow-md backdrop-blur-sm"
+      >
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8 rounded-r-none dark:hover:bg-accent/80"
+              onClick={onZoomOut}
+              disabled={zoom <= 0.5}
+            >
+              <MinusIcon />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent
+            sideOffset={4}
+            className="rounded border bg-background text-accent-foreground [&>span]:hidden"
+          >
+            <p>Zoom out</p>
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8 rounded-none dark:hover:bg-accent/80"
+              onClick={onResetZoom}
+            >
+              <Maximize />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent
+            sideOffset={4}
+            className="rounded border bg-background text-accent-foreground [&>span]:hidden"
+          >
+            <p>Reset zoom</p>
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8 rounded-l-none dark:hover:bg-accent/80"
+              onClick={onZoomIn}
+              disabled={zoom >= 2}
+            >
+              <PlusIcon />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent
+            sideOffset={4}
+            className="rounded border bg-background text-accent-foreground [&>span]:hidden"
+          >
+            <p>Zoom in</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
       <div
-        ref={containerRef}
+        ref={mermaidRef}
         style={{
           transform: `scale(${zoom})`,
           transformOrigin: "center top",
@@ -156,7 +203,7 @@ export function MermaidDiagram({
         className={cn("transition-transform duration-200", className)}
         {...props}
       >
-        <div key={chart} className={cn("mermaid", loading && "invisible")}>
+        <div key={chart} className={cn("mermaid", isLoading && "invisible")}>
           {chart}
         </div>
       </div>

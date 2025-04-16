@@ -18,8 +18,6 @@ export function Registry() {
     );
   }
 
-  console.log({ registryMermaid });
-
   return (
     <div className="h-[calc(100vh-60px)] px-4">
       <MermaidDiagram code={registryMermaid} isPending={isPending} />

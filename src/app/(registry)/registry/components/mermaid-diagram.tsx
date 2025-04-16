@@ -7,9 +7,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { Maximize, MinusIcon, PlusIcon } from "lucide-react";
+import { AlignCenterIcon, Maximize, MinusIcon, PlusIcon } from "lucide-react";
 import mermaid, { type MermaidConfig } from "mermaid";
 import * as React from "react";
+import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 
 interface MermaidDiagramProps extends React.ComponentProps<"div"> {
   chart: string;
@@ -22,13 +23,12 @@ export function MermaidDiagram({
   className,
   ...props
 }: MermaidDiagramProps) {
-  const mermaidRef = React.useRef<HTMLDivElement>(null);
+  const containerRef = React.useRef<HTMLDivElement>(null);
   const [error, setError] = React.useState<Error | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
-  const [zoom, setZoom] = React.useState(1);
 
   React.useEffect(() => {
-    async function renderDiagram() {
+    async function onDiagramLoad() {
       try {
         setIsLoading(true);
         setError(null);
@@ -87,9 +87,9 @@ export function MermaidDiagram({
           `,
         });
 
-        if (mermaidRef.current) {
+        if (containerRef.current) {
           const { svg } = await mermaid.render(`mermaid-${Date.now()}`, chart);
-          mermaidRef.current.innerHTML = svg;
+          containerRef.current.innerHTML = svg;
         }
 
         setIsLoading(false);
@@ -100,21 +100,11 @@ export function MermaidDiagram({
       }
     }
 
-    void renderDiagram();
+    void onDiagramLoad();
   }, [chart, theme]);
 
-  const onZoomIn = React.useCallback(
-    () => setZoom((prev) => Math.min(prev + 0.1, 2)),
-    [],
-  );
-  const onZoomOut = React.useCallback(
-    () => setZoom((prev) => Math.max(prev - 0.1, 0.5)),
-    [],
-  );
-  const onResetZoom = React.useCallback(() => setZoom(1), []);
-
   return (
-    <div className="relative w-full">
+    <div className="relative size-full">
       {isLoading ? (
         <div
           role="status"
@@ -132,81 +122,101 @@ export function MermaidDiagram({
           <p className="mt-1 text-sm">{error.message}</p>
         </div>
       ) : null}
-      <div
-        role="toolbar"
-        aria-orientation="horizontal"
-        className="absolute top-4 right-4 z-10 flex items-center rounded bg-accent/60 shadow-md backdrop-blur-sm"
+      <TransformWrapper
+        initialScale={4}
+        limitToBounds={false}
+        minScale={2}
+        maxScale={8}
+        centerOnInit
       >
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8 rounded-r-none dark:hover:bg-accent/80"
-              onClick={onZoomOut}
-              disabled={zoom <= 0.5}
+        {({ zoomIn, zoomOut, resetTransform, centerView }) => (
+          <React.Fragment>
+            <div
+              role="toolbar"
+              aria-orientation="horizontal"
+              className="absolute top-4 right-4 z-10 flex items-center rounded bg-accent/60 shadow-md backdrop-blur-sm"
             >
-              <MinusIcon />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent
-            sideOffset={4}
-            className="rounded border bg-background text-accent-foreground [&>span]:hidden"
-          >
-            <p>Zoom out</p>
-          </TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8 rounded-none dark:hover:bg-accent/80"
-              onClick={onResetZoom}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8 rounded-r-none dark:hover:bg-accent/80"
+                    onClick={() => zoomOut(0.2)}
+                  >
+                    <MinusIcon />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent
+                  sideOffset={4}
+                  className="rounded border bg-background text-accent-foreground [&>span]:hidden"
+                >
+                  <p>Zoom out</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8 rounded-none dark:hover:bg-accent/80"
+                    onClick={() => {
+                      resetTransform();
+                      centerView();
+                    }}
+                  >
+                    <Maximize />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent
+                  sideOffset={4}
+                  className="rounded border bg-background text-accent-foreground [&>span]:hidden"
+                >
+                  <p>Reset view</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8 rounded-l-none dark:hover:bg-accent/80"
+                    onClick={() => zoomIn(0.2)}
+                  >
+                    <PlusIcon />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent
+                  sideOffset={4}
+                  className="rounded border bg-background text-accent-foreground [&>span]:hidden"
+                >
+                  <p>Zoom in</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            <TransformComponent
+              wrapperStyle={{ width: "100%", height: "100%" }}
+              contentStyle={{ width: "100%" }}
             >
-              <Maximize />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent
-            sideOffset={4}
-            className="rounded border bg-background text-accent-foreground [&>span]:hidden"
-          >
-            <p>Reset zoom</p>
-          </TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8 rounded-l-none dark:hover:bg-accent/80"
-              onClick={onZoomIn}
-              disabled={zoom >= 2}
-            >
-              <PlusIcon />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent
-            sideOffset={4}
-            className="rounded border bg-background text-accent-foreground [&>span]:hidden"
-          >
-            <p>Zoom in</p>
-          </TooltipContent>
-        </Tooltip>
-      </div>
-      <div
-        ref={mermaidRef}
-        style={{
-          transform: `scale(${zoom})`,
-          transformOrigin: "center top",
-        }}
-        className={cn("transition-transform duration-200", className)}
-        {...props}
-      >
-        <div key={chart} className={cn("mermaid", isLoading && "invisible")}>
-          {chart}
-        </div>
-      </div>
+              <div
+                ref={containerRef}
+                className={cn(
+                  "mx-auto flex items-center justify-center",
+                  className,
+                )}
+                {...props}
+              >
+                <div
+                  key={chart}
+                  className={cn("mermaid max-w-full", isLoading && "invisible")}
+                >
+                  {chart}
+                </div>
+              </div>
+            </TransformComponent>
+          </React.Fragment>
+        )}
+      </TransformWrapper>
     </div>
   );
 }

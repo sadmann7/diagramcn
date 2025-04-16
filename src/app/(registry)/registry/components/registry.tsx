@@ -18,5 +18,9 @@ export function Registry() {
     );
   }
 
-  return <MermaidDiagram chart={registryMermaid} />;
+  return (
+    <div className="h-[calc(100vh-60px)]">
+      <MermaidDiagram chart={registryMermaid} />
+    </div>
+  );
 }

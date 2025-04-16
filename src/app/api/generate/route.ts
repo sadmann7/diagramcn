@@ -43,7 +43,7 @@ export async function POST(req: Request) {
 
       3.  **Sections and Nodes (Only include sections and nodes if corresponding data exists):**
 
-          *   **%% Files:** (Group files based on their type derived from common patterns or explicit types if available. Use filename without path.)
+          *   **%% Files:** (Group files based on their type. Use filename without path for the node text. Add a tooltip with the full path.)
               - Pages: PageName["filename.tsx"]:::page
               - Components: CompName["filename.tsx"]:::component
               - UI Components: UIName["filename.tsx"]:::ui (map 'registry:ui' type)
@@ -55,6 +55,16 @@ export async function POST(req: Request) {
               - Styles: StyleName["style.css"]:::style (map 'registry:style' type)
               - Data files: DataName["data.json"]:::data (Infer if possible, e.g., .json)
               - Shared Components: SharedName["filename.tsx"]:::shared (Infer if possible)
+              - Create the node: NodeType["filename.ext"]:::nodeclass
+              - Immediately after the node definition, add a click directive for the tooltip:
+                \`click NodeId href "#" "full/path/to/filename.ext"\`
+              - Example for a component:
+                \`\`\`
+                %% Files:
+                MyComponent["component.tsx"]:::component
+                click MyComponent href "#" "src/components/component.tsx"
+                \`\`\`
+              - Apply this pattern to all file types (Pages, Components, UI, Hooks, Libs, Blocks, Files, Themes, Styles, Data, Shared).
 
           *   **%% Dependencies:**
               - NPM Dependencies: NPMDep["dependency_name"]:::npm
@@ -81,6 +91,7 @@ export async function POST(req: Request) {
           - Connect the Root node to Styling nodes (Tailwind, CSSVars, CSS) if they exist.
           - Connect the Root node to Metadata nodes (Docs, Categories, Meta Properties) if they exist.
           - If possible, infer and add compositional relationships between file nodes (e.g., Page --> Component, Component --> SubComponent, Component --> Lib). Base this on typical usage patterns or hints in filenames/structure if available in the input data.
+          - **Do not** add \`click\` tooltips to non-file nodes (Dependencies, Styling, Metadata).
 
       6.  **Output:**
           - Output only the raw Mermaid.js code.

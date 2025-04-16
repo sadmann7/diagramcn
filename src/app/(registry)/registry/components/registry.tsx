@@ -5,9 +5,9 @@ import { RegistryInput } from "../../components/registry-input";
 import { MermaidDiagram } from "./mermaid-diagram";
 
 export function Registry() {
-  const { registryMermaid, isPending } = useRegistry();
+  const { registryMermaid, registryData, isPending } = useRegistry();
 
-  if (!registryMermaid) {
+  if (!registryMermaid || !registryData) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 pt-40">
         <h1 className="max-w-lg text-pretty text-center font-semibold text-2xl tracking-tighter sm:text-3xl md:text-5xl">
@@ -19,8 +19,12 @@ export function Registry() {
   }
 
   return (
-    <div className="h-[calc(100vh-60px)] px-4">
-      <MermaidDiagram code={registryMermaid} isPending={isPending} />
+    <div className="h-[calc(100svh-60px)] px-4 sm:px-6">
+      <MermaidDiagram
+        code={registryMermaid}
+        registryData={registryData}
+        isPending={isPending}
+      />
     </div>
   );
 }

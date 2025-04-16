@@ -1,25 +1,35 @@
 "use client";
 
+import { CodeBlock } from "@/components/code-block";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import type { RegistryItem } from "@/lib/validations/registry";
 import { Maximize, Minus, Plus } from "lucide-react";
 import mermaid, { type MermaidConfig } from "mermaid";
 import * as React from "react";
 import svgPanZoom from "svg-pan-zoom";
-
 interface MermaidDiagramProps extends React.ComponentProps<"div"> {
   code: string;
+  registryData: RegistryItem;
   theme?: MermaidConfig["theme"];
   isPending: boolean;
 }
 
 export function MermaidDiagram({
   code,
+  registryData,
   theme = "neutral",
   className,
   isPending,
@@ -29,6 +39,13 @@ export function MermaidDiagram({
   const panZoomRef = React.useRef<SvgPanZoom.Instance | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [showNodeDialog, setShowNodeDialog] = React.useState(false);
+  const [selectedNodePath, setSelectedNodePath] = React.useState<string | null>(
+    null,
+  );
+  const [selectedFile, setSelectedFile] = React.useState<
+    NonNullable<RegistryItem["files"]>[number] | null
+  >(null);
 
   const isGenerating = isPending || isLoading;
 
@@ -159,6 +176,32 @@ export function MermaidDiagram({
               panZoomInstance.resize();
               panZoomInstance.fit();
               panZoomInstance.center();
+
+              const nodes = currentContainer.querySelectorAll(".node");
+              for (const node of nodes) {
+                const nodeId = node.id;
+                const nodeElement = node;
+                if (nodeId) {
+                  nodeElement.addEventListener("click", () => {
+                    const path =
+                      nodeElement.querySelector("title")?.textContent ??
+                      nodeElement.getAttribute("title") ??
+                      null;
+
+                    setSelectedNodePath(path);
+                    setShowNodeDialog(true);
+
+                    if (path && registryData?.files) {
+                      const file = registryData.files.find(
+                        (file) => file.path === path,
+                      );
+                      setSelectedFile(file ?? null);
+                    } else {
+                      setSelectedFile(null);
+                    }
+                  });
+                }
+              }
             } else {
               console.warn("Could not find SVG element after rendering.");
             }
@@ -226,7 +269,7 @@ export function MermaidDiagram({
         }
       }
     };
-  }, [code, theme]);
+  }, [code, theme, registryData]);
 
   const onZoomIn = React.useCallback(() => {
     panZoomRef.current?.zoomIn();
@@ -327,6 +370,51 @@ export function MermaidDiagram({
         className={cn("size-full", isGenerating && "invisible", className)}
         {...props}
       />
+      <Dialog open={showNodeDialog} onOpenChange={setShowNodeDialog}>
+        <DialogContent className="sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Node</DialogTitle>
+            <DialogDescription
+              className="flex flex-col gap-2 pt-2 text-muted-foreground text-sm"
+              asChild
+            >
+              <div>
+                {selectedFile ? (
+                  <>
+                    <span>
+                      Path:{" "}
+                      <code className="font-mono text-foreground">
+                        {selectedFile.path}
+                      </code>
+                    </span>
+                    <span>
+                      Type:{" "}
+                      <code className="font-mono text-foreground">
+                        {selectedFile.type ?? "N/A"}
+                      </code>
+                    </span>
+                    {/* Add more file details here if needed */}
+                  </>
+                ) : selectedNodePath ? (
+                  <span>
+                    Path:{" "}
+                    <code className="font-mono text-foreground">
+                      {selectedNodePath}
+                    </code>
+                  </span>
+                ) : null}
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          {selectedFile ? (
+            <CodeBlock
+              code={selectedFile.content ?? ""}
+              language={selectedFile.path.split(".").pop()}
+              className="max-h-[50svh] overflow-auto"
+            />
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

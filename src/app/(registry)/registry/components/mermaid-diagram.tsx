@@ -7,10 +7,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { AlignCenterIcon, Maximize, MinusIcon, PlusIcon } from "lucide-react";
+import { Maximize, MinusIcon, PlusIcon } from "lucide-react";
 import mermaid, { type MermaidConfig } from "mermaid";
 import * as React from "react";
-import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
+import svgPanZoom from "svg-pan-zoom";
 
 interface MermaidDiagramProps extends React.ComponentProps<"div"> {
   chart: string;
@@ -24,11 +24,28 @@ export function MermaidDiagram({
   ...props
 }: MermaidDiagramProps) {
   const containerRef = React.useRef<HTMLDivElement>(null);
-  const [error, setError] = React.useState<Error | null>(null);
+  const panZoomRef = React.useRef<SvgPanZoom.Instance | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
 
   React.useEffect(() => {
+    const currentContainer = containerRef.current;
+    let panZoomInstance: SvgPanZoom.Instance | null = null;
+
     async function onDiagramLoad() {
+      if (panZoomRef.current) {
+        try {
+          panZoomRef.current.destroy();
+        } catch (error) {
+          console.error("Error destroying previous panZoom instance:", error);
+        }
+        panZoomRef.current = null;
+      }
+
+      if (currentContainer) {
+        currentContainer.innerHTML = "";
+      }
+
       try {
         setIsLoading(true);
         setError(null);
@@ -87,28 +104,123 @@ export function MermaidDiagram({
           `,
         });
 
-        if (containerRef.current) {
+        if (currentContainer) {
           const { svg } = await mermaid.render(`mermaid-${Date.now()}`, chart);
-          containerRef.current.innerHTML = svg;
+
+          if (containerRef.current === currentContainer) {
+            currentContainer.innerHTML = svg;
+
+            const svgElement = currentContainer.querySelector("svg");
+            if (svgElement) {
+              svgElement.setAttribute("width", "100%");
+              svgElement.setAttribute("height", "100%");
+              svgElement.style.maxWidth = "none";
+
+              panZoomInstance = svgPanZoom(svgElement, {
+                zoomEnabled: true,
+                controlIconsEnabled: false,
+                fit: true,
+                center: true,
+                minZoom: 0.5,
+                maxZoom: 8,
+                preventMouseEventsDefault: true,
+              });
+
+              panZoomRef.current = panZoomInstance;
+
+              panZoomInstance.resize();
+              panZoomInstance.fit();
+              panZoomInstance.center();
+            } else {
+              console.warn("Could not find SVG element after rendering.");
+            }
+          } else {
+            console.warn("Container ref changed during async render.");
+          }
+        } else {
+          console.warn("Container ref was initially null.");
         }
 
         setIsLoading(false);
-      } catch (err) {
-        console.error("Mermaid rendering error:", err);
-        setError(err as Error);
+      } catch (error) {
+        setError(
+          error instanceof Error ? error.message : "Failed to render diagram",
+        );
         setIsLoading(false);
+
+        if (panZoomRef.current) {
+          console.log("Destroying panZoom instance after error");
+          try {
+            panZoomRef.current.destroy();
+          } catch (error) {
+            console.error(
+              "Error destroying panZoom instance after error:",
+              error,
+            );
+          }
+          panZoomRef.current = null;
+        }
+
+        if (currentContainer && containerRef.current === currentContainer) {
+          currentContainer.innerHTML = "";
+        }
       }
     }
 
     void onDiagramLoad();
+
+    return () => {
+      console.log("Running MermaidDiagram cleanup...");
+
+      if (panZoomInstance) {
+        try {
+          panZoomInstance.destroy();
+        } catch (error) {
+          console.error("Error destroying panZoomInstance in cleanup:", error);
+        }
+        panZoomInstance = null;
+      }
+
+      if (panZoomRef.current) {
+        panZoomRef.current = null;
+      }
+
+      if (currentContainer) {
+        try {
+          currentContainer.innerHTML = "";
+        } catch (e) {
+          console.error("Error clearing captured container innerHTML:", e);
+        }
+      }
+
+      if (containerRef.current && containerRef.current !== currentContainer) {
+        try {
+          containerRef.current.innerHTML = "";
+        } catch (error) {
+          console.error("Error clearing current container innerHTML:", error);
+        }
+      }
+    };
   }, [chart, theme]);
 
+  const onZoomIn = React.useCallback(() => {
+    panZoomRef.current?.zoomIn();
+  }, []);
+
+  const onZoomOut = React.useCallback(() => {
+    panZoomRef.current?.zoomOut();
+  }, []);
+
+  const onResetView = React.useCallback(() => {
+    panZoomRef.current?.reset();
+  }, []);
+
   return (
-    <div className="relative size-full">
+    <div className="relative size-full overflow-hidden">
       {isLoading ? (
         <div
           role="status"
-          className="absolute inset-0 flex items-center justify-center bg-background/50"
+          className="absolute inset-0 z-20 flex items-center justify-center bg-background/50"
         >
           <div className="h-6 w-6 animate-spin rounded-full border-current border-b-2" />
         </div>
@@ -116,107 +228,85 @@ export function MermaidDiagram({
       {error ? (
         <div
           role="alert"
-          className="rounded-lg border border-destructive bg-destructive/10 p-4 text-destructive"
+          className="absolute inset-x-4 top-4 z-20 rounded-lg border border-destructive bg-destructive/10 p-4 text-destructive"
         >
           <h3 className="font-semibold">Error rendering diagram</h3>
-          <p className="mt-1 text-sm">{error.message}</p>
+          <p className="mt-1 text-sm">{error}</p>
         </div>
       ) : null}
-      <TransformWrapper
-        initialScale={4}
-        limitToBounds={false}
-        minScale={2}
-        maxScale={8}
-        centerOnInit
+      <div
+        role="toolbar"
+        aria-orientation="horizontal"
+        className="absolute top-4 right-4 z-10 flex items-center rounded bg-accent/60 shadow-md backdrop-blur-sm"
       >
-        {({ zoomIn, zoomOut, resetTransform, centerView }) => (
-          <React.Fragment>
-            <div
-              role="toolbar"
-              aria-orientation="horizontal"
-              className="absolute top-4 right-4 z-10 flex items-center rounded bg-accent/60 shadow-md backdrop-blur-sm"
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8 rounded-r-none dark:hover:bg-accent/80"
+              onClick={onZoomOut}
+              disabled={isLoading || !!error}
             >
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-8 rounded-r-none dark:hover:bg-accent/80"
-                    onClick={() => zoomOut(0.2)}
-                  >
-                    <MinusIcon />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent
-                  sideOffset={4}
-                  className="rounded border bg-background text-accent-foreground [&>span]:hidden"
-                >
-                  <p>Zoom out</p>
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-8 rounded-none dark:hover:bg-accent/80"
-                    onClick={() => {
-                      resetTransform();
-                      centerView();
-                    }}
-                  >
-                    <Maximize />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent
-                  sideOffset={4}
-                  className="rounded border bg-background text-accent-foreground [&>span]:hidden"
-                >
-                  <p>Reset view</p>
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-8 rounded-l-none dark:hover:bg-accent/80"
-                    onClick={() => zoomIn(0.2)}
-                  >
-                    <PlusIcon />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent
-                  sideOffset={4}
-                  className="rounded border bg-background text-accent-foreground [&>span]:hidden"
-                >
-                  <p>Zoom in</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-            <TransformComponent
-              wrapperStyle={{ width: "100%", height: "100%" }}
-              contentStyle={{ width: "100%" }}
+              <MinusIcon />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent
+            sideOffset={4}
+            className="rounded border bg-background text-accent-foreground [&>span]:hidden"
+          >
+            <p>Zoom out</p>
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8 rounded-none dark:hover:bg-accent/80"
+              onClick={onResetView}
+              disabled={isLoading || !!error}
             >
-              <div
-                ref={containerRef}
-                className={cn(
-                  "mx-auto flex items-center justify-center",
-                  className,
-                )}
-                {...props}
-              >
-                <div
-                  key={chart}
-                  className={cn("mermaid max-w-full", isLoading && "invisible")}
-                >
-                  {chart}
-                </div>
-              </div>
-            </TransformComponent>
-          </React.Fragment>
-        )}
-      </TransformWrapper>
+              <Maximize />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent
+            sideOffset={4}
+            className="rounded border bg-background text-accent-foreground [&>span]:hidden"
+          >
+            <p>Reset view</p>
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8 rounded-l-none dark:hover:bg-accent/80"
+              onClick={onZoomIn}
+              disabled={isLoading || !!error}
+            >
+              <PlusIcon />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent
+            sideOffset={4}
+            className="rounded border bg-background text-accent-foreground [&>span]:hidden"
+          >
+            <p>Zoom in</p>
+          </TooltipContent>
+        </Tooltip>
+      </div>
+      <div
+        ref={containerRef}
+        className={cn("size-full", className)}
+        {...props}
+        style={{
+          visibility: isLoading ? "hidden" : "visible",
+          height: "100%",
+          width: "100%",
+        }}
+      />
     </div>
   );
 }

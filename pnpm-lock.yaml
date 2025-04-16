@@ -71,9 +71,6 @@ importers:
       react-syntax-highlighter:
         specifier: ^15.6.1
         version: 15.6.1(react@19.1.0)
-      react-zoom-pan-pinch:
-        specifier: ^3.7.0
-        version: 3.7.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       react-zoomable-ui:
         specifier: ^0.11.0
         version: 0.11.0(react@19.1.0)
@@ -83,6 +80,9 @@ importers:
       sonner:
         specifier: ^2.0.2
         version: 2.0.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      svg-pan-zoom:
+        specifier: ^3.6.2
+        version: 3.6.2
       tailwind-merge:
         specifier: ^3.1.0
         version: 3.1.0
@@ -2138,13 +2138,6 @@ packages:
     peerDependencies:
       react: '>= 16.8.0'
 
-  react-zoom-pan-pinch@3.7.0:
-    resolution: {integrity: sha512-UmReVZ0TxlKzxSbYiAj+LeGRW8s8LraAFTXRAxzMYnNRgGPsxCudwZKVkjvGmjtx7SW/hZamt69NUmGf4xrkXA==}
-    engines: {node: '>=8', npm: '>=5'}
-    peerDependencies:
-      react: '*'
-      react-dom: '*'
-
   react-zoomable-ui@0.11.0:
     resolution: {integrity: sha512-2msg8DyZUToHNTek3WfvlvZ6mumWyocp7xPzUvMaYpQAwjXvenRYR9nlmmITLymJdZReNqR2nDW8I5yUC8mXiQ==}
     peerDependencies:
@@ -2306,6 +2299,9 @@ packages:
   supports-preserve-symlinks-flag@1.0.0:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
+
+  svg-pan-zoom@3.6.2:
+    resolution: {integrity: sha512-JwnvRWfVKw/Xzfe6jriFyfey/lWJLq4bUh2jwoR5ChWQuQoOH8FEh1l/bEp46iHHKHEJWIyFJETbazraxNWECg==}
 
   swr@2.3.3:
     resolution: {integrity: sha512-dshNvs3ExOqtZ6kJBaAsabhPdHyeY4P2cKwRCniDVifBMoG/SVI7tfLWqPXriVspf2Rg4tPzXJTnwaihIeFw2A==}
@@ -4557,11 +4553,6 @@ snapshots:
     dependencies:
       react: 19.1.0
 
-  react-zoom-pan-pinch@3.7.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
-    dependencies:
-      react: 19.1.0
-      react-dom: 19.1.0(react@19.1.0)
-
   react-zoomable-ui@0.11.0(react@19.1.0):
     dependencies:
       hammerjs: 2.0.8
@@ -4800,6 +4791,8 @@ snapshots:
   stylis@4.3.6: {}
 
   supports-preserve-symlinks-flag@1.0.0: {}
+
+  svg-pan-zoom@3.6.2: {}
 
   swr@2.3.3(react@19.1.0):
     dependencies:

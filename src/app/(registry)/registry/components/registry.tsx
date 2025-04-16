@@ -5,7 +5,7 @@ import { RegistryInput } from "../../components/registry-input";
 import { MermaidDiagram } from "./mermaid-diagram";
 
 export function Registry() {
-  const { registryMermaid } = useRegistry();
+  const { registryMermaid, isPending } = useRegistry();
 
   if (!registryMermaid) {
     return (
@@ -20,7 +20,7 @@ export function Registry() {
 
   return (
     <div className="h-[calc(100vh-60px)] px-4">
-      <MermaidDiagram chart={registryMermaid} />
+      <MermaidDiagram code={registryMermaid} isPending={isPending} />
     </div>
   );
 }

@@ -13,20 +13,24 @@ import * as React from "react";
 import svgPanZoom from "svg-pan-zoom";
 
 interface MermaidDiagramProps extends React.ComponentProps<"div"> {
-  chart: string;
+  code: string;
   theme?: MermaidConfig["theme"];
+  isPending: boolean;
 }
 
 export function MermaidDiagram({
-  chart,
+  code,
   theme = "neutral",
   className,
+  isPending,
   ...props
 }: MermaidDiagramProps) {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const panZoomRef = React.useRef<SvgPanZoom.Instance | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
+
+  const isGenerating = isPending || isLoading;
 
   React.useEffect(() => {
     const currentContainer = containerRef.current;
@@ -74,6 +78,10 @@ export function MermaidDiagram({
             leftPadding: 75,
           },
           themeCSS: `
+            .node {
+              cursor: pointer;
+              user-select: none;
+            }
             .node rect,
             .node circle,
             .node polygon,
@@ -92,6 +100,10 @@ export function MermaidDiagram({
               stroke-width: 2px;
               stroke: var(--color-foreground);
             }
+            .cluster {
+              cursor: pointer;
+              user-select: none;
+            }
             .cluster rect {
               transition: background-color 0.3s ease;
             }
@@ -100,12 +112,19 @@ export function MermaidDiagram({
             }
             .label {
               font-family: var(--font-sans);
+              user-select: none;
+            }
+            .edgeLabel {
+              user-select: none;
             }
           `,
         });
 
         if (currentContainer) {
-          const { svg } = await mermaid.render(`mermaid-${Date.now()}`, chart);
+          const { svg } = await mermaid.render(
+            `mermaid-${crypto.randomUUID()}`,
+            code,
+          );
 
           if (containerRef.current === currentContainer) {
             currentContainer.innerHTML = svg;
@@ -149,7 +168,6 @@ export function MermaidDiagram({
         setIsLoading(false);
 
         if (panZoomRef.current) {
-          console.log("Destroying panZoom instance after error");
           try {
             panZoomRef.current.destroy();
           } catch (error) {
@@ -188,8 +206,8 @@ export function MermaidDiagram({
       if (currentContainer) {
         try {
           currentContainer.innerHTML = "";
-        } catch (e) {
-          console.error("Error clearing captured container innerHTML:", e);
+        } catch (error) {
+          console.error("Error clearing captured container innerHTML:", error);
         }
       }
 
@@ -201,7 +219,7 @@ export function MermaidDiagram({
         }
       }
     };
-  }, [chart, theme]);
+  }, [code, theme]);
 
   const onZoomIn = React.useCallback(() => {
     panZoomRef.current?.zoomIn();
@@ -217,7 +235,7 @@ export function MermaidDiagram({
 
   return (
     <div className="relative size-full overflow-hidden">
-      {isLoading ? (
+      {isGenerating ? (
         <div
           role="status"
           className="absolute inset-0 z-20 flex items-center justify-center bg-background/50"
@@ -246,7 +264,7 @@ export function MermaidDiagram({
               size="icon"
               className="size-8 rounded-r-none dark:hover:bg-accent/80"
               onClick={onZoomOut}
-              disabled={isLoading || !!error}
+              disabled={isGenerating || !!error}
             >
               <MinusIcon />
             </Button>
@@ -265,7 +283,7 @@ export function MermaidDiagram({
               size="icon"
               className="size-8 rounded-none dark:hover:bg-accent/80"
               onClick={onResetView}
-              disabled={isLoading || !!error}
+              disabled={isGenerating || !!error}
             >
               <Maximize />
             </Button>
@@ -284,7 +302,7 @@ export function MermaidDiagram({
               size="icon"
               className="size-8 rounded-l-none dark:hover:bg-accent/80"
               onClick={onZoomIn}
-              disabled={isLoading || !!error}
+              disabled={isGenerating || !!error}
             >
               <PlusIcon />
             </Button>
@@ -299,13 +317,8 @@ export function MermaidDiagram({
       </div>
       <div
         ref={containerRef}
-        className={cn("size-full", className)}
+        className={cn("size-full", isGenerating && "invisible", className)}
         {...props}
-        style={{
-          visibility: isLoading ? "hidden" : "visible",
-          height: "100%",
-          width: "100%",
-        }}
       />
     </div>
   );

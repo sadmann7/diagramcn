@@ -1,13 +1,20 @@
 "use client";
 
+import { Switch } from "@/components/ui/switch";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useRegistry } from "@/hooks/use-registry";
+import * as React from "react";
 import { RegistryInput } from "../../components/registry-input";
+import { Diagram } from "./diagram";
 import { MermaidDiagram } from "./mermaid-diagram";
 
 export function Registry() {
   const { registryMermaid, registryData, isPending } = useRegistry();
-
-  console.log({ registryMermaid, registryData, isPending });
+  const [isJsonDiagram, setIsJsonDiagram] = React.useState(false);
 
   if (!registryMermaid || !registryData) {
     return (
@@ -21,12 +28,36 @@ export function Registry() {
   }
 
   return (
-    <div className="h-[calc(100svh-60px)] px-4 sm:px-6">
-      <MermaidDiagram
-        code={registryMermaid}
-        registryData={registryData}
-        isPending={isPending}
-      />
+    <div className="relative h-[calc(100svh-60px)] px-4 sm:px-6">
+      <Tooltip delayDuration={700}>
+        <TooltipTrigger asChild>
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => setIsJsonDiagram(!isJsonDiagram)}
+            className="-top-12 absolute right-24 z-50 flex w-fit select-none items-center gap-2 rounded-sm border p-2 text-xs"
+          >
+            <span>Json mode</span>
+            <Switch
+              checked={isJsonDiagram}
+              onCheckedChange={setIsJsonDiagram}
+              className="bg-accent"
+            />
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Toggle between Mermaid and JSON diagram view</p>
+        </TooltipContent>
+      </Tooltip>
+      {isJsonDiagram ? (
+        <Diagram />
+      ) : (
+        <MermaidDiagram
+          code={registryMermaid}
+          registryData={registryData}
+          isPending={isPending}
+        />
+      )}
     </div>
   );
 }

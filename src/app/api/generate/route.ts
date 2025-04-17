@@ -27,7 +27,9 @@ export async function POST(req: Request) {
     const registries: RegistryItem[] = [registry];
 
     const externalDependencies = (registry.registryDependencies ?? []).filter(
-      (dep) => dep.startsWith("http") && dep.endsWith(".json"),
+      (registryDependency) =>
+        registryDependency.startsWith("http") &&
+        registryDependency.endsWith(".json"),
     );
 
     if (externalDependencies.length > 0) {
@@ -56,7 +58,7 @@ export async function POST(req: Request) {
       1.  **Start** with: flowchart TD
 
       2.  **Root Node:**
-          - Create a root node representing the main registry item: Root["<name> (<type>)"]
+          - Create a root node representing the main registry item: Root["<name>"]
           - Assign the class 'root' to this node.
 
       3.  **Sections and Nodes (Only include sections and nodes if corresponding data exists):**

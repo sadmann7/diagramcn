@@ -397,7 +397,7 @@ export function MermaidDiagram({
           role="status"
           className="absolute inset-0 z-20 flex items-center justify-center bg-background/50"
         >
-          <div className="h-6 w-6 animate-spin rounded-full border-current border-b-2" />
+          <div className="size-20 animate-spin rounded-full border-current border-b-2" />
         </div>
       ) : error ? (
         <div

@@ -20,6 +20,7 @@ import { Maximize, Minus, Plus } from "lucide-react";
 import mermaid, { type MermaidConfig } from "mermaid";
 import * as React from "react";
 import svgPanZoom from "svg-pan-zoom";
+
 interface MermaidDiagramProps extends React.ComponentProps<"div"> {
   code: string;
   registryData: RegistryItem;
@@ -393,7 +394,6 @@ export function MermaidDiagram({
                         {selectedFile.type ?? "N/A"}
                       </code>
                     </span>
-                    {/* Add more file details here if needed */}
                   </>
                 ) : selectedNodePath ? (
                   <span>

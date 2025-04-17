@@ -10,7 +10,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
   return (
     <NextThemesProvider {...props}>
-      <TooltipProvider delayDuration={120}>{children}</TooltipProvider>
+      <TooltipProvider delayDuration={240}>{children}</TooltipProvider>
     </NextThemesProvider>
   );
 }

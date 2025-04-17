@@ -1,4 +1,7 @@
-import { registryItemSchema } from "@/lib/validations/registry";
+import {
+  type RegistryItem,
+  registryItemSchema,
+} from "@/lib/validations/registry";
 import { openai } from "@ai-sdk/openai";
 import { generateText } from "ai";
 import { z } from "zod";
@@ -18,8 +21,31 @@ export async function POST(req: Request) {
       throw new Error(`Failed to fetch registry data: HTTP ${response.status}`);
     }
 
-    const data = await response.json();
-    const parsedData = registryItemSchema.parse(data);
+    const registryResponse = await response.json();
+    const registry = registryItemSchema.parse(registryResponse);
+
+    const registries: RegistryItem[] = [registry];
+
+    const externalDependencies = (registry.registryDependencies ?? []).filter(
+      (dep) => dep.startsWith("http") && dep.endsWith(".json"),
+    );
+
+    if (externalDependencies.length > 0) {
+      const externalResults = await Promise.all(
+        externalDependencies.map(async (registryDependency) => {
+          const externalResponse = await fetch(registryDependency);
+          if (!externalResponse.ok) {
+            throw new Error(
+              `Failed to fetch external dependency: HTTP ${externalResponse.status}`,
+            );
+          }
+          const externalData = await externalResponse.json();
+          return registryItemSchema.parse(externalData);
+        }),
+      );
+
+      registries.push(...externalResults);
+    }
 
     const system = `Generate a Mermaid.js flowchart diagram using flowchart TD syntax based on the provided registry item data.
 
@@ -92,7 +118,7 @@ export async function POST(req: Request) {
           - Do not create empty sections or nodes if the corresponding data doesn't exist.`;
 
     const prompt = `Generate a Mermaid.js flowchart diagram (using flowchart TD) for the following registry data, focusing on the files array and their relationships: ${JSON.stringify(
-      parsedData,
+      registries,
     )}`;
 
     const { text } = await generateText({

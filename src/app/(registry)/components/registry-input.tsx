@@ -1,11 +1,11 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { useRegistry } from "@/hooks/use-registry";
 import { parseRegistryCommand } from "@/lib/command";
 import { cn } from "@/lib/utils";
-import { Loader, Send } from "lucide-react";
+import { ArrowRight, Loader, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 
@@ -16,10 +16,10 @@ export function RegistryInput({ className, ...props }: RegistryInputProps) {
   const [isPending, startTransition] = React.useTransition();
   const { onRegistryUrlChange } = useRegistry();
   const [input, setInput] = React.useState("");
-  const inputRef = React.useRef<HTMLTextAreaElement>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
 
   const onInputChange = React.useCallback(
-    (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    (event: React.ChangeEvent<HTMLInputElement>) => {
       setInput(event.target.value);
     },
     [],
@@ -35,7 +35,7 @@ export function RegistryInput({ className, ...props }: RegistryInputProps) {
       startTransition(() => {
         new URL(parsedCommand);
         onRegistryUrlChange(parsedCommand);
-        router.push("/editor");
+        router.push("/registry");
       });
     } catch (_err) {
       console.error("Invalid registry URL");
@@ -43,7 +43,7 @@ export function RegistryInput({ className, ...props }: RegistryInputProps) {
   }, [input, router, onRegistryUrlChange]);
 
   const onInputKeyDown = React.useCallback(
-    (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    (event: React.KeyboardEvent<HTMLInputElement>) => {
       if (event.key === "Enter" && !event.shiftKey) {
         event.preventDefault();
         onSubmit();
@@ -69,24 +69,24 @@ export function RegistryInput({ className, ...props }: RegistryInputProps) {
   }, []);
 
   return (
-    <div className={cn("relative w-full max-w-2xl", className)} {...props}>
-      <Textarea
+    <div className={cn("relative h-12 w-full max-w-2xl", className)} {...props}>
+      <Input
         ref={inputRef}
         placeholder="Type registry here..."
-        className="max-h-40 resize-none pr-12"
+        className="h-full pr-10"
         value={input}
         onChange={onInputChange}
         onKeyDown={onInputKeyDown}
         autoFocus
       />
       <Button
-        variant="outline"
+        variant="ghost"
         size="icon"
-        className="absolute right-2 bottom-2 size-7 rounded-sm"
+        className="absolute top-0 right-0 h-full rounded-l-none text-muted-foreground hover:text-foreground hover:dark:bg-transparent"
         onClick={onSubmit}
         disabled={isPending}
       >
-        {isPending ? <Loader className="animate-spin" /> : <Send />}
+        {isPending ? <Loader className="animate-spin" /> : <ArrowRight />}
       </Button>
     </div>
   );

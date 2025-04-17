@@ -11,11 +11,14 @@ import * as React from "react";
 const REGISTRY_URL_KEY = "registryUrl";
 const REGISTRY_DATA_KEY = "registryData";
 const REGISTRY_JSON_KEY = "registryJson";
+const REGISTRY_MERMAID_KEY = "registryMermaid";
 
 interface RegistryState {
   registryUrl: string | null;
   registryData: RegistryItem | null;
   registryJson: string | undefined;
+  registryMermaid: string | undefined;
+  isPending: boolean;
 }
 
 function createRegistryStore() {
@@ -25,6 +28,8 @@ function createRegistryStore() {
         registryUrl: null,
         registryData: null,
         registryJson: undefined,
+        registryMermaid: undefined,
+        isPending: false,
       };
     }
 
@@ -44,6 +49,11 @@ function createRegistryStore() {
         REGISTRY_JSON_KEY,
         undefined,
       ),
+      registryMermaid: getStoredItem<string | undefined>(
+        REGISTRY_MERMAID_KEY,
+        undefined,
+      ),
+      isPending: false,
     };
   }
 
@@ -85,20 +95,34 @@ function createRegistryStore() {
     if (partial.registryJson !== undefined) {
       updateStorage(REGISTRY_JSON_KEY, state.registryJson);
     }
+    if (partial.registryMermaid !== undefined) {
+      updateStorage(REGISTRY_MERMAID_KEY, state.registryMermaid);
+    }
 
     for (const listener of listeners) {
       listener();
     }
   }
 
-  async function fetchRegistryData(url: string | null) {
+  async function getRegistryData(url: string | null) {
     if (!url) {
-      setState({ registryData: null, registryJson: undefined });
+      setState({
+        registryData: null,
+        registryJson: undefined,
+        registryMermaid: undefined,
+        isPending: false,
+      });
       return;
     }
 
+    setState({ isPending: true });
+
     try {
-      const response = await fetch(url);
+      const response = await fetch("/api/registry", {
+        method: "POST",
+        body: JSON.stringify({ url }),
+      });
+
       if (!response.ok) {
         throw new Error(
           `Failed to fetch registry data: HTTP ${response.status} ${response.statusText}`,
@@ -106,18 +130,29 @@ function createRegistryStore() {
       }
 
       const data = await response.json();
-      const parsedData = registryItemSchema.parse(data);
-      const jsonData = JSON.stringify(parsedData, null, 2);
+      const registryData = registryItemSchema.parse(data);
+      const registryJson = JSON.stringify(registryData, null, 2);
+
+      const mermaidResponse = await fetch("/api/generate", {
+        method: "POST",
+        body: JSON.stringify({ url }),
+      });
+
+      const registryMermaid = await mermaidResponse.text();
 
       setState({
-        registryData: parsedData,
-        registryJson: jsonData,
+        registryData,
+        registryJson,
+        registryMermaid,
+        isPending: false,
       });
     } catch (error) {
       console.error("Error fetching or parsing registry data:", error);
       setState({
         registryData: null,
         registryJson: undefined,
+        registryMermaid: undefined,
+        isPending: false,
       });
     }
   }
@@ -131,12 +166,17 @@ function createRegistryStore() {
     getRegistryUrl: () => state.registryUrl,
     getRegistryData: () => state.registryData,
     getRegistryJson: () => state.registryJson,
+    getRegistryMermaid: () => state.registryMermaid,
+    getIsPending: () => state.isPending,
     onRegistryUrlChange: (url: string | null) => {
       setState({ registryUrl: url });
-      fetchRegistryData(url);
+      getRegistryData(url);
     },
     onRegistryJsonChange: (json: string | undefined) => {
       setState({ registryJson: json });
+    },
+    onRegistryMermaidChange: (mermaid: string | undefined) => {
+      setState({ registryMermaid: mermaid });
     },
   };
 }
@@ -157,11 +197,13 @@ const debouncedDiagramUpdate = debounce(function updateDiagram(json: unknown) {
 export function useRegistry() {
   const getSnapshot = React.useCallback(() => registryStore.getSnapshot(), []);
 
-  const serverSnapshot = React.useMemo(
+  const serverSnapshot = React.useMemo<RegistryState>(
     () => ({
       registryUrl: null,
       registryData: null,
       registryJson: undefined,
+      registryMermaid: undefined,
+      isPending: false,
     }),
     [],
   );
@@ -186,5 +228,8 @@ export function useRegistry() {
     registryData: state.registryData,
     registryJson: state.registryJson,
     onRegistryJsonChange: registryStore.onRegistryJsonChange,
+    registryMermaid: state.registryMermaid,
+    onRegistryMermaidChange: registryStore.onRegistryMermaidChange,
+    isPending: state.isPending,
   };
 }

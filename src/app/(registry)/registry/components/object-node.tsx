@@ -1,4 +1,4 @@
-import { NodeContent } from "@/app/(registry)/editor/components/node-content";
+import { NodeContent } from "@/app/(registry)/registry/components/node-content";
 import { NODE_DIMENSIONS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import type { Node } from "@/types";

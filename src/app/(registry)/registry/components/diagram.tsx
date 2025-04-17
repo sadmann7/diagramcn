@@ -1,9 +1,9 @@
 "use client";
 
-import { DiagramToolbar } from "@/app/(registry)/editor/components/diagram-toolbar";
-import { Edge } from "@/app/(registry)/editor/components/edge";
-import { Node } from "@/app/(registry)/editor/components/node";
-import { NodeDialog } from "@/app/(registry)/editor/components/node-dialog";
+import { DiagramToolbar } from "@/app/(registry)/registry/components/diagram-toolbar";
+import { Edge } from "@/app/(registry)/registry/components/edge";
+import { Node } from "@/app/(registry)/registry/components/node";
+import { NodeDialog } from "@/app/(registry)/registry/components/node-dialog";
 import { useDiagram } from "@/hooks/use-diagram";
 import { type LongPressCallback, useLongPress } from "@/hooks/use-long-press";
 import { MAX_NODE_COUNT } from "@/lib/constants";
@@ -19,10 +19,10 @@ const layoutOptions = {
 };
 
 interface DiagramProps {
-  withToolbar?: boolean;
+  isRegistryPending?: boolean;
 }
 
-export function Diagram({ withToolbar }: DiagramProps) {
+export function Diagram({ isRegistryPending }: DiagramProps) {
   const {
     nodes,
     edges,
@@ -48,13 +48,13 @@ export function Diagram({ withToolbar }: DiagramProps) {
 
         setTimeout(() => {
           window.requestAnimationFrame(() => {
-            if (changeRatio > 70 || withToolbar) centerView();
+            if (changeRatio > 70) centerView();
             setIsPending(false);
           });
         });
       }
     },
-    [withToolbar, height, width, centerView, setIsPending],
+    [height, width, centerView, setIsPending],
   );
 
   const onLongPressStart = React.useCallback<LongPressCallback>(() => {
@@ -86,6 +86,13 @@ export function Diagram({ withToolbar }: DiagramProps) {
     [],
   );
 
+  const onContextMenu = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement> | MouseEvent) => {
+      event.preventDefault();
+    },
+    [],
+  );
+
   if (nodes.length > MAX_NODE_COUNT) {
     return (
       <div className="flex h-full items-center justify-center">
@@ -100,19 +107,20 @@ export function Diagram({ withToolbar }: DiagramProps) {
   return (
     <div
       className="relative size-full"
-      onContextMenu={(event) => event.preventDefault()}
+      onContextMenu={onContextMenu}
       onClick={onItemBlur}
       {...onLongPressEnd}
     >
-      {isPending && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background/50">
-          <div className="text-foreground">Loading...</div>
-        </div>
-      )}
+      {isRegistryPending ||
+        (isPending && (
+          <div className="absolute inset-0 flex items-center justify-center bg-background/50">
+            <div className="text-foreground">Loading...</div>
+          </div>
+        ))}
       <Space
         onUpdated={debouncedSetViewPort}
         onCreate={setViewPort}
-        onContextMenu={(e) => e.preventDefault()}
+        onContextMenu={onContextMenu}
         treatTwoFingerTrackPadGesturesLikeTouch
         pollForElementResizing
         className="diagram-space"
@@ -142,7 +150,7 @@ export function Diagram({ withToolbar }: DiagramProps) {
         />
       </Space>
       <NodeDialog />
-      {withToolbar && <DiagramToolbar />}
+      <DiagramToolbar />
     </div>
   );
 }

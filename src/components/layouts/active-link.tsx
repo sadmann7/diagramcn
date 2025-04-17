@@ -17,13 +17,17 @@ export function ActiveLink({ href, className, ...props }: ActiveLinkProps) {
     if (!href) return false;
 
     const hrefSegments = href.split("/").filter(Boolean);
-    const normalizedSegments = segments.map((s) =>
-      s.replace(/^\((.+)\)$/, "$1"),
+    const activeSegments = segments.filter(
+      (segment) => !segment.startsWith("("),
     );
+
+    if (href === "/" && activeSegments.length === 0) {
+      return true;
+    }
 
     return (
       hrefSegments.length > 0 &&
-      normalizedSegments.join("/").includes(hrefSegments.join("/"))
+      activeSegments.join("/").includes(hrefSegments.join("/"))
     );
   }, [href, segments]);
 
@@ -32,7 +36,7 @@ export function ActiveLink({ href, className, ...props }: ActiveLinkProps) {
       data-state={isActive ? "active" : "inactive"}
       href={href}
       className={cn(
-        "text-foreground/70 transition-colors hover:text-foreground data-[state=active]:font-medium data-[state=active]:text-foreground",
+        "font-medium text-foreground/70 transition-colors hover:text-foreground data-[state=active]:font-medium data-[state=active]:text-foreground",
         className,
       )}
       {...props}

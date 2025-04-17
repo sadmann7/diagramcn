@@ -9,6 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getPackageManagerCommands, packageManagers } from "@/lib/command";
 import { cn } from "@/lib/utils";
 import type { RegistryItem } from "@/lib/validations/registry";
 import { Check, Copy, Download, Maximize, Minus, Plus } from "lucide-react";
@@ -37,13 +39,19 @@ export function MermaidDiagram({
   const [error, setError] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [showNodeDialog, setShowNodeDialog] = React.useState(false);
+  const [selectedNodeId, setSelectedNodeId] = React.useState<string | null>(
+    null,
+  );
   const [selectedNodePath, setSelectedNodePath] = React.useState<string | null>(
-    null
+    null,
   );
   const [selectedFile, setSelectedFile] = React.useState<
     NonNullable<RegistryItem["files"]>[number] | null
   >(null);
   const [isCopied, setIsCopied] = React.useState(false);
+  const [packageManager, setPackageManager] = React.useState<
+    string | undefined
+  >(undefined);
 
   const isGenerating = isPending || isLoading;
 
@@ -147,7 +155,7 @@ export function MermaidDiagram({
         if (currentContainer) {
           const { svg } = await mermaid.render(
             `mermaid-${crypto.randomUUID()}`,
-            code
+            code,
           );
 
           if (containerRef.current === currentContainer) {
@@ -178,20 +186,20 @@ export function MermaidDiagram({
               const nodes = currentContainer.querySelectorAll(".node");
               for (const node of nodes) {
                 const nodeId = node.id;
-                const nodeElement = node;
                 if (nodeId) {
-                  nodeElement.addEventListener("click", () => {
+                  node.addEventListener("click", () => {
                     const path =
-                      nodeElement.querySelector("title")?.textContent ??
-                      nodeElement.getAttribute("title") ??
+                      node.querySelector("title")?.textContent ??
+                      node.getAttribute("title") ??
                       null;
 
+                    setSelectedNodeId(nodeId);
                     setSelectedNodePath(path);
                     setShowNodeDialog(true);
 
                     if (path && registryData?.files) {
                       const file = registryData.files.find(
-                        (file) => file.path === path
+                        (file) => file.path === path,
                       );
                       setSelectedFile(file ?? null);
                     } else {
@@ -213,7 +221,7 @@ export function MermaidDiagram({
         setIsLoading(false);
       } catch (error) {
         setError(
-          error instanceof Error ? error.message : "Failed to render diagram"
+          error instanceof Error ? error.message : "Failed to render diagram",
         );
         setIsLoading(false);
 
@@ -223,7 +231,7 @@ export function MermaidDiagram({
           } catch (error) {
             console.error(
               "Error destroying panZoom instance after error:",
-              error
+              error,
             );
           }
           panZoomRef.current = null;
@@ -328,23 +336,23 @@ export function MermaidDiagram({
 
     svgString = svgString.replace(
       /fill:\s*var\(--canvas\)/g,
-      `fill:${canvasColor}`
+      `fill:${canvasColor}`,
     );
     svgString = svgString.replace(
       /stroke:\s*var\(--border\)/g,
-      `stroke:${borderColor}`
+      `stroke:${borderColor}`,
     );
     svgString = svgString.replace(
       /color:\s*var\(--canvas-foreground\)/g,
-      `color:${canvasForegroundColor}`
+      `color:${canvasForegroundColor}`,
     );
     svgString = svgString.replace(
       /font-family:\s*var\(--font-sans\)/g,
-      `font-family:${fontSans}`
+      `font-family:${fontSans}`,
     );
     svgString = svgString.replace(
       /fill:\s*var\(--canvas-foreground\)/g,
-      `fill:${canvasForegroundColor}`
+      `fill:${canvasForegroundColor}`,
     );
 
     svgString = svgString.replace(/transition:[^;]+;/g, "");
@@ -374,9 +382,13 @@ export function MermaidDiagram({
     };
 
     image.src = `data:image/svg+xml;base64,${btoa(
-      String.fromCharCode(...new TextEncoder().encode(svgString))
+      String.fromCharCode(...new TextEncoder().encode(svgString)),
     )}`;
   }, [registryData?.name]);
+
+  const isRoot = React.useMemo(() => {
+    return selectedNodeId?.includes("Root");
+  }, [selectedNodeId]);
 
   return (
     <div className="relative size-full overflow-hidden">
@@ -450,12 +462,21 @@ export function MermaidDiagram({
       <Dialog open={showNodeDialog} onOpenChange={setShowNodeDialog}>
         <DialogContent className="sm:max-w-3xl">
           <DialogHeader>
-            <DialogTitle>Node</DialogTitle>
-            <DialogDescription
-              className="flex flex-col gap-2 pt-2 text-muted-foreground text-sm"
-              asChild
-            >
-              <div>
+            <DialogTitle>
+              {isRoot
+                ? registryData.name
+                : (selectedFile?.path?.split("/").pop() ??
+                  selectedNodePath?.split("/").pop() ??
+                  selectedNodeId ??
+                  "Node")}
+            </DialogTitle>
+            {isRoot ? (
+              <DialogDescription>{registryData.description}</DialogDescription>
+            ) : (
+              <div className="flex flex-col gap-1.5 pt-2 text-muted-foreground text-sm">
+                <DialogDescription className="sr-only">
+                  Node description
+                </DialogDescription>
                 {selectedFile ? (
                   <>
                     <span>
@@ -480,8 +501,39 @@ export function MermaidDiagram({
                   </span>
                 ) : null}
               </div>
-            </DialogDescription>
+            )}
           </DialogHeader>
+          {isRoot ? (
+            <div className="relative flex flex-col">
+              <div className="rounded-t-md border-b bg-canvas px-4 pt-1.5">
+                <Tabs value={packageManager} onValueChange={setPackageManager}>
+                  <TabsList className="gap-3 bg-transparent p-0">
+                    {packageManagers.map((packageManager) => (
+                      <TabsTrigger
+                        key={packageManager}
+                        value={packageManager}
+                        className="rounded-none border-0 border-transparent border-b p-0 data-[state=active]:border-b-foreground data-[state=active]:bg-transparent dark:data-[state=active]:border-b-foreground dark:data-[state=active]:bg-transparent"
+                      >
+                        {packageManager}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </Tabs>
+              </div>
+              <CodeBlock
+                code={`${
+                  getPackageManagerCommands(packageManager ?? "pnpm").dlx
+                } shadcn@latest add ${registryData.$schema}`}
+                language="bash"
+                className="max-h-[60svh] overflow-auto"
+                style={{
+                  borderTopLeftRadius: "0",
+                  borderTopRightRadius: "0",
+                }}
+                isCommand
+              />
+            </div>
+          ) : null}
           {selectedFile ? (
             <CodeBlock
               code={selectedFile.content ?? ""}

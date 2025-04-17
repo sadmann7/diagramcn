@@ -36,7 +36,7 @@ export function ActionButton({
             size="icon"
             className={cn(
               "size-8 rounded-sm dark:hover:bg-accent/80",
-              className
+              className,
             )}
             {...props}
           />

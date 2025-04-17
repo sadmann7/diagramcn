@@ -2,6 +2,7 @@
 
 import { ActionButton } from "@/components/action-button";
 import { CodeBlock } from "@/components/code-block";
+import { Portal } from "@/components/portal";
 import {
   Dialog,
   DialogContent,

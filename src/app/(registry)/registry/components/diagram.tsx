@@ -19,11 +19,10 @@ const layoutOptions = {
 };
 
 interface DiagramProps {
-  withToolbar?: boolean;
   isRegistryPending?: boolean;
 }
 
-export function Diagram({ withToolbar, isRegistryPending }: DiagramProps) {
+export function Diagram({ isRegistryPending }: DiagramProps) {
   const {
     nodes,
     edges,
@@ -49,13 +48,13 @@ export function Diagram({ withToolbar, isRegistryPending }: DiagramProps) {
 
         setTimeout(() => {
           window.requestAnimationFrame(() => {
-            if (changeRatio > 70 || withToolbar) centerView();
+            if (changeRatio > 70) centerView();
             setIsPending(false);
           });
         });
       }
     },
-    [withToolbar, height, width, centerView, setIsPending],
+    [height, width, centerView, setIsPending],
   );
 
   const onLongPressStart = React.useCallback<LongPressCallback>(() => {
@@ -151,7 +150,7 @@ export function Diagram({ withToolbar, isRegistryPending }: DiagramProps) {
         />
       </Space>
       <NodeDialog />
-      {withToolbar && <DiagramToolbar />}
+      <DiagramToolbar />
     </div>
   );
 }

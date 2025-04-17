@@ -1,12 +1,7 @@
 "use client";
 
+import { ActionButton } from "@/components/action-button";
 import { Portal } from "@/components/portal";
-import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useDiagram } from "@/hooks/use-diagram";
 import { cn } from "@/lib/utils";
 import { Focus, Maximize, Minus, Plus } from "lucide-react";
@@ -21,98 +16,46 @@ export function DiagramToolbar({
   const { zoomIn, zoomOut, centerView, focusFirstNode } = useDiagram();
 
   return (
-    <Portal>
-      <div
-        role="toolbar"
-        aria-orientation={orientation}
+    <div
+      role="toolbar"
+      aria-orientation={orientation}
+      className={cn(
+        "absolute top-4 right-4 flex rounded bg-accent/60 shadow-md backdrop-blur-sm",
+        orientation === "vertical" && "flex-col",
+      )}
+    >
+      <ActionButton
+        tooltip="Focus first node"
         className={cn(
-          "absolute right-4 bottom-4 flex rounded bg-accent/60 shadow-md backdrop-blur-sm",
-          orientation === "vertical" && "flex-col",
+          orientation === "horizontal" ? "rounded-r-none" : "rounded-b-none",
         )}
+        onClick={() => focusFirstNode()}
       >
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className={cn(
-                "size-8 dark:hover:bg-accent/80",
-                orientation === "horizontal"
-                  ? "rounded-r-none"
-                  : "rounded-b-none",
-              )}
-              onClick={() => zoomIn()}
-            >
-              <Plus />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent
-            sideOffset={4}
-            className="rounded border bg-background text-accent-foreground [&>span]:hidden"
-          >
-            <p>Zoom in</p>
-          </TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8 rounded-none dark:hover:bg-accent/80"
-              onClick={() => zoomOut()}
-            >
-              <Minus />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent
-            sideOffset={4}
-            className="rounded border bg-background text-accent-foreground [&>span]:hidden"
-          >
-            <p>Zoom out</p>
-          </TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8 rounded-none dark:hover:bg-accent/80"
-              onClick={() => centerView()}
-            >
-              <Maximize />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent
-            sideOffset={4}
-            className="rounded border bg-background text-accent-foreground [&>span]:hidden"
-          >
-            <p>Center view</p>
-          </TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className={cn(
-                "size-8 dark:hover:bg-accent/80",
-                orientation === "horizontal"
-                  ? "rounded-l-none"
-                  : "rounded-t-none",
-              )}
-              onClick={() => focusFirstNode()}
-            >
-              <Focus />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent
-            sideOffset={4}
-            className="rounded border bg-background text-accent-foreground [&>span]:hidden"
-          >
-            <p>Focus first node</p>
-          </TooltipContent>
-        </Tooltip>
-      </div>
-    </Portal>
+        <Focus />
+      </ActionButton>
+      <ActionButton
+        tooltip="Reset view"
+        className="rounded-none"
+        onClick={() => centerView()}
+      >
+        <Maximize />
+      </ActionButton>
+      <ActionButton
+        tooltip="Zoom out"
+        className="rounded-none"
+        onClick={() => zoomOut()}
+      >
+        <Minus />
+      </ActionButton>
+      <ActionButton
+        tooltip="Zoom in"
+        className={cn(
+          orientation === "horizontal" ? "rounded-l-none" : "rounded-t-none",
+        )}
+        onClick={() => zoomIn()}
+      >
+        <Plus />
+      </ActionButton>
+    </div>
   );
 }

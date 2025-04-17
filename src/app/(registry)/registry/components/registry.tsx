@@ -45,8 +45,12 @@ export function Registry() {
             />
           </div>
         </TooltipTrigger>
-        <TooltipContent>
-          <p>Toggle between Mermaid and JSON diagram view</p>
+        <TooltipContent
+          side="right"
+          sideOffset={8}
+          className="w-[210px] text-balance rounded-sm border bg-background text-accent-foreground [&>span]:hidden"
+        >
+          <p>Toggle between Mermaid diagram and JSON diagram view</p>
         </TooltipContent>
       </Tooltip>
       {isJsonDiagram ? (

@@ -2,7 +2,6 @@
 
 import { ActionButton } from "@/components/action-button";
 import { CodeBlock } from "@/components/code-block";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,12 +9,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type { RegistryItem } from "@/lib/validations/registry";
 import { Check, Copy, Download, Maximize, Minus, Plus } from "lucide-react";
@@ -45,7 +38,7 @@ export function MermaidDiagram({
   const [isLoading, setIsLoading] = React.useState(true);
   const [showNodeDialog, setShowNodeDialog] = React.useState(false);
   const [selectedNodePath, setSelectedNodePath] = React.useState<string | null>(
-    null,
+    null
   );
   const [selectedFile, setSelectedFile] = React.useState<
     NonNullable<RegistryItem["files"]>[number] | null
@@ -154,7 +147,7 @@ export function MermaidDiagram({
         if (currentContainer) {
           const { svg } = await mermaid.render(
             `mermaid-${crypto.randomUUID()}`,
-            code,
+            code
           );
 
           if (containerRef.current === currentContainer) {
@@ -198,7 +191,7 @@ export function MermaidDiagram({
 
                     if (path && registryData?.files) {
                       const file = registryData.files.find(
-                        (file) => file.path === path,
+                        (file) => file.path === path
                       );
                       setSelectedFile(file ?? null);
                     } else {
@@ -220,7 +213,7 @@ export function MermaidDiagram({
         setIsLoading(false);
       } catch (error) {
         setError(
-          error instanceof Error ? error.message : "Failed to render diagram",
+          error instanceof Error ? error.message : "Failed to render diagram"
         );
         setIsLoading(false);
 
@@ -230,7 +223,7 @@ export function MermaidDiagram({
           } catch (error) {
             console.error(
               "Error destroying panZoom instance after error:",
-              error,
+              error
             );
           }
           panZoomRef.current = null;
@@ -335,23 +328,23 @@ export function MermaidDiagram({
 
     svgString = svgString.replace(
       /fill:\s*var\(--canvas\)/g,
-      `fill:${canvasColor}`,
+      `fill:${canvasColor}`
     );
     svgString = svgString.replace(
       /stroke:\s*var\(--border\)/g,
-      `stroke:${borderColor}`,
+      `stroke:${borderColor}`
     );
     svgString = svgString.replace(
       /color:\s*var\(--canvas-foreground\)/g,
-      `color:${canvasForegroundColor}`,
+      `color:${canvasForegroundColor}`
     );
     svgString = svgString.replace(
       /font-family:\s*var\(--font-sans\)/g,
-      `font-family:${fontSans}`,
+      `font-family:${fontSans}`
     );
     svgString = svgString.replace(
       /fill:\s*var\(--canvas-foreground\)/g,
-      `fill:${canvasForegroundColor}`,
+      `fill:${canvasForegroundColor}`
     );
 
     svgString = svgString.replace(/transition:[^;]+;/g, "");
@@ -381,7 +374,7 @@ export function MermaidDiagram({
     };
 
     image.src = `data:image/svg+xml;base64,${btoa(
-      String.fromCharCode(...new TextEncoder().encode(svgString)),
+      String.fromCharCode(...new TextEncoder().encode(svgString))
     )}`;
   }, [registryData?.name]);
 
@@ -406,7 +399,7 @@ export function MermaidDiagram({
       <div
         role="toolbar"
         aria-orientation="horizontal"
-        className="absolute top-4 right-4 z-10 flex items-center rounded bg-accent/60 shadow-md backdrop-blur-sm"
+        className="absolute top-4 right-4 z-10 flex items-center rounded-sm bg-accent/60 shadow-md backdrop-blur-sm"
       >
         <ActionButton
           tooltip="Copy Mermaid code"
@@ -425,20 +418,20 @@ export function MermaidDiagram({
           <Download />
         </ActionButton>
         <ActionButton
-          tooltip="Zoom out"
-          className="rounded-none"
-          disabled={isGenerating || !!error}
-          onClick={onZoomOut}
-        >
-          <Minus />
-        </ActionButton>
-        <ActionButton
           tooltip="Reset view"
           onClick={onResetView}
           disabled={isGenerating || !!error}
           className="rounded-none"
         >
           <Maximize />
+        </ActionButton>
+        <ActionButton
+          tooltip="Zoom out"
+          className="rounded-none"
+          disabled={isGenerating || !!error}
+          onClick={onZoomOut}
+        >
+          <Minus />
         </ActionButton>
         <ActionButton
           tooltip="Zoom in"

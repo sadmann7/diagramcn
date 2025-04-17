@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     const registries: RegistryItem[] = [registry];
 
     const externalDependencies = (registry.registryDependencies ?? []).filter(
-      (dep) => dep.startsWith("http") && dep.endsWith(".json"),
+      (dep) => dep.startsWith("http") && dep.endsWith(".json")
     );
 
     if (externalDependencies.length > 0) {
@@ -36,12 +36,12 @@ export async function POST(req: Request) {
           const externalResponse = await fetch(registryDependency);
           if (!externalResponse.ok) {
             throw new Error(
-              `Failed to fetch external dependency: HTTP ${externalResponse.status}`,
+              `Failed to fetch external dependency: HTTP ${externalResponse.status}`
             );
           }
           const externalData = await externalResponse.json();
           return registryItemSchema.parse(externalData);
-        }),
+        })
       );
 
       registries.push(...externalResults);
@@ -118,7 +118,7 @@ export async function POST(req: Request) {
           - Do not create empty sections or nodes if the corresponding data doesn't exist.`;
 
     const prompt = `Generate a Mermaid.js flowchart diagram (using flowchart TD) for the following registry data, focusing on the files array and their relationships: ${JSON.stringify(
-      registries,
+      registries
     )}`;
 
     const { text } = await generateText({

@@ -1,5 +1,6 @@
 "use client";
 
+import { ActionButton } from "@/components/action-button";
 import { CodeBlock } from "@/components/code-block";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
   TooltipContent,
@@ -16,9 +18,10 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type { RegistryItem } from "@/lib/validations/registry";
-import { Maximize, Minus, Plus } from "lucide-react";
+import { Check, Copy, Download, Maximize, Minus, Plus } from "lucide-react";
 import mermaid, { type MermaidConfig } from "mermaid";
 import * as React from "react";
+import { toast } from "sonner";
 import svgPanZoom from "svg-pan-zoom";
 
 interface MermaidDiagramProps extends React.ComponentProps<"div"> {
@@ -47,6 +50,7 @@ export function MermaidDiagram({
   const [selectedFile, setSelectedFile] = React.useState<
     NonNullable<RegistryItem["files"]>[number] | null
   >(null);
+  const [isCopied, setIsCopied] = React.useState(false);
 
   const isGenerating = isPending || isLoading;
 
@@ -284,6 +288,103 @@ export function MermaidDiagram({
     panZoomRef.current?.reset();
   }, []);
 
+  const onCopyCode = React.useCallback(async () => {
+    if (isCopied) return;
+
+    try {
+      await navigator.clipboard.writeText(code);
+      toast.success("Mermaid code copied to clipboard");
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (_error) {
+      toast.error("Failed to copy code to clipboard");
+    }
+  }, [code, isCopied]);
+
+  const onExportPNG = React.useCallback(() => {
+    const svg = containerRef.current?.querySelector("svg");
+    if (!svg) {
+      toast.error("Failed to export PNG: SVG element not found.");
+      return;
+    }
+
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      toast.error("Failed to export PNG: Canvas context unavailable.");
+      return;
+    }
+
+    const svgRect = svg.getBoundingClientRect();
+    const { width: svgWidth, height: svgHeight } = svgRect;
+
+    if (!svgWidth || !svgHeight) {
+      toast.error("Failed to export PNG: Invalid SVG dimensions.");
+      return;
+    }
+
+    const computedStyle = window.getComputedStyle(document.documentElement);
+    const canvasColor = computedStyle.getPropertyValue("--canvas").trim();
+    const borderColor = computedStyle.getPropertyValue("--border").trim();
+    const canvasForegroundColor = computedStyle
+      .getPropertyValue("--canvas-foreground")
+      .trim();
+    const fontSans = computedStyle.getPropertyValue("--font-sans").trim();
+
+    let svgString = new XMLSerializer().serializeToString(svg);
+
+    svgString = svgString.replace(
+      /fill:\s*var\(--canvas\)/g,
+      `fill:${canvasColor}`,
+    );
+    svgString = svgString.replace(
+      /stroke:\s*var\(--border\)/g,
+      `stroke:${borderColor}`,
+    );
+    svgString = svgString.replace(
+      /color:\s*var\(--canvas-foreground\)/g,
+      `color:${canvasForegroundColor}`,
+    );
+    svgString = svgString.replace(
+      /font-family:\s*var\(--font-sans\)/g,
+      `font-family:${fontSans}`,
+    );
+    svgString = svgString.replace(
+      /fill:\s*var\(--canvas-foreground\)/g,
+      `fill:${canvasForegroundColor}`,
+    );
+
+    svgString = svgString.replace(/transition:[^;]+;/g, "");
+    svgString = svgString.replace(/:hover\s*{[^}]+}/g, "");
+
+    const scale = 2;
+    canvas.width = svgWidth * scale;
+    canvas.height = svgHeight * scale;
+
+    const image = new Image();
+    image.width = svgWidth;
+    image.height = svgHeight;
+
+    image.onload = () => {
+      ctx.scale(scale, scale);
+      ctx.drawImage(image, 0, 0);
+
+      const link = document.createElement("a");
+      link.download = `${registryData?.name ?? "diagram"}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+      toast.success("Diagram exported as PNG");
+    };
+
+    image.onerror = () => {
+      toast.error("Failed to export PNG: Error loading SVG data.");
+    };
+
+    image.src = `data:image/svg+xml;base64,${btoa(
+      String.fromCharCode(...new TextEncoder().encode(svgString)),
+    )}`;
+  }, [registryData?.name]);
+
   return (
     <div className="relative size-full overflow-hidden">
       {isGenerating ? (
@@ -307,63 +408,46 @@ export function MermaidDiagram({
         aria-orientation="horizontal"
         className="absolute top-4 right-4 z-10 flex items-center rounded bg-accent/60 shadow-md backdrop-blur-sm"
       >
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8 rounded-r-none dark:hover:bg-accent/80"
-              onClick={onZoomOut}
-              disabled={isGenerating || !!error}
-            >
-              <Minus />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent
-            sideOffset={4}
-            className="rounded border bg-background text-accent-foreground [&>span]:hidden"
-          >
-            <p>Zoom out</p>
-          </TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8 rounded-none dark:hover:bg-accent/80"
-              onClick={onResetView}
-              disabled={isGenerating || !!error}
-            >
-              <Maximize />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent
-            sideOffset={4}
-            className="rounded border bg-background text-accent-foreground [&>span]:hidden"
-          >
-            <p>Reset view</p>
-          </TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8 rounded-l-none dark:hover:bg-accent/80"
-              onClick={onZoomIn}
-              disabled={isGenerating || !!error}
-            >
-              <Plus />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent
-            sideOffset={4}
-            className="rounded border bg-background text-accent-foreground [&>span]:hidden"
-          >
-            <p>Zoom in</p>
-          </TooltipContent>
-        </Tooltip>
+        <ActionButton
+          tooltip="Copy Mermaid code"
+          className="rounded-r-none"
+          disabled={isGenerating || !!error || isCopied}
+          onClick={onCopyCode}
+        >
+          {isCopied ? <Check /> : <Copy />}
+        </ActionButton>
+        <ActionButton
+          tooltip="Export as PNG"
+          className="rounded-none"
+          disabled={isGenerating || !!error}
+          onClick={onExportPNG}
+        >
+          <Download />
+        </ActionButton>
+        <ActionButton
+          tooltip="Zoom out"
+          className="rounded-none"
+          disabled={isGenerating || !!error}
+          onClick={onZoomOut}
+        >
+          <Minus />
+        </ActionButton>
+        <ActionButton
+          tooltip="Reset view"
+          onClick={onResetView}
+          disabled={isGenerating || !!error}
+          className="rounded-none"
+        >
+          <Maximize />
+        </ActionButton>
+        <ActionButton
+          tooltip="Zoom in"
+          onClick={onZoomIn}
+          disabled={isGenerating || !!error}
+          className="rounded-l-none"
+        >
+          <Plus />
+        </ActionButton>
       </div>
       <div
         ref={containerRef}

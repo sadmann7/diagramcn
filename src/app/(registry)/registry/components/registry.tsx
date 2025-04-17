@@ -7,6 +7,8 @@ import { MermaidDiagram } from "./mermaid-diagram";
 export function Registry() {
   const { registryMermaid, registryData, isPending } = useRegistry();
 
+  console.log({ registryMermaid, registryData, isPending });
+
   if (!registryMermaid || !registryData) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 pt-40">

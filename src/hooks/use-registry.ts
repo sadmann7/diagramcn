@@ -104,7 +104,7 @@ function createRegistryStore() {
     }
   }
 
-  async function fetchRegistryData(url: string | null) {
+  async function getRegistryData(url: string | null) {
     if (!url) {
       setState({
         registryData: null,
@@ -118,7 +118,11 @@ function createRegistryStore() {
     setState({ isPending: true });
 
     try {
-      const response = await fetch(url);
+      const response = await fetch("/api/registry", {
+        method: "POST",
+        body: JSON.stringify({ url }),
+      });
+
       if (!response.ok) {
         throw new Error(
           `Failed to fetch registry data: HTTP ${response.status} ${response.statusText}`,
@@ -166,7 +170,7 @@ function createRegistryStore() {
     getIsPending: () => state.isPending,
     onRegistryUrlChange: (url: string | null) => {
       setState({ registryUrl: url });
-      fetchRegistryData(url);
+      getRegistryData(url);
     },
     onRegistryJsonChange: (json: string | undefined) => {
       setState({ registryJson: json });

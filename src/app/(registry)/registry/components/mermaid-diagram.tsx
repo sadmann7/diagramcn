@@ -293,8 +293,7 @@ export function MermaidDiagram({
         >
           <div className="h-6 w-6 animate-spin rounded-full border-current border-b-2" />
         </div>
-      ) : null}
-      {error ? (
+      ) : error ? (
         <div
           role="alert"
           className="absolute inset-x-4 top-4 z-20 rounded-lg border border-destructive bg-destructive/10 p-4 text-destructive"

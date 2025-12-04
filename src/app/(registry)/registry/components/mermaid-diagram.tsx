@@ -1,5 +1,10 @@
 "use client";
 
+import { Check, Copy, Download, Maximize, Minus, Plus } from "lucide-react";
+import mermaid, { type MermaidConfig } from "mermaid";
+import * as React from "react";
+import { toast } from "sonner";
+import svgPanZoom from "svg-pan-zoom";
 import { ActionButton } from "@/components/action-button";
 import { CodeBlock } from "@/components/code-block";
 import { Portal } from "@/components/portal";
@@ -14,11 +19,6 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getPackageManagerCommands, packageManagers } from "@/lib/command";
 import { cn } from "@/lib/utils";
 import type { RegistryItem } from "@/lib/validations/registry";
-import { Check, Copy, Download, Maximize, Minus, Plus } from "lucide-react";
-import mermaid, { type MermaidConfig } from "mermaid";
-import * as React from "react";
-import { toast } from "sonner";
-import svgPanZoom from "svg-pan-zoom";
 
 interface MermaidDiagramProps extends React.ComponentProps<"div"> {
   code: string;

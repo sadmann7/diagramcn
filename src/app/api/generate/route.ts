@@ -1,10 +1,10 @@
+import { openai } from "@ai-sdk/openai";
+import { generateText } from "ai";
+import { z } from "zod";
 import {
   type RegistryItem,
   registryItemSchema,
 } from "@/lib/validations/registry";
-import { openai } from "@ai-sdk/openai";
-import { generateText } from "ai";
-import { z } from "zod";
 
 const requestSchema = z.object({
   url: z.string().url({

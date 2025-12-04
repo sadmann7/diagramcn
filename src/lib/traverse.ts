@@ -1,10 +1,10 @@
+import type { Node, NodeType } from "jsonc-parser";
 import {
   addEdgeToDiagram,
   addNodeToDiagram,
   calculateNodeSize,
 } from "@/lib/diagram";
 import type { Diagram, JsonParserStates, PrimitiveOrNull } from "@/types";
-import type { Node, NodeType } from "jsonc-parser";
 
 function isPrimitiveOrNull(type: unknown): type is PrimitiveOrNull {
   if (!(typeof type === "string")) return false;

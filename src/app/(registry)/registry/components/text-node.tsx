@@ -1,5 +1,8 @@
 "use client";
 
+import { Link2, Link2Off, Unlink2 } from "lucide-react";
+import * as React from "react";
+import type { NodeProps } from "reaflow";
 import { NodeContent } from "@/app/(registry)/registry/components/node-content";
 import { Button } from "@/components/ui/button";
 import { useBranch } from "@/hooks/use-branch";
@@ -7,9 +10,6 @@ import { useDiagram } from "@/hooks/use-diagram";
 import { isContentImage } from "@/lib/diagram";
 import { cn } from "@/lib/utils";
 import type { Node } from "@/types";
-import { Link2, Link2Off, Unlink2 } from "lucide-react";
-import * as React from "react";
-import type { NodeProps } from "reaflow";
 
 interface CustomNodeProps extends NodeProps {
   node: Node;
@@ -70,6 +70,7 @@ function TextNodeImpl({ node, x, y, collapsible = false }: CustomNodeProps) {
     >
       {isImage ? (
         <div className="p-1">
+          {/** biome-ignore lint/performance/noImgElement: dynamically generated image */}
           <img
             src={node.text as string}
             alt=""

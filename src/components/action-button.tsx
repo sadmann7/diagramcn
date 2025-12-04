@@ -1,3 +1,4 @@
+import type * as React from "react";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -6,7 +7,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import type * as React from "react";
 
 interface ActionButtonProps
   extends React.ComponentProps<typeof Button>,

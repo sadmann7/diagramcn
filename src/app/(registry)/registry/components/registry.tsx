@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { Switch } from "@/components/ui/switch";
 import {
   Tooltip,
@@ -7,7 +8,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useRegistry } from "@/hooks/use-registry";
-import * as React from "react";
 import { RegistryInput } from "../../components/registry-input";
 import { Diagram } from "./diagram";
 import { MermaidDiagram } from "./mermaid-diagram";

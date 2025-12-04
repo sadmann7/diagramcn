@@ -1,8 +1,8 @@
+import * as React from "react";
 import { NodeContent } from "@/app/(registry)/registry/components/node-content";
 import { NODE_DIMENSIONS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import type { Node } from "@/types";
-import * as React from "react";
 
 const getTextColor = (value?: string) => {
   if (value && !Number.isNaN(+value)) return "text-blue-600 dark:text-blue-400";

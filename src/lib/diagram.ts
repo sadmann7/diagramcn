@@ -1,7 +1,7 @@
-import { NODE_DIMENSIONS } from "@/lib/constants";
-import type { Diagram, Edge, Node } from "@/types";
 import type { NodeType } from "jsonc-parser";
 import { getParentsForNodeId } from "reaflow";
+import { NODE_DIMENSIONS } from "@/lib/constants";
+import type { Diagram, Edge, Node } from "@/types";
 
 interface AddEdgeToDiagramProps {
   diagram: Diagram;
@@ -182,9 +182,7 @@ export function getNodePath({ nodes, edges, nodeId }: GetNodePathProps) {
   }
 
   if (rootArrayElementIds.length > 1) {
-    resolvedPath += `Root[${rootArrayElementIds.findIndex(
-      (id) => id === path[0],
-    )}]`;
+    resolvedPath += `Root[${rootArrayElementIds.indexOf(path[0])}]`;
   } else {
     resolvedPath += "{Root}";
   }

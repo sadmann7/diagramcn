@@ -1,7 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { Check, Clipboard } from "lucide-react";
 import { useTheme } from "next-themes";
 import * as React from "react";
@@ -13,6 +11,8 @@ import {
   oneDark,
   oneLight,
 } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface CodeBlockImplProps extends React.ComponentProps<"div"> {
   code: string;

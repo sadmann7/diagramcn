@@ -1,6 +1,6 @@
+import * as React from "react";
 import { useDiagram } from "@/hooks/use-diagram";
 import { INVISIBLE_CLASS_NAME } from "@/lib/constants";
-import * as React from "react";
 
 export function useBranch() {
   const { collapsedNodes, collapsedEdges } = useDiagram();

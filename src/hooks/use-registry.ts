@@ -1,12 +1,12 @@
 "use client";
 
+import * as React from "react";
 import { diagramActions, useDiagram } from "@/hooks/use-diagram";
 import { debounce } from "@/lib/utils";
 import {
   type RegistryItem,
   registryItemSchema,
 } from "@/lib/validations/registry";
-import * as React from "react";
 
 const REGISTRY_URL_KEY = "registryUrl";
 const REGISTRY_DATA_KEY = "registryData";

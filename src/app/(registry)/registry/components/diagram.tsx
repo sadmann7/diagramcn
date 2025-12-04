@@ -1,5 +1,9 @@
 "use client";
 
+import { useTheme } from "next-themes";
+import * as React from "react";
+import { Space } from "react-zoomable-ui";
+import { Canvas, type ElkRoot } from "reaflow";
 import { DiagramToolbar } from "@/app/(registry)/registry/components/diagram-toolbar";
 import { Edge } from "@/app/(registry)/registry/components/edge";
 import { Node } from "@/app/(registry)/registry/components/node";
@@ -8,10 +12,6 @@ import { useDiagram } from "@/hooks/use-diagram";
 import { type LongPressCallback, useLongPress } from "@/hooks/use-long-press";
 import { MAX_NODE_COUNT } from "@/lib/constants";
 import { debounce } from "@/lib/utils";
-import { useTheme } from "next-themes";
-import * as React from "react";
-import { Space } from "react-zoomable-ui";
-import { Canvas, type ElkRoot } from "reaflow";
 
 const layoutOptions = {
   "elk.layered.compaction.postCompaction.strategy": "EDGE_LENGTH",
@@ -106,6 +106,7 @@ export function Diagram({ isRegistryPending }: DiagramProps) {
 
   return (
     <div
+      role="region"
       className="relative size-full"
       onContextMenu={onContextMenu}
       onClick={onItemBlur}

@@ -1,5 +1,6 @@
 "use client";
 
+import { Slot } from "@radix-ui/react-slot";
 import { CodeBlock } from "@/components/code-block";
 import {
   Dialog,
@@ -20,7 +21,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useNode } from "@/hooks/use-node";
 import { getIsPackageManagerCommand, packageManagers } from "@/lib/command";
 import { cn } from "@/lib/utils";
-import { Slot } from "@radix-ui/react-slot";
 
 export function NodeDialog() {
   const {

@@ -1,6 +1,6 @@
+import * as React from "react";
 import { getPackageManagerCommands } from "@/lib/command";
 import type { Node } from "@/types";
-import * as React from "react";
 
 interface NodeState {
   nodeOpen: boolean;

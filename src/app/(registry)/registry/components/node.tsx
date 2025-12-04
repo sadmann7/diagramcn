@@ -1,11 +1,11 @@
 "use client";
 
-import { useNode } from "@/hooks/use-node";
-import type { Node as ExtendedNode } from "@/types";
 import type { NodeType as JsonNodeType } from "jsonc-parser";
 import * as React from "react";
 import type { NodeData, NodeProps } from "reaflow";
 import { Node as ReaflowNode } from "reaflow";
+import { useNode } from "@/hooks/use-node";
+import type { Node as ExtendedNode } from "@/types";
 import { ObjectNode } from "./object-node";
 import { TextNode } from "./text-node";
 

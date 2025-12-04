@@ -1,9 +1,9 @@
-import { getChildrenEdges, getOutgoers } from "@/lib/diagram";
-import { jsonParser } from "@/lib/json-parser";
-import type { Edge, Node } from "@/types";
 import * as React from "react";
 import type { ViewPort } from "react-zoomable-ui/dist/ViewPort";
 import type { CanvasDirection } from "reaflow";
+import { getChildrenEdges, getOutgoers } from "@/lib/diagram";
+import { jsonParser } from "@/lib/json-parser";
+import type { Edge, Node } from "@/types";
 
 interface DiagramState {
   viewPort: ViewPort | null;

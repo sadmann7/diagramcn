@@ -32,6 +32,5 @@ const Portal = React.forwardRef<HTMLDivElement, PortalProps>(
 
 Portal.displayName = "Portal";
 
-export { Portal };
-
 export type { PortalProps };
+export { Portal };

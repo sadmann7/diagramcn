@@ -157,8 +157,8 @@ export {
   Kbd,
   KbdKey,
   KbdSeparator,
+  Key,
   //
   Root,
-  Key,
   Separator,
 };

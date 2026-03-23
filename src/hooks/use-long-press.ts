@@ -236,4 +236,4 @@ function useLongPress<Context = undefined>(
   }, [callback, cancel, detect, start, move]);
 }
 
-export { useLongPress, type LongPressCallback };
+export { type LongPressCallback, useLongPress };

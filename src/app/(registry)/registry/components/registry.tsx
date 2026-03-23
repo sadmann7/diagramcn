@@ -35,7 +35,7 @@ export function Registry() {
             role="button"
             tabIndex={0}
             onClick={() => setIsJsonDiagram(!isJsonDiagram)}
-            className="-top-12 absolute right-24 z-50 flex w-fit select-none items-center gap-2 rounded-sm border p-2 text-xs"
+            className="absolute -top-12 right-24 z-50 flex w-fit select-none items-center gap-2 rounded-sm border p-2 text-xs"
           >
             <span>Json mode</span>
             <Switch

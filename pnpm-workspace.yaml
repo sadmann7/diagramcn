@@ -1,0 +1,8 @@
+allowBuilds:
+  sharp: true
+
+minimumReleaseAge: 1440
+
+overrides:
+  dompurify: "3.4.3"
+  postcss: "8.5.14"

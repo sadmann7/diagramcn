@@ -7,7 +7,7 @@ import {
 } from "@/lib/validations/registry";
 
 const requestSchema = z.object({
-  url: z.string().url({
+  url: z.url({
     message: "Please provide a valid URL",
   }),
 });

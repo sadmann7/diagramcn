@@ -1,6 +1,8 @@
 import * as React from "react";
-import { getPackageManagerCommands } from "@/lib/command";
+
 import type { Node } from "@/types";
+
+import { getPackageManagerCommands } from "@/lib/command";
 
 interface NodeState {
   nodeOpen: boolean;
@@ -30,6 +32,37 @@ const initialState: NodeState = {
   packageManager: "pnpm",
 };
 
+function updateNodeContent(node: Node | null, packageManager: string) {
+  if (!node) return null;
+
+  const { install, dlx } = getPackageManagerCommands(packageManager);
+
+  if (node.path === "{Root}" && Array.isArray(node.text)) {
+    const nameEntry = node.text.find(([key]) => key === "name");
+    return nameEntry ? `${dlx} shadcn@latest add "${nameEntry[1]}"` : null;
+  }
+
+  if (node.path?.includes("{Root}.registryDependencies")) {
+    const componentName = typeof node.text === "string" ? node.text : null;
+    return componentName ? `${dlx} shadcn@latest add ${componentName}` : null;
+  }
+
+  if (node.path?.includes("{Root}.dependencies")) {
+    const packageName = typeof node.text === "string" ? node.text : null;
+    return packageName ? `${install} ${packageName}` : null;
+  }
+
+  if (Array.isArray(node.text)) {
+    return JSON.stringify(node.text, null, 2);
+  }
+
+  if (typeof node.text === "string") {
+    return node.text;
+  }
+
+  return null;
+}
+
 function createNodeStore(initialState: NodeState) {
   let state = initialState;
   const listeners = new Set<() => void>();
@@ -39,37 +72,6 @@ function createNodeStore(initialState: NodeState) {
     for (const listener of listeners) {
       listener();
     }
-  }
-
-  function updateNodeContent(node: Node | null, packageManager: string) {
-    if (!node) return null;
-
-    const { install, dlx } = getPackageManagerCommands(packageManager);
-
-    if (node.path === "{Root}" && Array.isArray(node.text)) {
-      const nameEntry = node.text.find(([key]) => key === "name");
-      return nameEntry ? `${dlx} shadcn@latest add "${nameEntry[1]}"` : null;
-    }
-
-    if (node.path?.includes("{Root}.registryDependencies")) {
-      const componentName = typeof node.text === "string" ? node.text : null;
-      return componentName ? `${dlx} shadcn@latest add ${componentName}` : null;
-    }
-
-    if (node.path?.includes("{Root}.dependencies")) {
-      const packageName = typeof node.text === "string" ? node.text : null;
-      return packageName ? `${install} ${packageName}` : null;
-    }
-
-    if (Array.isArray(node.text)) {
-      return JSON.stringify(node.text, null, 2);
-    }
-
-    if (typeof node.text === "string") {
-      return node.text;
-    }
-
-    return null;
   }
 
   return {

@@ -1,10 +1,12 @@
 import type { Node, NodeType } from "jsonc-parser";
+
+import type { Diagram, JsonParserStates, PrimitiveOrNull } from "@/types";
+
 import {
   addEdgeToDiagram,
   addNodeToDiagram,
   calculateNodeSize,
 } from "@/lib/diagram";
-import type { Diagram, JsonParserStates, PrimitiveOrNull } from "@/types";
 
 function isPrimitiveOrNull(type: unknown): type is PrimitiveOrNull {
   if (!(typeof type === "string")) return false;
@@ -45,7 +47,7 @@ function traverseWithoutChildren(
       states.brotherKey = value;
     }
   } else if (parentType === "array") {
-    const nodeFromArrayId = addNodeToDiagram({ diagram, text: String(value) });
+    const nodeFromArrayId = addNodeToDiagram({ diagram, text: value });
 
     if (myParentId) {
       addEdgeToDiagram({ diagram, from: myParentId, to: nodeFromArrayId });
@@ -105,7 +107,7 @@ function traverseWithChildren(
             } else if (Array.isArray(states.brothersNode)) {
               foundNode.text = states.brothersNode;
             } else {
-              foundNode.text = states.brothersNode.toString();
+              foundNode.text = states.brothersNode;
             }
             const { width, height } = calculateNodeSize({
               text: foundNode.text,

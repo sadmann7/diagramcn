@@ -1,7 +1,10 @@
 import type { NodeType } from "jsonc-parser";
+
 import { getParentsForNodeId } from "reaflow";
-import { NODE_DIMENSIONS } from "@/lib/constants";
+
 import type { Diagram, Edge, Node } from "@/types";
+
+import { NODE_DIMENSIONS } from "@/lib/constants";
 
 interface AddEdgeToDiagramProps {
   diagram: Diagram;
@@ -107,7 +110,7 @@ setInterval(() => sizeCache.clear(), 120_000);
 
 export function calculateNodeSize({
   text,
-  isParent = false,
+  isParent,
 }: {
   text: Text;
   isParent: boolean;
@@ -159,7 +162,12 @@ interface GetNodePathProps {
 export function getNodePath({ nodes, edges, nodeId }: GetNodePathProps) {
   let resolvedPath = "";
   const parentIds = getParentsForNodeId(nodes, edges, nodeId).map((n) => n.id);
-  const path = parentIds.reverse().concat(nodeId);
+  const path: string[] = [];
+  for (let index = parentIds.length - 1; index >= 0; index--) {
+    const parentId = parentIds[index];
+    if (parentId != null) path.push(parentId);
+  }
+  path.push(nodeId);
   const rootArrayElementIds = ["1"];
   const edgesMap = new Map();
 
@@ -181,18 +189,20 @@ export function getNodePath({ nodes, edges, nodeId }: GetNodePathProps) {
     }
   }
 
-  if (rootArrayElementIds.length > 1) {
-    resolvedPath += `Root[${rootArrayElementIds.indexOf(path[0])}]`;
+  const rootId = path[0];
+  if (rootArrayElementIds.length > 1 && rootId !== undefined) {
+    resolvedPath += `Root[${rootArrayElementIds.indexOf(rootId)}]`;
   } else {
     resolvedPath += "{Root}";
   }
 
   for (let i = 1; i < path.length; i++) {
     const curId = path[i];
+    if (curId === undefined) break;
     const curNode = nodes[+curId - 1];
 
     if (!curNode) break;
-    if (curNode.data?.type === "array") {
+    if (curNode.data?.type === "array" && typeof curNode.text === "string") {
       resolvedPath += `.${curNode.text}`;
 
       if (i !== path.length - 1) {
@@ -203,7 +213,7 @@ export function getNodePath({ nodes, edges, nodeId }: GetNodePathProps) {
       }
     }
 
-    if (curNode.data?.type === "object") {
+    if (curNode.data?.type === "object" && typeof curNode.text === "string") {
       resolvedPath += `.${curNode.text}`;
     }
   }

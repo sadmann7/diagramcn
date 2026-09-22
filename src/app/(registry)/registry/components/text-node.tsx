@@ -1,15 +1,18 @@
 "use client";
 
-import { Link2, Link2Off, Unlink2 } from "lucide-react";
-import * as React from "react";
 import type { NodeProps } from "reaflow";
+
+import { Link2, Link2Off } from "lucide-react";
+import * as React from "react";
+
+import type { Node } from "@/types";
+
 import { NodeContent } from "@/app/(registry)/registry/components/node-content";
 import { Button } from "@/components/ui/button";
 import { useBranch } from "@/hooks/use-branch";
 import { useDiagram } from "@/hooks/use-diagram";
 import { isContentImage } from "@/lib/diagram";
 import { cn } from "@/lib/utils";
-import type { Node } from "@/types";
 
 interface CustomNodeProps extends NodeProps {
   node: Node;
@@ -62,7 +65,7 @@ function TextNodeImpl({ node, x, y, collapsible = false }: CustomNodeProps) {
   return (
     <foreignObject
       className={cn(
-        "pointer-events-none overflow-hidden font-medium font-mono text-[11px]",
+        "pointer-events-none overflow-hidden font-mono text-[11px] font-medium",
         "searched:rounded searched:border-2 searched:border-green-500 searched:bg-green-500/10",
         "[&_.highlight]:bg-yellow-500/15",
       )}
@@ -110,7 +113,7 @@ function TextNodeImpl({ node, x, y, collapsible = false }: CustomNodeProps) {
             <NodeContent>{value}</NodeContent>
           </div>
           {node.data.isParent && node.data.childrenCount > 0 && (
-            <span className="text-muted-foreground text-xs">
+            <span className="text-xs text-muted-foreground">
               {childrenCountText}
             </span>
           )}

@@ -1,11 +1,15 @@
 "use client";
 
 import type { NodeType as JsonNodeType } from "jsonc-parser";
-import * as React from "react";
 import type { NodeData, NodeProps } from "reaflow";
+
+import * as React from "react";
 import { Node as ReaflowNode } from "reaflow";
-import { useNode } from "@/hooks/use-node";
+
 import type { Node as ExtendedNode } from "@/types";
+
+import { useNode } from "@/hooks/use-node";
+
 import { ObjectNode } from "./object-node";
 import { TextNode } from "./text-node";
 
@@ -47,10 +51,7 @@ function NodeImpl(props: NodeProps<ExtendedNodeData>) {
   const { onNodeOpenChange, onSelectedNodeChange } = useNode();
 
   const onClick = React.useCallback(
-    (
-      _event: React.MouseEvent<SVGGElement, MouseEvent>,
-      data: ExtendedNodeData,
-    ) => {
+    (_event: React.MouseEvent<SVGGElement>, data: ExtendedNodeData) => {
       if (!getIsNode(data)) return;
 
       onSelectedNodeChange(data);
@@ -59,19 +60,13 @@ function NodeImpl(props: NodeProps<ExtendedNodeData>) {
     [onSelectedNodeChange, onNodeOpenChange],
   );
 
-  const onEnter = React.useCallback(
-    (event: React.MouseEvent<SVGGElement, MouseEvent>) => {
-      event.currentTarget.style.stroke = "var(--ring)";
-    },
-    [],
-  );
+  const onEnter = React.useCallback((event: React.MouseEvent<SVGGElement>) => {
+    event.currentTarget.style.stroke = "var(--ring)";
+  }, []);
 
-  const onLeave = React.useCallback(
-    (event: React.MouseEvent<SVGGElement, MouseEvent>) => {
-      event.currentTarget.style.stroke = "var(--border)";
-    },
-    [],
-  );
+  const onLeave = React.useCallback((event: React.MouseEvent<SVGGElement>) => {
+    event.currentTarget.style.stroke = "var(--border)";
+  }, []);
 
   const onChildrenRender = React.useCallback(
     ({ node, x, y }: { node: NodeData; x: number; y: number }) => {

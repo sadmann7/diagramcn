@@ -1,5 +1,9 @@
 import * as React from "react";
 
+function isUpdater<T>(value: T | ((val: T) => T)): value is (val: T) => T {
+  return typeof value === "function";
+}
+
 function useLocalStorage<T>(key: string, initialValue: T) {
   const [storedValue, setStoredValue] = React.useState<T>(() => {
     if (typeof window === "undefined") {
@@ -19,10 +23,9 @@ function useLocalStorage<T>(key: string, initialValue: T) {
     (updatorOrValue: T | ((val: T) => T)) => {
       try {
         setStoredValue((prevValue) => {
-          const valueToStore =
-            updatorOrValue instanceof Function
-              ? updatorOrValue(prevValue)
-              : updatorOrValue;
+          const valueToStore = isUpdater(updatorOrValue)
+            ? updatorOrValue(prevValue)
+            : updatorOrValue;
 
           if (typeof window !== "undefined") {
             window.localStorage.setItem(key, JSON.stringify(valueToStore));

@@ -5,9 +5,11 @@ import mermaid, { type MermaidConfig } from "mermaid";
 import * as React from "react";
 import { toast } from "sonner";
 import svgPanZoom from "svg-pan-zoom";
+
+import type { RegistryItem } from "@/lib/validations/registry";
+
 import { ActionButton } from "@/components/action-button";
 import { CodeBlock } from "@/components/code-block";
-import { Portal } from "@/components/portal";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +20,6 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getPackageManagerCommands, packageManagers } from "@/lib/command";
 import { cn } from "@/lib/utils";
-import type { RegistryItem } from "@/lib/validations/registry";
 
 interface MermaidDiagramProps extends React.ComponentProps<"div"> {
   code: string;
@@ -298,7 +299,7 @@ export function MermaidDiagram({
       toast.success("Mermaid code copied to clipboard");
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
-    } catch (_error) {
+    } catch {
       toast.error("Failed to copy code to clipboard");
     }
   }, [code, isCopied]);
@@ -367,20 +368,28 @@ export function MermaidDiagram({
     image.width = svgWidth;
     image.height = svgHeight;
 
-    image.onload = () => {
-      ctx.scale(scale, scale);
-      ctx.drawImage(image, 0, 0);
+    image.addEventListener(
+      "load",
+      () => {
+        ctx.scale(scale, scale);
+        ctx.drawImage(image, 0, 0);
 
-      const link = document.createElement("a");
-      link.download = `${registryData?.name ?? "diagram"}.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-      toast.success("Diagram exported as PNG");
-    };
+        const link = document.createElement("a");
+        link.download = `${registryData?.name ?? "diagram"}.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+        toast.success("Diagram exported as PNG");
+      },
+      { once: true },
+    );
 
-    image.onerror = () => {
-      toast.error("Failed to export PNG: Error loading SVG data.");
-    };
+    image.addEventListener(
+      "error",
+      () => {
+        toast.error("Failed to export PNG: Error loading SVG data.");
+      },
+      { once: true },
+    );
 
     image.src = `data:image/svg+xml;base64,${btoa(
       String.fromCharCode(...new TextEncoder().encode(svgString)),
@@ -398,7 +407,7 @@ export function MermaidDiagram({
           role="status"
           className="absolute inset-0 z-20 flex items-center justify-center bg-background/50"
         >
-          <div className="size-20 animate-spin rounded-full border-current border-b-2" />
+          <div className="size-20 animate-spin rounded-full border-b-2 border-current" />
         </div>
       ) : error ? (
         <div
@@ -474,7 +483,7 @@ export function MermaidDiagram({
             {isRoot ? (
               <DialogDescription>{registryData.description}</DialogDescription>
             ) : (
-              <div className="flex flex-col gap-1.5 pt-2 text-muted-foreground text-sm">
+              <div className="flex flex-col gap-1.5 pt-2 text-sm text-muted-foreground">
                 <DialogDescription className="sr-only">
                   Node description
                 </DialogDescription>
@@ -513,7 +522,7 @@ export function MermaidDiagram({
                       <TabsTrigger
                         key={packageManager}
                         value={packageManager}
-                        className="rounded-none border-0 border-transparent border-b p-0 data-[state=active]:border-b-foreground data-[state=active]:bg-transparent dark:data-[state=active]:border-b-foreground dark:data-[state=active]:bg-transparent"
+                        className="rounded-none border-0 border-b border-transparent p-0 data-[state=active]:border-b-foreground data-[state=active]:bg-transparent dark:data-[state=active]:border-b-foreground dark:data-[state=active]:bg-transparent"
                       >
                         {packageManager}
                       </TabsTrigger>

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+
 import { Switch } from "@/components/ui/switch";
 import {
   Tooltip,
@@ -8,6 +9,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useRegistry } from "@/hooks/use-registry";
+
 import { RegistryInput } from "../../components/registry-input";
 import { Diagram } from "./diagram";
 import { MermaidDiagram } from "./mermaid-diagram";
@@ -19,7 +21,7 @@ export function Registry() {
   if (!registryMermaid || !registryData) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 pt-40">
-        <h1 className="max-w-lg text-pretty text-center font-semibold text-2xl tracking-tighter sm:text-3xl md:text-5xl">
+        <h1 className="max-w-lg text-center text-2xl font-semibold tracking-tighter text-pretty sm:text-3xl md:text-5xl">
           Type a shadcn/ui registry command or url
         </h1>
         <RegistryInput />
@@ -35,7 +37,7 @@ export function Registry() {
             role="button"
             tabIndex={0}
             onClick={() => setIsJsonDiagram(!isJsonDiagram)}
-            className="absolute -top-12 right-24 z-50 flex w-fit select-none items-center gap-2 rounded-sm border p-2 text-xs"
+            className="absolute -top-12 right-24 z-50 flex w-fit items-center gap-2 rounded-sm border p-2 text-xs select-none"
           >
             <span>Json mode</span>
             <Switch
@@ -48,7 +50,7 @@ export function Registry() {
         <TooltipContent
           side="right"
           sideOffset={8}
-          className="w-[210px] text-balance rounded-sm border bg-background text-accent-foreground [&>span]:hidden"
+          className="w-[210px] rounded-sm border bg-background text-balance text-accent-foreground [&>span]:hidden"
         >
           <p>Toggle between Mermaid diagram and JSON diagram view</p>
         </TooltipContent>

@@ -1,6 +1,7 @@
 "use client";
 
 import { Slot } from "@radix-ui/react-slot";
+
 import { CodeBlock } from "@/components/code-block";
 import {
   Dialog,
@@ -56,18 +57,18 @@ export function NodeDialog() {
       {path ? (
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <h3 className="font-medium text-sm">Path:</h3>
+            <h3 className="text-sm font-medium">Path:</h3>
             <CodeBlock code={path} language="plaintext" />
           </div>
           <div className="flex items-center gap-4">
             {type ? (
               <div className="flex w-full flex-col gap-2">
-                <h3 className="font-medium text-sm">Type:</h3>
+                <h3 className="text-sm font-medium">Type:</h3>
                 <CodeBlock code={type} language="plaintext" />
               </div>
             ) : null}
             <div className="flex w-full flex-col gap-2">
-              <h3 className="font-medium text-sm">Target:</h3>
+              <h3 className="text-sm font-medium">Target:</h3>
               <CodeBlock
                 code={!target || target === "" ? JSON.stringify("") : target}
                 language="plaintext"
@@ -76,7 +77,7 @@ export function NodeDialog() {
           </div>
           {content ? (
             <div className="flex flex-col gap-2">
-              <h3 className="font-medium text-sm">Content:</h3>
+              <h3 className="text-sm font-medium">Content:</h3>
               <CodeBlock
                 code={content}
                 language={path.split(".").pop()}
@@ -99,7 +100,7 @@ export function NodeDialog() {
                       <TabsTrigger
                         key={packageManager}
                         value={packageManager}
-                        className="rounded-none border-0 border-transparent border-b p-0 data-[state=active]:border-b-foreground data-[state=active]:bg-transparent dark:data-[state=active]:border-b-foreground dark:data-[state=active]:bg-transparent"
+                        className="rounded-none border-0 border-b border-transparent p-0 data-[state=active]:border-b-foreground data-[state=active]:bg-transparent dark:data-[state=active]:border-b-foreground dark:data-[state=active]:bg-transparent"
                       >
                         {packageManager}
                       </TabsTrigger>
@@ -124,27 +125,27 @@ export function NodeDialog() {
             <div className="flex flex-col gap-4">
               {type && (
                 <div className="flex w-full flex-col gap-2">
-                  <h3 className="font-medium text-sm">Type:</h3>
+                  <h3 className="text-sm font-medium">Type:</h3>
                   <CodeBlock code={type} />
                 </div>
               )}
               <div className="flex items-center gap-4">
                 {jsonPath ? (
                   <div className="flex w-full flex-col gap-2">
-                    <h3 className="font-medium text-sm">JSON path:</h3>
+                    <h3 className="text-sm font-medium">JSON path:</h3>
                     <CodeBlock code={jsonPath} />
                   </div>
                 ) : null}
                 {childrenCount > 0 ? (
                   <div className="flex w-full flex-col gap-2">
-                    <h3 className="font-medium text-sm">Children count:</h3>
+                    <h3 className="text-sm font-medium">Children count:</h3>
                     <CodeBlock code={childrenCount.toString()} />
                   </div>
                 ) : null}
               </div>
               {content && !isCommand && (
                 <div className="flex w-full flex-col gap-2">
-                  <h3 className="font-medium text-sm">Content:</h3>
+                  <h3 className="text-sm font-medium">Content:</h3>
                   <CodeBlock
                     code={content}
                     className="max-h-[50svh] overflow-auto"

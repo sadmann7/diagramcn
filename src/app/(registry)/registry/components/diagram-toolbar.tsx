@@ -1,8 +1,8 @@
 "use client";
 
 import { Focus, Maximize, Minus, Plus } from "lucide-react";
+
 import { ActionButton } from "@/components/action-button";
-import { Portal } from "@/components/portal";
 import { useDiagram } from "@/hooks/use-diagram";
 import { cn } from "@/lib/utils";
 

@@ -1,5 +1,6 @@
 import { ClientOnly } from "@/components/client-only";
 import { Skeleton } from "@/components/ui/skeleton";
+
 import { Registry } from "./components/registry";
 
 export default function RegistryPage() {

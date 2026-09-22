@@ -4,6 +4,7 @@ import { useTheme } from "next-themes";
 import * as React from "react";
 import { Space } from "react-zoomable-ui";
 import { Canvas, type ElkRoot } from "reaflow";
+
 import { DiagramToolbar } from "@/app/(registry)/registry/components/diagram-toolbar";
 import { Edge } from "@/app/(registry)/registry/components/edge";
 import { Node } from "@/app/(registry)/registry/components/node";

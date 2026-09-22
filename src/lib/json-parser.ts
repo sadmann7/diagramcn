@@ -1,7 +1,9 @@
 import { parseTree } from "jsonc-parser";
+
+import type { Diagram, JsonParserStates } from "@/types";
+
 import { addEdgeToDiagram, addNodeToDiagram, getNodePath } from "@/lib/diagram";
 import { traverse } from "@/lib/traverse";
-import type { Diagram, JsonParserStates } from "@/types";
 
 function initializeStates(): JsonParserStates {
   return {

@@ -26,7 +26,7 @@ export async function POST(req: Request) {
 
     const data = await response.json();
     return NextResponse.json(data);
-  } catch (_error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to fetch registry data" },
       { status: 500 },

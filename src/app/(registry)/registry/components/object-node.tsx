@@ -1,8 +1,10 @@
 import * as React from "react";
+
+import type { Node } from "@/types";
+
 import { NodeContent } from "@/app/(registry)/registry/components/node-content";
 import { NODE_DIMENSIONS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import type { Node } from "@/types";
 
 const getTextColor = (value?: string) => {
   if (value && !Number.isNaN(+value)) return "text-blue-600 dark:text-blue-400";
@@ -33,11 +35,11 @@ function NodeRow({ val, x, y, index }: NodeRowProps) {
       data-x={x}
       data-y={y + rowPosition}
       className={cn(
-        "block h-[24px] truncate border-border border-b px-2.5 py-0.5 leading-[18px] last:border-b-0",
+        "block h-[24px] truncate border-b border-border px-2.5 py-0.5 leading-[18px] last:border-b-0",
         getTextColor(rowValue),
       )}
     >
-      <span className="font-medium font-mono text-blue-600 text-sm dark:text-blue-400">
+      <span className="font-mono text-sm font-medium text-blue-600 dark:text-blue-400">
         {rowKey}:{" "}
       </span>
       <NodeContent>{rowValue}</NodeContent>
@@ -55,7 +57,7 @@ function ObjectNodeImpl({ node, x, y }: ObjectNodeImplProps) {
   return (
     <foreignObject
       className={cn(
-        "pointer-events-none overflow-hidden font-medium font-mono text-[11px]",
+        "pointer-events-none overflow-hidden font-mono text-[11px] font-medium",
         "searched:rounded searched:border-2 searched:border-green-500 searched:bg-green-500/10",
         "[&_.highlight]:bg-yellow-500/15",
       )}

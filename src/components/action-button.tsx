@@ -1,4 +1,5 @@
 import type * as React from "react";
+
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -9,7 +10,8 @@ import {
 import { cn } from "@/lib/utils";
 
 interface ActionButtonProps
-  extends React.ComponentProps<typeof Button>,
+  extends
+    React.ComponentProps<typeof Button>,
     Pick<
       React.ComponentProps<typeof TooltipContent>,
       "align" | "alignOffset" | "side" | "sideOffset"
@@ -24,7 +26,6 @@ export function ActionButton({
   side = "bottom",
   sideOffset = 4,
   className,
-  asChild = false,
   ...props
 }: ActionButtonProps) {
   return (

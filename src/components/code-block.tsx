@@ -11,6 +11,7 @@ import {
   oneDark,
   oneLight,
 } from "react-syntax-highlighter/dist/esm/styles/prism";
+
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -73,7 +74,7 @@ function CodeBlockImpl({
           variant="secondary"
           size="icon"
           className={cn(
-            "absolute size-6 rounded border border-border/60 opacity-0 transition-[color,opacity] duration-200 hover:bg-secondary hover:text-foreground/80 disabled:opacity-100 group-hover:opacity-100",
+            "absolute size-6 rounded border border-border/60 opacity-0 transition-[color,opacity] duration-200 group-hover:opacity-100 hover:bg-secondary hover:text-foreground/80 disabled:opacity-100",
             isCommand ? "top-2 right-2" : "top-3 right-3",
           )}
           onClick={onCopy}

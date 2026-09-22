@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { diagramActions, useDiagram } from "@/hooks/use-diagram";
+
+import { diagramActions } from "@/hooks/use-diagram";
 import { debounce } from "@/lib/utils";
 import {
   type RegistryItem,
@@ -21,6 +22,28 @@ interface RegistryState {
   isPending: boolean;
 }
 
+function getStoredItem<T>(key: string, defaultValue: T): T {
+  try {
+    const item = localStorage.getItem(key);
+    return item ? JSON.parse(item) : defaultValue;
+  } catch {
+    return defaultValue;
+  }
+}
+
+function updateStorage(key: string, value: unknown) {
+  if (typeof window === "undefined") return;
+
+  try {
+    const valueToStore = JSON.stringify(value);
+    setTimeout(() => {
+      localStorage.setItem(key, valueToStore);
+    }, 0);
+  } catch (error) {
+    console.error(`Failed to store ${key} in localStorage:`, error);
+  }
+}
+
 function createRegistryStore() {
   function getInitialState(): RegistryState {
     if (typeof window === "undefined") {
@@ -31,15 +54,6 @@ function createRegistryStore() {
         registryMermaid: undefined,
         isPending: false,
       };
-    }
-
-    function getStoredItem<T>(key: string, defaultValue: T): T {
-      try {
-        const item = localStorage.getItem(key);
-        return item ? JSON.parse(item) : defaultValue;
-      } catch {
-        return defaultValue;
-      }
     }
 
     return {
@@ -59,19 +73,6 @@ function createRegistryStore() {
 
   let state = getInitialState();
   const listeners = new Set<() => void>();
-
-  function updateStorage(key: string, value: unknown) {
-    if (typeof window === "undefined") return;
-
-    try {
-      const valueToStore = JSON.stringify(value);
-      setTimeout(() => {
-        localStorage.setItem(key, valueToStore);
-      }, 0);
-    } catch (error) {
-      console.error(`Failed to store ${key} in localStorage:`, error);
-    }
-  }
 
   function setState(partial: Partial<RegistryState>) {
     const newState = { ...state, ...partial };
@@ -170,7 +171,7 @@ function createRegistryStore() {
     getIsPending: () => state.isPending,
     onRegistryUrlChange: (url: string | null) => {
       setState({ registryUrl: url });
-      getRegistryData(url);
+      void getRegistryData(url);
     },
     onRegistryJsonChange: (json: string | undefined) => {
       setState({ registryJson: json });

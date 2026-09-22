@@ -1,7 +1,8 @@
 "use client";
 
-import * as React from "react";
 import type { EdgeProps } from "reaflow";
+
+import * as React from "react";
 import { Edge as ReaflowEdge } from "reaflow";
 
 function EdgeImpl({ id, ...props }: EdgeProps) {

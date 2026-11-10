@@ -26,7 +26,7 @@ export async function GET(req: Request) {
   const result = await crawl();
   await deleteExpiredRateLimits();
   console.log(
-    `Crawled ${result.checked} items in ${result.durationMs}ms: ${result.changed.length} changed, ${result.failed.length} failed`,
+    `Crawled ${result.checked} items in ${result.durationMs}ms: ${result.added} new, ${result.changed.length} changed, ${result.failed.length} failed`,
   );
 
   return NextResponse.json(result);

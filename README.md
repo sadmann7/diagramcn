@@ -87,7 +87,7 @@ Other tasks run through Turborepo too: `pnpm build`, `pnpm test`, `pnpm check-ty
 
 diagramcn snapshots registry items so it can show what changed upstream. It is optional: without `DATABASE_URL` the rest of the app works and tracking is skipped.
 
-- **What's tracked:** every `@shadcn` item in `base-nova` (the default) and `new-york-v4` (legacy, but what most existing projects use), plus any item someone opens, syncs, or puts on a canvas. `@shadcn` items are tracked per style, since each style serves different files; other styles start being tracked the first time someone uses them.
+- **What's tracked:** every `@shadcn` item in every current style (Base, Aria and Radix in each look, plus `new-york-v4`), every item of any third-party registry someone has used, and anything someone opens, syncs, or puts on a canvas, including the Tailwind v3 styles. `@shadcn` items are tracked per style, since each style serves different files; other styles start being tracked the first time someone uses them.
 - **How:** a daily Vercel cron (`/api/cron/crawl`, see `vercel.json`) re-fetches tracked items, least recently checked first, and stores a snapshot only when the content hash changes. Item pages and canvases also record the items they resolve.
 - **History:** item pages have a History tab with every version since tracking started, what changed (files, dependencies, CSS and env vars, other fields), and line diffs per file.
 - **Following changes:** `/changes` lists every change, and each item, canvas and registry has an RSS feed. Feeds for items and canvases include everything they depend on, since a change to `button` affects every canvas that uses it.

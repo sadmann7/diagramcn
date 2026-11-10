@@ -5,10 +5,10 @@ import * as React from "react";
 import { Space } from "react-zoomable-ui";
 import { Canvas, type ElkRoot } from "reaflow";
 
-import { DiagramToolbar } from "@/app/(registry)/registry/components/diagram-toolbar";
-import { Edge } from "@/app/(registry)/registry/components/edge";
-import { Node } from "@/app/(registry)/registry/components/node";
-import { NodeDialog } from "@/app/(registry)/registry/components/node-dialog";
+import { DiagramToolbar } from "@/app/(registry)/components/diagram-toolbar";
+import { Edge } from "@/app/(registry)/components/edge";
+import { Node } from "@/app/(registry)/components/node";
+import { NodeDialog } from "@/app/(registry)/components/node-dialog";
 import { useDiagram } from "@/hooks/use-diagram";
 import { type LongPressCallback, useLongPress } from "@/hooks/use-long-press";
 import { MAX_NODE_COUNT } from "@/lib/constants";

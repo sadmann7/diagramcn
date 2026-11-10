@@ -2,7 +2,7 @@ import * as React from "react";
 
 import type { Node } from "@/types";
 
-import { NodeContent } from "@/app/(registry)/registry/components/node-content";
+import { NodeContent } from "@/app/(registry)/components/node-content";
 import { NODE_DIMENSIONS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 

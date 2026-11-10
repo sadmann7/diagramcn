@@ -6,3 +6,5 @@ export const NODE_DIMENSIONS = {
 export const MAX_NODE_COUNT = 1000;
 
 export const INVISIBLE_CLASS_NAME = "invisible";
+
+export const DATABASE_PREFIX = "diagramcn";

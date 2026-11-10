@@ -7,7 +7,7 @@ import * as React from "react";
 
 import type { Node } from "@/types";
 
-import { NodeContent } from "@/app/(registry)/registry/components/node-content";
+import { NodeContent } from "@/app/(registry)/components/node-content";
 import { Button } from "@/components/ui/button";
 import { useBranch } from "@/hooks/use-branch";
 import { useDiagram } from "@/hooks/use-diagram";

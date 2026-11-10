@@ -3,21 +3,32 @@
 import { ArrowRight, Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useRegistry } from "@/hooks/use-registry";
-import { parseRegistryCommand } from "@/lib/command";
+import { getInspectHref, parseAddInput } from "@/lib/registry/specifier";
 import { cn } from "@/lib/utils";
 
-interface RegistryInputProps extends React.ComponentProps<"div"> {}
+interface RegistryInputProps extends React.ComponentProps<"div"> {
+  defaultValue?: string;
+  autoFocus?: boolean;
+}
 
-export function RegistryInput({ className, ...props }: RegistryInputProps) {
+export function RegistryInput({
+  defaultValue = "",
+  autoFocus,
+  className,
+  ...props
+}: RegistryInputProps) {
   const router = useRouter();
   const [isPending, startTransition] = React.useTransition();
-  const { onRegistryUrlChange } = useRegistry();
-  const [input, setInput] = React.useState("");
+  const [input, setInput] = React.useState(defaultValue);
   const inputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    setInput(defaultValue);
+  }, [defaultValue]);
 
   const onInputChange = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,19 +40,19 @@ export function RegistryInput({ className, ...props }: RegistryInputProps) {
   const onSubmit = React.useCallback(() => {
     if (!input.trim()) return;
 
-    const command = input.trim();
-    const parsedCommand = parseRegistryCommand(command) ?? command;
-
-    try {
-      startTransition(() => {
-        new URL(parsedCommand);
-        onRegistryUrlChange(parsedCommand);
-        router.push("/registry");
+    const specifiers = parseAddInput(input);
+    if (specifiers.length === 0) {
+      toast.error("No registry items found", {
+        description:
+          "Try @shadcn/button, an item URL, or a shadcn add command.",
       });
-    } catch {
-      console.error("Invalid registry URL");
+      return;
     }
-  }, [input, router, onRegistryUrlChange]);
+
+    startTransition(() => {
+      router.push(getInspectHref(specifiers));
+    });
+  }, [input, router]);
 
   const onInputKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -73,14 +84,18 @@ export function RegistryInput({ className, ...props }: RegistryInputProps) {
     <div className={cn("relative h-12 w-full max-w-2xl", className)} {...props}>
       <Input
         ref={inputRef}
-        placeholder="Type registry here..."
-        className="h-full pr-10"
+        aria-label="Registry items"
+        placeholder="npx shadcn@latest add @acme/data-table"
+        className="h-full pr-10 font-mono text-sm"
         value={input}
         onChange={onInputChange}
         onKeyDown={onInputKeyDown}
-        autoFocus
+        autoFocus={autoFocus}
+        spellCheck={false}
+        autoComplete="off"
       />
       <Button
+        aria-label="Inspect"
         variant="ghost"
         size="icon"
         className="absolute top-0 right-0 h-full rounded-l-none text-muted-foreground hover:text-foreground hover:dark:bg-transparent"

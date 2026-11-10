@@ -1,7 +1,6 @@
 import Link from "next/link";
 
 import { Icons } from "@/components/icons";
-import { ActiveLink } from "@/components/layouts/active-link";
 import { ModeToggle } from "@/components/layouts/mode-toggle";
 import { Button } from "@/components/ui/button";
 import { GITHUB_URL, SITE_NAME } from "@/lib/site";
@@ -13,10 +12,15 @@ export function SiteHeader() {
         <Link href="/" className="font-semibold">
           {SITE_NAME}
         </Link>
-        <nav className="ml-3 flex w-full items-center gap-6 text-sm">
-          <ActiveLink href="/registry">Registry</ActiveLink>
+        <nav className="ml-4 flex items-center gap-4 text-sm">
+          <Link
+            href="/stack"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Stack
+          </Link>
         </nav>
-        <nav className="flex flex-1 items-center md:justify-end">
+        <nav className="ml-auto flex items-center">
           <Button
             variant="ghost"
             size="icon"

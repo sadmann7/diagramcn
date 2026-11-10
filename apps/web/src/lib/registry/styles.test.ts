@@ -30,7 +30,7 @@ describe("shadcn styles", () => {
   });
 
   test("labels styles by library", () => {
-    assert.equal(getShadcnStyleLabel("base-nova"), "Base UI Nova");
+    assert.equal(getShadcnStyleLabel("base-nova"), "Base Nova");
     assert.equal(getShadcnStyleLabel("new-york"), "New York (Tailwind v3)");
     assert.equal(getShadcnStyleLabel("new-york-v4"), "New York (Tailwind v4)");
   });

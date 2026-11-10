@@ -1,0 +1,30 @@
+{
+  "name": "@diagramcn/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema.ts",
+    "./utils": "./src/utils.ts"
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "db:generate": "dotenv -e ../../apps/web/.env -- drizzle-kit generate",
+    "db:push": "dotenv -e ../../apps/web/.env -- drizzle-kit push",
+    "db:migrate": "dotenv -e ../../apps/web/.env -- tsx src/migrate.ts",
+    "db:studio": "dotenv -e ../../apps/web/.env -- drizzle-kit studio"
+  },
+  "dependencies": {
+    "drizzle-orm": "catalog:",
+    "postgres": "^3.4.9"
+  },
+  "devDependencies": {
+    "@diagramcn/config": "workspace:*",
+    "@types/node": "catalog:",
+    "dotenv-cli": "catalog:",
+    "drizzle-kit": "^0.31.11",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  }
+}

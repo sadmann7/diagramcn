@@ -2,6 +2,14 @@
   "name": "diagramcn",
   "version": "0.1.0",
   "description": "Pull upstream shadcn registry changes into your edited components with a three-way merge",
+  "keywords": [
+    "shadcn",
+    "shadcn-ui",
+    "registry",
+    "sync",
+    "merge",
+    "cli"
+  ],
   "license": "MIT",
   "type": "module",
   "bin": {
@@ -11,7 +19,11 @@
     "dist"
   ],
   "scripts": {
-    "prepublishOnly": "cd ../.. && pnpm cli:build"
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "test": "tsx --test 'test/*.test.ts'",
+    "check-types": "tsc --noEmit",
+    "prepublishOnly": "pnpm build"
   },
   "engines": {
     "node": ">=20"
@@ -21,5 +33,11 @@
     "url": "git+https://github.com/sadmann7/diagramcn.git",
     "directory": "packages/cli"
   },
-  "homepage": "https://diagramcn.com"
+  "homepage": "https://diagramcn.com",
+  "devDependencies": {
+    "@diagramcn/config": "workspace:*",
+    "@types/node": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  }
 }

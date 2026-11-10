@@ -94,6 +94,11 @@ function compareLists(
   };
 }
 
+function formatValue(value: unknown) {
+  if (value === undefined) return null;
+  return typeof value === "string" ? value : JSON.stringify(value);
+}
+
 function compareRecords(
   before: Record<string, unknown>,
   after: Record<string, unknown>,
@@ -101,8 +106,8 @@ function compareRecords(
 ): ValueChange[] {
   const keys = [...new Set([...Object.keys(before), ...Object.keys(after)])];
   return keys.flatMap((key) => {
-    const from = before[key] === undefined ? null : String(before[key]);
-    const to = after[key] === undefined ? null : String(after[key]);
+    const from = formatValue(before[key]);
+    const to = formatValue(after[key]);
     return from === to ? [] : [{ key: `${prefix}${key}`, from, to }];
   });
 }
@@ -188,17 +193,50 @@ export function compareSnapshots(
   };
 }
 
-export function getChangeCount(changes: ItemChanges) {
-  const listCount = (change: ListChange) =>
-    change.added.length + change.removed.length;
+function getListCount(change: ListChange) {
+  return change.added.length + change.removed.length;
+}
 
+export function getChangeCount(changes: ItemChanges) {
   return (
     changes.files.length +
-    listCount(changes.dependencies) +
-    listCount(changes.devDependencies) +
-    listCount(changes.registryDependencies) +
+    getListCount(changes.dependencies) +
+    getListCount(changes.devDependencies) +
+    getListCount(changes.registryDependencies) +
     changes.cssVars.length +
     changes.envVars.length +
     changes.fields.length
   );
+}
+
+function getListSummary(label: string, change: ListChange) {
+  const parts = [
+    change.added.length ? `+${change.added.length}` : null,
+    change.removed.length ? `−${change.removed.length}` : null,
+  ].filter(Boolean);
+  return parts.length ? `${label} ${parts.join(" ")}` : null;
+}
+
+/** One line describing a change, e.g. "2 files changed · deps +1". */
+export function getChangeSummary(changes: ItemChanges) {
+  if (getChangeCount(changes) === 0) return "Formatting only";
+
+  const fileCounts = { added: 0, removed: 0, modified: 0 };
+  for (const file of changes.files) fileCounts[file.status]++;
+
+  return [
+    fileCounts.modified
+      ? `${fileCounts.modified} ${fileCounts.modified === 1 ? "file" : "files"} changed`
+      : null,
+    fileCounts.added ? `${fileCounts.added} added` : null,
+    fileCounts.removed ? `${fileCounts.removed} removed` : null,
+    getListSummary("deps", changes.dependencies),
+    getListSummary("dev deps", changes.devDependencies),
+    getListSummary("registry deps", changes.registryDependencies),
+    changes.cssVars.length ? `${changes.cssVars.length} CSS vars` : null,
+    changes.envVars.length ? `${changes.envVars.length} env vars` : null,
+    changes.fields.length ? changes.fields.join(", ") : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 }

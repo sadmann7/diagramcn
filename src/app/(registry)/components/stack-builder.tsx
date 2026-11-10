@@ -1,6 +1,7 @@
 "use client";
 
-import { Check, Link2, Loader, Plus, X } from "lucide-react";
+import { Check, Link2, Loader, Plus, Rss, X } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import { toast } from "sonner";
@@ -130,6 +131,15 @@ export function StackBuilder({ specifiers, result }: StackBuilderProps) {
           {optimisticSpecifiers.length > 0 ? (
             <div className="flex gap-2">
               <CopyLinkButton specifiers={optimisticSpecifiers} />
+              <Button variant="outline" size="sm" asChild>
+                <Link
+                  href={`/changes?q=${encodeURIComponent(optimisticSpecifiers.join(" "))}`}
+                  title="Changes to these items and everything they depend on"
+                >
+                  <Rss />
+                  Changes
+                </Link>
+              </Button>
               <Button
                 variant="ghost"
                 size="sm"

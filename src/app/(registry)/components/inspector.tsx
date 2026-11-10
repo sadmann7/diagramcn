@@ -35,9 +35,10 @@ interface InspectorProps {
   result: InspectResult;
   /** Present on single-item pages. */
   history?: ItemHistoryResult;
+  defaultTab?: string;
 }
 
-export function Inspector({ result, history }: InspectorProps) {
+export function Inspector({ result, history, defaultTab }: InspectorProps) {
   const { specifiers } = result;
 
   return (
@@ -59,7 +60,7 @@ export function Inspector({ result, history }: InspectorProps) {
 
       <InstallCommand getCommand={(dlx) => getAddCommand(dlx, specifiers)} />
 
-      <InspectTabs result={result} history={history} />
+      <InspectTabs result={result} history={history} defaultTab={defaultTab} />
     </div>
   );
 }
@@ -146,16 +147,28 @@ export function InstallCommand({ getCommand }: InstallCommandProps) {
   );
 }
 
+const tabs = ["plan", "items", "files", "json", "history"];
+
 interface InspectTabsProps {
   result: InspectResult;
   history?: ItemHistoryResult;
+  defaultTab?: string;
 }
 
-export function InspectTabs({ result, history }: InspectTabsProps) {
+export function InspectTabs({ result, history, defaultTab }: InspectTabsProps) {
   const { specifiers, plan } = result;
 
   return (
-    <Tabs defaultValue="plan" className="gap-6">
+    <Tabs
+      defaultValue={
+        defaultTab &&
+        tabs.includes(defaultTab) &&
+        (defaultTab !== "history" || history)
+          ? defaultTab
+          : "plan"
+      }
+      className="gap-6"
+    >
       <TabsList>
         <TabsTrigger value="plan">Install plan</TabsTrigger>
         <TabsTrigger value="items">Item graph</TabsTrigger>

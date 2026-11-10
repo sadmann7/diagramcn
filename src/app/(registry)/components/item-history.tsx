@@ -1,16 +1,16 @@
 "use client";
 
-import { ChevronRight, Loader, TriangleAlert } from "lucide-react";
+import { ChevronRight, Loader, Rss, TriangleAlert } from "lucide-react";
 import * as React from "react";
 
-import type { ItemChanges, ListChange } from "@/lib/tracking/compare";
+import type { ItemChanges } from "@/lib/tracking/compare";
 import type {
   FileDiff,
   HistoryVersion,
   ItemHistoryResult,
 } from "@/lib/tracking/history";
 
-import { getChangeCount } from "@/lib/tracking/compare";
+import { getChangeSummary } from "@/lib/tracking/compare";
 import { cn } from "@/lib/utils";
 
 // Fixed locale and time zone so server and client render the same text.
@@ -68,6 +68,14 @@ export function ItemHistory({ result }: ItemHistoryProps) {
           {changedVersions.length}{" "}
           {changedVersions.length === 1 ? "change" : "changes"}
         </span>
+        <a
+          href={`/changes/feed.xml?q=${encodeURIComponent(history.specifier)}`}
+          title="Changes to this item and everything it depends on"
+          className="flex items-center gap-1 hover:text-foreground"
+        >
+          <Rss className="size-3.5" />
+          RSS
+        </a>
       </p>
 
       {history.lastError ? (
@@ -140,37 +148,6 @@ function VersionRow({ version }: { version: HistoryVersion }) {
       ) : null}
     </li>
   );
-}
-
-function getListSummary(label: string, change: ListChange) {
-  const parts = [
-    change.added.length ? `+${change.added.length}` : null,
-    change.removed.length ? `−${change.removed.length}` : null,
-  ].filter(Boolean);
-  return parts.length ? `${label} ${parts.join(" ")}` : null;
-}
-
-function getChangeSummary(changes: ItemChanges) {
-  if (getChangeCount(changes) === 0) return "Formatting only";
-
-  const fileCounts = { added: 0, removed: 0, modified: 0 };
-  for (const file of changes.files) fileCounts[file.status]++;
-
-  return [
-    fileCounts.modified
-      ? `${fileCounts.modified} ${fileCounts.modified === 1 ? "file" : "files"} changed`
-      : null,
-    fileCounts.added ? `${fileCounts.added} added` : null,
-    fileCounts.removed ? `${fileCounts.removed} removed` : null,
-    getListSummary("deps", changes.dependencies),
-    getListSummary("dev deps", changes.devDependencies),
-    getListSummary("registry deps", changes.registryDependencies),
-    changes.cssVars.length ? `${changes.cssVars.length} CSS vars` : null,
-    changes.envVars.length ? `${changes.envVars.length} env vars` : null,
-    changes.fields.length ? changes.fields.join(", ") : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
 }
 
 type DiffState =

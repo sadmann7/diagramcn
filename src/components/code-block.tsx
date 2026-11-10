@@ -13,6 +13,7 @@ import {
 } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 import { Button } from "@/components/ui/button";
+import { useMounted } from "@/hooks/use-mounted";
 import { cn } from "@/lib/utils";
 
 interface CodeBlockImplProps extends React.ComponentProps<"div"> {
@@ -30,7 +31,9 @@ function CodeBlockImpl({
   ...props
 }: CodeBlockImplProps) {
   const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
+  const mounted = useMounted();
+  // The theme is unknown on the server, so match its render until hydrated.
+  const isDark = mounted && resolvedTheme === "dark";
   const [isCopied, setIsCopied] = React.useState(false);
 
   async function onCopy() {

@@ -8,12 +8,15 @@ interface InspectViewProps {
   input: string;
   shadcnStyle?: string;
   style?: string;
+  /** Tab to open first, e.g. `history`. */
+  tab?: string;
 }
 
 export async function InspectView({
   input,
   shadcnStyle,
   style,
+  tab,
 }: InspectViewProps) {
   const result = input
     ? await inspectRegistry(input, shadcnStyle, style)
@@ -48,5 +51,5 @@ export async function InspectView({
         })
       : undefined;
 
-  return <Inspector result={result} history={history} />;
+  return <Inspector result={result} history={history} defaultTab={tab} />;
 }

@@ -5,7 +5,12 @@ import { getInspectSummary, inspectRegistry } from "@/lib/registry/inspect";
 import { InspectView } from "../components/inspect-view";
 
 interface InspectPageProps {
-  searchParams: Promise<{ q?: string; style?: string; shadcnStyle?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    style?: string;
+    shadcnStyle?: string;
+    tab?: string;
+  }>;
 }
 
 export async function generateMetadata({
@@ -26,6 +31,8 @@ export async function generateMetadata({
 }
 
 export default async function InspectPage({ searchParams }: InspectPageProps) {
-  const { q = "", style, shadcnStyle } = await searchParams;
-  return <InspectView input={q} style={style} shadcnStyle={shadcnStyle} />;
+  const { q = "", style, shadcnStyle, tab } = await searchParams;
+  return (
+    <InspectView input={q} style={style} shadcnStyle={shadcnStyle} tab={tab} />
+  );
 }

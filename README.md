@@ -21,10 +21,13 @@ Paste a command, an item, or a URL and get the fully resolved install plan for a
 | `/stack?q=<input>`         | Stack builder: pick items, check conflicts, get one install command |
 | `/changes`                 | Recent changes across tracked items, filterable by registry (`?namespace=`) or items (`?q=`) |
 | `/changes/feed.xml`        | RSS for the same: all changes, `?namespace=@ns`, or `?q=<items>` (includes their dependencies) |
+| `/s/<id>`                  | A saved stack behind a short link (never changes) |
+| `/r/<id>.json`             | A saved stack as one registry item: `npx shadcn add https://diagramcn.com/r/<id>.json` |
 | `/@namespace/item`          | Permalink for a single item                   |
 | `/inspect?q=<input>`        | Any input: commands, multiple items, URLs     |
 | `/api/inspect?q=<input>`    | Resolved graph and install plan as JSON       |
 | `/api/stack?q=<input>`      | One registry item that installs every item, for `shadcn add <url>` |
+| `POST /api/stacks`         | Save a stack (`{ "q": "<items>" }`), returns its short id |
 | `/api/registries`          | Registries in the shadcn directory, ranked |
 | `/api/registries/items?namespace=@ns` | Items a registry publishes in its index |
 | `/api/history/diff?snapshot=<id>` | File diffs between a version and the one before it |

@@ -69,6 +69,19 @@ export const blobs = pgTable("blobs", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Saved stacks behind short links. Never edited: saving a different list
+// creates a new stack, and saving the same list returns the existing one.
+export const stacks = pgTable("stacks", {
+  id: varchar("id", { length: 30 })
+    .$defaultFn(() => generateId({ length: 8 }))
+    .primaryKey(),
+  // sha256 of the specifier list, so identical stacks share a link.
+  hash: varchar("hash", { length: 64 }).notNull().unique(),
+  specifiers: jsonb("specifiers").$type<string[]>().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export type Item = typeof items.$inferSelect;
 export type NewItem = typeof items.$inferInsert;
 export type Snapshot = typeof snapshots.$inferSelect;
+export type Stack = typeof stacks.$inferSelect;

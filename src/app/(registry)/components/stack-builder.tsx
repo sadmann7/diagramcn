@@ -44,9 +44,18 @@ function useOrigin() {
 interface StackBuilderProps {
   specifiers: string[];
   result: InspectResult | null;
+  /** Set on a saved stack's page (`/s/<id>`). */
+  savedId?: string;
+  /** Whether stacks can be saved to short links on this deployment. */
+  canSave?: boolean;
 }
 
-export function StackBuilder({ specifiers, result }: StackBuilderProps) {
+export function StackBuilder({
+  specifiers,
+  result,
+  savedId,
+  canSave,
+}: StackBuilderProps) {
   const router = useRouter();
   const origin = useOrigin();
   const [isPending, startTransition] = React.useTransition();
@@ -58,10 +67,12 @@ export function StackBuilder({ specifiers, result }: StackBuilderProps) {
     (next: string[]) => {
       startTransition(() => {
         setOptimisticSpecifiers(next);
-        router.replace(getStackHref(next), { scroll: false });
+        // Saved stacks never change, so editing one leaves its page.
+        if (savedId) router.push(getStackHref(next), { scroll: false });
+        else router.replace(getStackHref(next), { scroll: false });
       });
     },
-    [router, setOptimisticSpecifiers],
+    [router, savedId, setOptimisticSpecifiers],
   );
 
   const onAdd = React.useCallback(
@@ -112,9 +123,20 @@ export function StackBuilder({ specifiers, result }: StackBuilderProps) {
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 pt-8 pb-16 sm:px-6">
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-          Build a stack
+          {savedId ? "Saved stack" : "Build a stack"}
         </h1>
-        <p className="max-w-2xl text-sm text-balance text-muted-foreground">
+        {savedId ? (
+          <p className="max-w-2xl text-sm text-balance text-muted-foreground">
+            This link always installs these exact items. Editing the stack
+            starts a new one.
+          </p>
+        ) : null}
+        <p
+          className={cn(
+            "max-w-2xl text-sm text-balance text-muted-foreground",
+            savedId && "sr-only",
+          )}
+        >
           Pick items from any shadcn registry, check how they fit together, then
           install all of them with one command.
         </p>
@@ -130,7 +152,12 @@ export function StackBuilder({ specifiers, result }: StackBuilderProps) {
           </h2>
           {optimisticSpecifiers.length > 0 ? (
             <div className="flex gap-2">
-              <CopyLinkButton specifiers={optimisticSpecifiers} />
+              <ShareButton
+                specifiers={optimisticSpecifiers}
+                savedId={savedId}
+                canSave={!!canSave && !hasUnresolved}
+                disabled={isStale}
+              />
               <Button variant="outline" size="sm" asChild>
                 <Link
                   href={`/changes?q=${encodeURIComponent(optimisticSpecifiers.join(" "))}`}
@@ -276,7 +303,9 @@ export function StackBuilder({ specifiers, result }: StackBuilderProps) {
             ) : (
               <InstallCommand
                 getCommand={(dlx) =>
-                  `${dlx} shadcn@latest add "${getStackItemUrl(origin, specifiers)}"`
+                  savedId
+                    ? `${dlx} shadcn@latest add ${origin}/r/${savedId}.json`
+                    : `${dlx} shadcn@latest add "${getStackItemUrl(origin, specifiers)}"`
                 }
               />
             )}
@@ -289,27 +318,86 @@ export function StackBuilder({ specifiers, result }: StackBuilderProps) {
   );
 }
 
-function CopyLinkButton({ specifiers }: { specifiers: string[] }) {
+interface ShareButtonProps {
+  specifiers: string[];
+  savedId?: string;
+  canSave: boolean;
+  disabled: boolean;
+}
+
+/**
+ * Copies the stack's link. Unsaved stacks are saved first when possible, so
+ * the copied link is a short `/s/<id>` one.
+ */
+function ShareButton({
+  specifiers,
+  savedId,
+  canSave,
+  disabled,
+}: ShareButtonProps) {
+  const router = useRouter();
   const origin = useOrigin();
   const [isCopied, setIsCopied] = React.useState(false);
+  const [isSaving, setIsSaving] = React.useState(false);
 
-  const onCopy = React.useCallback(async () => {
+  const copy = React.useCallback(async (text: string, message: string) => {
     try {
-      await navigator.clipboard.writeText(
-        `${origin}${getStackHref(specifiers)}`,
-      );
+      await navigator.clipboard.writeText(text);
       setIsCopied(true);
-      toast.success("Stack link copied");
+      toast.success(message);
       setTimeout(() => setIsCopied(false), 2000);
     } catch {
       toast.error("Failed to copy to clipboard");
     }
-  }, [origin, specifiers]);
+  }, []);
+
+  const onClick = React.useCallback(async () => {
+    if (savedId) {
+      await copy(`${origin}/s/${savedId}`, "Stack link copied");
+      return;
+    }
+
+    if (!canSave) {
+      await copy(`${origin}${getStackHref(specifiers)}`, "Stack link copied");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const response = await fetch("/api/stacks", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ q: specifiers.join(" ") }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "Failed to save stack");
+
+      await copy(`${origin}/s/${data.id}`, "Stack saved and link copied");
+      router.push(`/s/${data.id}`, { scroll: false });
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to save stack",
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  }, [canSave, copy, origin, router, savedId, specifiers]);
 
   return (
-    <Button variant="outline" size="sm" onClick={onCopy}>
-      {isCopied ? <Check /> : <Link2 />}
-      Copy link
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={onClick}
+      disabled={disabled || isSaving}
+    >
+      {isSaving ? (
+        <Loader className="animate-spin" />
+      ) : isCopied ? (
+        <Check />
+      ) : (
+        <Link2 />
+      )}
+      {savedId || !canSave ? "Copy link" : "Save link"}
     </Button>
   );
 }

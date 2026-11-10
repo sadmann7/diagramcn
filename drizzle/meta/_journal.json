@@ -8,6 +8,13 @@
       "when": 1794314939416,
       "tag": "0000_careless_logan",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794315779538,
+      "tag": "0001_gigantic_firebird",
+      "breakpoints": true
     }
   ]
 }

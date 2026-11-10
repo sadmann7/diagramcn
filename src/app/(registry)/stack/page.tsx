@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { inspectRegistry } from "@/lib/registry/inspect";
 import { parseAddInput } from "@/lib/registry/specifier";
+import { isTrackingEnabled } from "@/lib/tracking/track";
 
 import { StackBuilder } from "../components/stack-builder";
 
@@ -29,5 +30,11 @@ export default async function StackPage({ searchParams }: StackPageProps) {
   const { q = "" } = await searchParams;
   const result = q ? await inspectRegistry(q) : null;
 
-  return <StackBuilder specifiers={result?.specifiers ?? []} result={result} />;
+  return (
+    <StackBuilder
+      specifiers={result?.specifiers ?? []}
+      result={result}
+      canSave={isTrackingEnabled}
+    />
+  );
 }

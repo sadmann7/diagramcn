@@ -1,6 +1,7 @@
 export const SITE_NAME = "diagramcn";
 
-export const SITE_DESCRIPTION = "Visualize shadcn registries in diagrams";
+export const SITE_DESCRIPTION =
+  "See what shadcn add does before you run it: dependency graphs, files, packages, conflicts, and risks for any shadcn registry item.";
 
 export const SITE_URL = "https://diagramcn.com";
 

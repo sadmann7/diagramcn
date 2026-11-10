@@ -6,56 +6,39 @@ import * as React from "react";
 import { toast } from "sonner";
 import svgPanZoom from "svg-pan-zoom";
 
-import type { RegistryItem } from "@/lib/validations/registry";
+import type { PlannedFile } from "@/lib/registry/plan";
 
 import { ActionButton } from "@/components/action-button";
-import { CodeBlock } from "@/components/code-block";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getPackageManagerCommands, packageManagers } from "@/lib/command";
+import { getPlannedFileId } from "@/lib/registry/plan";
 import { cn } from "@/lib/utils";
+
+import { FileDialog } from "./file-dialog";
 
 interface MermaidDiagramProps extends React.ComponentProps<"div"> {
   code: string;
-  registryData: RegistryItem;
+  files: PlannedFile[];
+  fileName: string;
   theme?: MermaidConfig["theme"];
-  isPending: boolean;
 }
 
 export function MermaidDiagram({
   code,
-  registryData,
+  files,
+  fileName,
   theme = "neutral",
   className,
-  isPending,
   ...props
 }: MermaidDiagramProps) {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const panZoomRef = React.useRef<SvgPanZoom.Instance | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
-  const [showNodeDialog, setShowNodeDialog] = React.useState(false);
-  const [selectedNodeId, setSelectedNodeId] = React.useState<string | null>(
+  const [selectedFile, setSelectedFile] = React.useState<PlannedFile | null>(
     null,
   );
-  const [selectedNodePath, setSelectedNodePath] = React.useState<string | null>(
-    null,
-  );
-  const [selectedFile, setSelectedFile] = React.useState<
-    NonNullable<RegistryItem["files"]>[number] | null
-  >(null);
   const [isCopied, setIsCopied] = React.useState(false);
-  const [packageManager, setPackageManager] = React.useState<
-    string | undefined
-  >(undefined);
 
-  const isGenerating = isPending || isLoading;
+  const isGenerating = isLoading;
 
   React.useEffect(() => {
     const currentContainer = containerRef.current;
@@ -187,28 +170,15 @@ export function MermaidDiagram({
 
               const nodes = currentContainer.querySelectorAll(".node");
               for (const node of nodes) {
-                const nodeId = node.id;
-                if (nodeId) {
-                  node.addEventListener("click", () => {
-                    const path =
-                      node.querySelector("title")?.textContent ??
-                      node.getAttribute("title") ??
-                      null;
+                const fileId =
+                  node.querySelector("title")?.textContent ??
+                  node.getAttribute("title");
+                const file = files.find(
+                  (file) => getPlannedFileId(file) === fileId,
+                );
+                if (!file) continue;
 
-                    setSelectedNodeId(nodeId);
-                    setSelectedNodePath(path);
-                    setShowNodeDialog(true);
-
-                    if (path && registryData?.files) {
-                      const file = registryData.files.find(
-                        (file) => file.path === path,
-                      );
-                      setSelectedFile(file ?? null);
-                    } else {
-                      setSelectedFile(null);
-                    }
-                  });
-                }
+                node.addEventListener("click", () => setSelectedFile(file));
               }
             } else {
               console.warn("Could not find SVG element after rendering.");
@@ -277,7 +247,7 @@ export function MermaidDiagram({
         }
       }
     };
-  }, [code, theme, registryData]);
+  }, [code, theme, files]);
 
   const onZoomIn = React.useCallback(() => {
     panZoomRef.current?.zoomIn();
@@ -375,7 +345,7 @@ export function MermaidDiagram({
         ctx.drawImage(image, 0, 0);
 
         const link = document.createElement("a");
-        link.download = `${registryData?.name ?? "diagram"}.png`;
+        link.download = `${fileName}.png`;
         link.href = canvas.toDataURL("image/png");
         link.click();
         toast.success("Diagram exported as PNG");
@@ -394,11 +364,7 @@ export function MermaidDiagram({
     image.src = `data:image/svg+xml;base64,${btoa(
       String.fromCharCode(...new TextEncoder().encode(svgString)),
     )}`;
-  }, [registryData?.name]);
-
-  const isRoot = React.useMemo(() => {
-    return selectedNodeId?.includes("Root");
-  }, [selectedNodeId]);
+  }, [fileName]);
 
   return (
     <div className="relative size-full overflow-hidden">
@@ -469,90 +435,7 @@ export function MermaidDiagram({
         className={cn("size-full", isGenerating && "invisible", className)}
         {...props}
       />
-      <Dialog open={showNodeDialog} onOpenChange={setShowNodeDialog}>
-        <DialogContent className="sm:max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>
-              {isRoot
-                ? registryData.name
-                : (selectedFile?.path?.split("/").pop() ??
-                  selectedNodePath?.split("/").pop() ??
-                  selectedNodeId ??
-                  "Node")}
-            </DialogTitle>
-            {isRoot ? (
-              <DialogDescription>{registryData.description}</DialogDescription>
-            ) : (
-              <div className="flex flex-col gap-1.5 pt-2 text-sm text-muted-foreground">
-                <DialogDescription className="sr-only">
-                  Node description
-                </DialogDescription>
-                {selectedFile ? (
-                  <>
-                    <span>
-                      Path:{" "}
-                      <code className="font-mono text-foreground">
-                        {selectedFile.path}
-                      </code>
-                    </span>
-                    <span>
-                      Type:{" "}
-                      <code className="font-mono text-foreground">
-                        {selectedFile.type ?? "N/A"}
-                      </code>
-                    </span>
-                  </>
-                ) : selectedNodePath ? (
-                  <span>
-                    Path:{" "}
-                    <code className="font-mono text-foreground">
-                      {selectedNodePath}
-                    </code>
-                  </span>
-                ) : null}
-              </div>
-            )}
-          </DialogHeader>
-          {isRoot ? (
-            <div className="relative flex flex-col">
-              <div className="rounded-t-md border-b bg-canvas px-4 pt-1.5">
-                <Tabs value={packageManager} onValueChange={setPackageManager}>
-                  <TabsList className="gap-3 bg-transparent p-0">
-                    {packageManagers.map((packageManager) => (
-                      <TabsTrigger
-                        key={packageManager}
-                        value={packageManager}
-                        className="rounded-none border-0 border-b border-transparent p-0 data-[state=active]:border-b-foreground data-[state=active]:bg-transparent dark:data-[state=active]:border-b-foreground dark:data-[state=active]:bg-transparent"
-                      >
-                        {packageManager}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-                </Tabs>
-              </div>
-              <CodeBlock
-                code={`${
-                  getPackageManagerCommands(packageManager ?? "pnpm").dlx
-                } shadcn@latest add ${registryData.$schema}`}
-                language="bash"
-                className="max-h-[60svh] overflow-auto"
-                style={{
-                  borderTopLeftRadius: "0",
-                  borderTopRightRadius: "0",
-                }}
-                isCommand
-              />
-            </div>
-          ) : null}
-          {selectedFile ? (
-            <CodeBlock
-              code={selectedFile.content ?? ""}
-              language={selectedFile.path.split(".").pop()}
-              className="max-h-[50svh] overflow-auto"
-            />
-          ) : null}
-        </DialogContent>
-      </Dialog>
+      <FileDialog file={selectedFile} onClose={() => setSelectedFile(null)} />
     </div>
   );
 }

@@ -1,24 +1,42 @@
 # [diagramcn](https://diagramcn.com)
 
-A diagram visualization tool for shadcn/ui registry components.
+See what `shadcn add` does before you run it.
+
+Paste a command, an item, or a URL and get the fully resolved install plan for any shadcn/ui registry item, across registries.
 
 ## Features
 
-- [x] Interactive diagram visualization
-- [x] Zoom in/out and center view controls
-- [x] Collapsible nodes for better organization
-- [x] Focus on specific nodes
-- [x] Responsive layout with mobile support
-- [x] Real-time JSON parsing and visualization
-- [x] Beautiful and modern UI with dark mode support
+- [x] Accepts `npx shadcn@latest add ...` commands (any package manager), namespaced items (`@acme/foo`), bare names, and item URLs, including several at once
+- [x] Resolves the full `registryDependencies` tree across registries, using the [shadcn registry directory](https://ui.shadcn.com/r/registries.json)
+- [x] Install plan: every file and its target path, npm and dev dependencies, CSS variables and rules, env vars, and fonts
+- [x] Findings: file conflicts between items, version conflicts, CSS variable overrides, undeclared dependencies, missing targets or content, and risky code (eval, child_process, fs, outbound requests, writes outside the project)
+- [x] Item graph and file graph (built from real imports), with PNG export
+- [x] Interactive JSON tree for each item
+- [x] Permalinks (`/@shadcn/sidebar-07`), OG images, and README badges
+
+## Routes
+
+| Route                       | Description                                   |
+| --------------------------- | --------------------------------------------- |
+| `/stack?q=<input>`         | Stack builder: pick items, check conflicts, get one install command |
+| `/@namespace/item`          | Permalink for a single item                   |
+| `/inspect?q=<input>`        | Any input: commands, multiple items, URLs     |
+| `/api/inspect?q=<input>`    | Resolved graph and install plan as JSON       |
+| `/api/stack?q=<input>`      | One registry item that installs every item, for `shadcn add <url>` |
+| `/api/registries`          | Registries in the shadcn directory, ranked |
+| `/api/registries/items?namespace=@ns` | Items a registry publishes in its index |
+| `/api/badge?q=<input>`      | SVG badge with the error or warning count     |
+| `/api/og?q=<input>`         | Open Graph image                              |
+
+Optional `?style=` (third-party `{style}` URLs, default `new-york`) and `?shadcnStyle=` (`@shadcn` items, default `new-york-v4`) are supported on every route.
 
 ## Tech Stack
 
 - **Framework:** [Next.js](https://nextjs.org)
 - **Styling:** [Tailwind CSS](https://tailwindcss.com)
 - **UI Components:** [shadcn/ui](https://ui.shadcn.com)
-- **Diagram Components:** [Reaflow](https://github.com/reaviz/reaflow)
-- **JSON Parsing:** [jsonc-parser](https://github.com/microsoft/node-jsonc-parser)
+- **Diagrams:** [Mermaid](https://mermaid.js.org) and [Reaflow](https://github.com/reaviz/reaflow)
+- **Database:** [PlanetScale](https://planetscale.com) Postgres with [Drizzle](https://orm.drizzle.team)
 - **Validation:** [Zod](https://zod.dev)
 
 ## Getting Started
@@ -37,17 +55,27 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## How to Use
+## Change tracking
 
-1. Enter a shadcn/ui registry command or URL in the input field
-2. The diagram will automatically generate showing component dependencies
-3. Use the toolbar to:
-   - Zoom in/out
-   - Center view
-   - Focus on specific nodes
-4. Click on nodes to expand/collapse their children
-5. Toggle between light and dark modes
-6. Edit the registry JSON directly in the editor panel
+diagramcn snapshots registry items so it can show what changed upstream. It is optional: without `DATABASE_URL` the rest of the app works and tracking is skipped.
+
+- **What's tracked:** every `@shadcn` item in the default style, plus any item someone inspects or adds to a stack.
+- **How:** a daily Vercel cron (`/api/cron/crawl`, see `vercel.json`) re-fetches tracked items, least recently checked first, and stores a snapshot only when the content hash changes. Inspections also record the items they resolve.
+- **Storage:** Postgres (PlanetScale in production). `items` holds one row per item, `snapshots` one row per distinct version, and `blobs` each file's content once per sha256.
+
+Local setup:
+
+```bash
+cp .env.example .env    # then adjust ports or set CRON_SECRET
+pnpm db:start           # Postgres in Docker
+pnpm db:migrate         # apply migrations from ./drizzle
+pnpm crawl              # run a crawl now (optionally: pnpm crawl 100)
+pnpm db:studio          # browse the data
+```
+
+After changing `src/db/schema.ts`, run `pnpm db:generate` to create a migration.
+
+In production, set `DATABASE_URL` (PlanetScale Postgres) and `CRON_SECRET` in the Vercel project, then run `pnpm db:migrate` against the production database once.
 
 ## Learn More
 

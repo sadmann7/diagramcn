@@ -19,6 +19,8 @@ Paste a command, an item, or a URL and get the fully resolved install plan for a
 | Route                       | Description                                   |
 | --------------------------- | --------------------------------------------- |
 | `/stack?q=<input>`         | Stack builder: pick items, check conflicts, get one install command |
+| `/changes`                 | Recent changes across tracked items, filterable by registry (`?namespace=`) or items (`?q=`) |
+| `/changes/feed.xml`        | RSS for the same: all changes, `?namespace=@ns`, or `?q=<items>` (includes their dependencies) |
 | `/@namespace/item`          | Permalink for a single item                   |
 | `/inspect?q=<input>`        | Any input: commands, multiple items, URLs     |
 | `/api/inspect?q=<input>`    | Resolved graph and install plan as JSON       |
@@ -63,6 +65,7 @@ diagramcn snapshots registry items so it can show what changed upstream. It is o
 - **What's tracked:** every `@shadcn` item in the default style, plus any item someone inspects or adds to a stack.
 - **How:** a daily Vercel cron (`/api/cron/crawl`, see `vercel.json`) re-fetches tracked items, least recently checked first, and stores a snapshot only when the content hash changes. Inspections also record the items they resolve.
 - **History:** item pages have a History tab with every version since tracking started, what changed (files, dependencies, CSS and env vars, other fields), and line diffs per file.
+- **Following changes:** `/changes` lists every change, and each item, stack and registry has an RSS feed. Feeds for items and stacks include everything they depend on, since a change to `button` affects every stack that uses it.
 - **Storage:** Postgres (PlanetScale in production). `items` holds one row per item, `snapshots` one row per distinct version, and `blobs` each file's content once per sha256.
 
 Local setup:

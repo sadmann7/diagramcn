@@ -19,6 +19,12 @@ export function SiteHeader() {
           >
             Stack
           </Link>
+          <Link
+            href="/changes"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Changes
+          </Link>
         </nav>
         <nav className="ml-auto flex items-center">
           <Button

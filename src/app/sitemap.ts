@@ -6,6 +6,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const routes = [
     "",
     "/stack",
+    "/changes",
     "/@shadcn/sidebar-07",
     "/@shadcn/dashboard-01",
   ].map((route) => ({

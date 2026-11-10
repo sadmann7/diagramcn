@@ -6,7 +6,7 @@ import { InspectView } from "../components/inspect-view";
 
 interface ItemPageProps {
   params: Promise<{ slug: string[] }>;
-  searchParams: Promise<{ style?: string; shadcnStyle?: string }>;
+  searchParams: Promise<{ style?: string; shadcnStyle?: string; tab?: string }>;
 }
 
 /** `/@acme/data-table` → `@acme/data-table`, `/button` → `button`. */
@@ -35,12 +35,13 @@ export default async function ItemPage({
   params,
   searchParams,
 }: ItemPageProps) {
-  const { style, shadcnStyle } = await searchParams;
+  const { style, shadcnStyle, tab } = await searchParams;
   return (
     <InspectView
       input={await getSpecifier(params)}
       style={style}
       shadcnStyle={shadcnStyle}
+      tab={tab}
     />
   );
 }

@@ -103,3 +103,9 @@ export function getStackHref(specifiers: string[]) {
 export function getStackItemUrl(origin: string, specifiers: string[]) {
   return `${origin}/api/stack?q=${encodeURIComponent(specifiers.join(" "))}`;
 }
+
+/** Item page opened on its History tab. */
+export function getItemHistoryHref(specifier: string) {
+  const href = getInspectHref([specifier]);
+  return `${href}${href.includes("?") ? "&" : "?"}tab=history`;
+}

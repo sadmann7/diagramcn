@@ -196,9 +196,14 @@ export async function backfillItem(
       contentHash: file.contentHash,
     })),
   );
-  if (stableStringify(imported.at(-1)?.item.files) === oldestFilesKey) {
-    imported.pop();
-  }
+  // It should match exactly: git as of tracking's start is what was served
+  // then. If not, the sources in git aren't the served files anymore (e.g.
+  // generated at build time), so none of the history can be trusted.
+  const isMatch =
+    imported.length === 0 ||
+    stableStringify(imported.at(-1)?.item.files) === oldestFilesKey;
+  if (isMatch) imported.pop();
+  else imported.length = 0;
 
   const added = await db.transaction(async (tx) => {
     // Claim the item first, so a concurrent backfill inserts nothing.
@@ -233,6 +238,13 @@ export async function backfillItem(
     return imported.length;
   });
 
+  if (!isMatch) {
+    // Marked as done above, so it isn't retried every crawl.
+    return {
+      status: "skipped",
+      reason: "sources in git don't match what was served",
+    };
+  }
   return { status: "done", added };
 }
 

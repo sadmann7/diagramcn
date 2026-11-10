@@ -155,7 +155,7 @@ export function CanvasBuilder({
 
   const onSelect = React.useCallback((id: string | null) => {
     setSelectedId(id);
-    if (!id) setHighlight(null);
+    setHighlight(null);
   }, []);
 
   const conflicts = React.useMemo(
@@ -186,8 +186,8 @@ export function CanvasBuilder({
   const selected = selectedId ? nodesById.get(selectedId) : undefined;
 
   return (
-    <div className="flex flex-col md:h-[calc(100svh-3.5rem)] md:flex-row">
-      <aside className="flex w-full shrink-0 flex-col gap-4 overflow-y-auto border-b p-4 md:w-72 md:border-r md:border-b-0">
+    <div className="flex flex-col lg:h-[calc(100svh-3.5rem)] lg:flex-row">
+      <aside className="flex w-full shrink-0 flex-col gap-4 overflow-y-auto border-b p-4 lg:w-72 lg:border-r lg:border-b-0">
         <div className="flex flex-col gap-1">
           <h1 className="text-lg font-semibold tracking-tight">
             {savedId ? "Saved canvas" : "Canvas"}
@@ -291,7 +291,7 @@ export function CanvasBuilder({
 
       <div
         aria-busy={isStale}
-        className="relative h-[60svh] min-w-0 flex-1 bg-canvas md:h-auto"
+        className="relative h-[70svh] min-w-0 shrink-0 bg-canvas lg:h-auto lg:flex-1 lg:shrink"
       >
         {result && optimisticSpecifiers.length > 0 ? (
           <CanvasGraph
@@ -318,7 +318,7 @@ export function CanvasBuilder({
         ) : null}
       </div>
 
-      <aside className="flex w-full shrink-0 flex-col overflow-y-auto border-t md:w-96 md:border-t-0 md:border-l">
+      <aside className="flex w-full shrink-0 flex-col overflow-y-auto border-t lg:w-96 lg:border-t-0 lg:border-l">
         {result && selected ? (
           <ItemDetails
             node={selected}

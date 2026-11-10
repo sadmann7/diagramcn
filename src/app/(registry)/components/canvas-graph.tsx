@@ -12,6 +12,7 @@ import {
   type NodeProps,
   Position,
   ReactFlow,
+  type ReactFlowInstance,
   useEdgesState,
   useNodesState,
 } from "@xyflow/react";
@@ -27,6 +28,8 @@ import { cn } from "@/lib/utils";
 const NODE_WIDTH = 240;
 const COLUMN_GAP = 120;
 const ROW_HEIGHT = 110;
+const MAX_ROWS = 6;
+const fitViewOptions = { padding: 0.15, maxZoom: 1 };
 
 // One accent per registry, so items from the same one read as a group.
 const registryColors = [
@@ -118,26 +121,36 @@ const nodeTypes = { item: ItemNode };
 
 /**
  * Columns by depth: what you picked on the left, what it pulls in to the
- * right. Nodes stay draggable; the layout resets when the items change.
+ * right. Deep levels wrap into several columns so the canvas stays wide
+ * rather than tall. Nodes stay draggable; the layout resets when the
+ * items change.
  */
 function getLayout(
   graph: ResolvedGraph,
   conflictCounts: Map<string, number>,
 ): ItemNodeType[] {
-  const columns = new Map<number, ResolvedNode[]>();
+  const levels = new Map<number, ResolvedNode[]>();
   for (const node of graph.nodes) {
-    columns.set(node.depth, [...(columns.get(node.depth) ?? []), node]);
+    levels.set(node.depth, [...(levels.get(node.depth) ?? []), node]);
   }
-  const tallest = Math.max(0, ...[...columns.values()].map((c) => c.length));
+
+  const columns = [...levels.entries()]
+    .sort(([a], [b]) => a - b)
+    .flatMap(([, nodes]) =>
+      Array.from({ length: Math.ceil(nodes.length / MAX_ROWS) }, (_, index) =>
+        nodes.slice(index * MAX_ROWS, (index + 1) * MAX_ROWS),
+      ),
+    );
+  const tallest = Math.max(0, ...columns.map((column) => column.length));
   const roots = new Set(graph.roots);
 
-  return [...columns.entries()].flatMap(([depth, nodes]) => {
+  return columns.flatMap((nodes, column) => {
     const offset = ((tallest - nodes.length) * ROW_HEIGHT) / 2;
     return nodes.map((node, index) => ({
       id: node.id,
       type: "item" as const,
       position: {
-        x: depth * (NODE_WIDTH + COLUMN_GAP),
+        x: column * (NODE_WIDTH + COLUMN_GAP),
         y: offset + index * ROW_HEIGHT,
       },
       data: {
@@ -259,24 +272,43 @@ export function CanvasGraph({
     setEdges(getEdges(graph, conflictPairs, positions, highlightSet));
   }, [graph, conflictCounts, conflictPairs, highlightSet, setEdges]);
 
+  // Fit again whenever the panel changes size, e.g. when sidebars stack.
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [instance, setInstance] = React.useState<ReactFlowInstance<
+    ItemNodeType,
+    Edge
+  > | null>(null);
+  React.useEffect(() => {
+    const container = containerRef.current;
+    if (!container || !instance) return;
+    const observer = new ResizeObserver(() => {
+      void instance.fitView(fitViewOptions);
+    });
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [instance]);
+
   return (
-    <ReactFlow
-      nodes={nodes}
-      edges={edges}
-      nodeTypes={nodeTypes}
-      onNodesChange={onNodesChange}
-      onEdgesChange={onEdgesChange}
-      onNodeClick={(_, node) => onSelect(node.id)}
-      onPaneClick={() => onSelect(null)}
-      colorMode={resolvedTheme === "dark" ? "dark" : "light"}
-      nodesConnectable={false}
-      fitView
-      fitViewOptions={{ padding: 0.2, maxZoom: 1.25 }}
-      minZoom={0.2}
-    >
-      <Background gap={20} />
-      <Controls showInteractive={false} />
-      <MiniMap pannable zoomable className="hidden md:block" />
-    </ReactFlow>
+    <div ref={containerRef} className="size-full">
+      <ReactFlow
+        onInit={setInstance}
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={nodeTypes}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onNodeClick={(_, node) => onSelect(node.id)}
+        onPaneClick={() => onSelect(null)}
+        colorMode={resolvedTheme === "dark" ? "dark" : "light"}
+        nodesConnectable={false}
+        fitView
+        fitViewOptions={fitViewOptions}
+        minZoom={0.2}
+      >
+        <Background gap={20} />
+        <Controls showInteractive={false} />
+        <MiniMap pannable zoomable className="hidden md:block" />
+      </ReactFlow>
+    </div>
   );
 }

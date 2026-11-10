@@ -11,7 +11,7 @@ Update shadcn components without losing your edits, and mix items from any regis
 - [x] `/changes` and RSS feeds for items, registries, and canvases (including everything they depend on)
 - [x] Canvas: lay out items from any registry in the [shadcn directory](https://ui.shadcn.com/r/registries.json), with everything they pull in. Conflicts (same file, different CSS or env values, clashing package ranges) are drawn as red edges
 - [x] One install command for a canvas, and short links that always install the same items
-- [x] Every shadcn style: `new-york-v4`, the Radix, Base UI and React Aria styles (vega, nova, maia, lyra, mira, luma, sera, rhea), and the Tailwind v3 styles. Pick one with `?style=` on item pages, the canvas and `/changes`; the CLI reads yours from `components.json`
+- [x] Every shadcn style: Base UI, React Aria and Radix in eight looks each (nova, vega, maia, lyra, mira, luma, sera, rhea), plus the legacy `new-york-v4` and Tailwind v3 styles. `base-nova` is the default, as in `shadcn init`. Pick one with `?style=` on item pages, the canvas and `/changes`; the CLI reads yours from `components.json`
 
 ## Routes
 
@@ -36,7 +36,7 @@ Update shadcn components without losing your edits, and mix items from any regis
 
 `POST /api/stacks` and `/api/sync/versions` are rate-limited per client IP (counters in Postgres, cleared by the daily crawl) and return `429` with `Retry-After` when over the limit.
 
-`?style=` picks the `@shadcn` style on item pages, the canvas, `/changes` and `/api/sync/versions` (default `new-york-v4`).
+`?style=` picks the `@shadcn` style on item pages, the canvas and `/api/sync/versions` (default `base-nova`). On `/changes` and its feeds it filters, and every style is shown without it.
 
 ## Project structure
 
@@ -87,7 +87,7 @@ Other tasks run through Turborepo too: `pnpm build`, `pnpm test`, `pnpm check-ty
 
 diagramcn snapshots registry items so it can show what changed upstream. It is optional: without `DATABASE_URL` the rest of the app works and tracking is skipped.
 
-- **What's tracked:** every `@shadcn` item in the default style, plus any item someone opens, syncs, or puts on a canvas. `@shadcn` items are tracked per style, since each style serves different files; other styles start being tracked the first time someone uses them.
+- **What's tracked:** every `@shadcn` item in `base-nova` (the default) and `new-york-v4` (legacy, but what most existing projects use), plus any item someone opens, syncs, or puts on a canvas. `@shadcn` items are tracked per style, since each style serves different files; other styles start being tracked the first time someone uses them.
 - **How:** a daily Vercel cron (`/api/cron/crawl`, see `vercel.json`) re-fetches tracked items, least recently checked first, and stores a snapshot only when the content hash changes. Item pages and canvases also record the items they resolve.
 - **History:** item pages have a History tab with every version since tracking started, what changed (files, dependencies, CSS and env vars, other fields), and line diffs per file.
 - **Following changes:** `/changes` lists every change, and each item, canvas and registry has an RSS feed. Feeds for items and canvases include everything they depend on, since a change to `button` affects every canvas that uses it.

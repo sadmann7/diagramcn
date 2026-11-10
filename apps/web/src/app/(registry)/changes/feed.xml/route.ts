@@ -1,6 +1,6 @@
 import { siteConfig } from "@/config/site";
 import { getItemHref } from "@/lib/registry/specifier";
-import { getShadcnStyle } from "@/lib/registry/styles";
+import { getShadcnStyleLabel, isShadcnStyle } from "@/lib/registry/styles";
 import {
   type ChangeEvent,
   getFollowedSpecifiers,
@@ -46,7 +46,7 @@ function renderFeed({
   const items = changes.map((change) => {
     const href = `${siteConfig.url}${getItemHref(change.specifier, change.style)}`;
     return `    <item>
-      <title>${escapeXml(`${change.specifier}: ${change.summary}`)}</title>
+      <title>${escapeXml(`${change.specifier}${change.style ? ` (${getShadcnStyleLabel(change.style)})` : ""}: ${change.summary}`)}</title>
       <link>${escapeXml(href)}</link>
       <guid isPermaLink="false">${escapeXml(change.snapshotId)}</guid>
       <pubDate>${new Date(change.fetchedAt).toUTCString()}</pubDate>
@@ -78,7 +78,8 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const namespace = searchParams.get("namespace")?.trim() || undefined;
   const query = searchParams.get("q")?.trim();
-  const style = getShadcnStyle(searchParams.get("style"));
+  const requestedStyle = searchParams.get("style");
+  const style = isShadcnStyle(requestedStyle) ? requestedStyle : undefined;
 
   let title = "diagramcn: shadcn registry changes";
   let description = "Changes to tracked shadcn registry items.";

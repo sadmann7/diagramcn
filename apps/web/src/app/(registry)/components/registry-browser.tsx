@@ -44,17 +44,23 @@ function useJson<T>(url: string | null) {
 
 interface RegistryBrowserProps {
   specifiers: string[];
+  /** `@shadcn` style to list; each style ships a different set of items. */
+  shadcnStyle: string;
   onAdd: (specifier: string) => void;
 }
 
-export function RegistryBrowser({ specifiers, onAdd }: RegistryBrowserProps) {
+export function RegistryBrowser({
+  specifiers,
+  shadcnStyle,
+  onAdd,
+}: RegistryBrowserProps) {
   const [registryQuery, setRegistryQuery] = React.useState("");
   const [itemQuery, setItemQuery] = React.useState("");
   const [namespace, setNamespace] = React.useState("@shadcn");
 
   const registries = useJson<BrowseRegistry[]>("/api/registries");
   const items = useJson<BrowseItem[]>(
-    `/api/registries/items?namespace=${encodeURIComponent(namespace)}`,
+    `/api/registries/items?namespace=${encodeURIComponent(namespace)}&style=${shadcnStyle}`,
   );
 
   const filteredRegistries = React.useMemo(() => {

@@ -4,9 +4,9 @@ import { cn } from "@diagramcn/ui/lib/utils";
 import { Rss } from "lucide-react";
 import Link from "next/link";
 
-import { StylePicker } from "@/components/style-picker";
+import { ALL_STYLES, StylePicker } from "@/components/style-picker";
 import { getItemHref } from "@/lib/registry/specifier";
-import { DEFAULT_SHADCN_STYLE, getShadcnStyle } from "@/lib/registry/styles";
+import { getShadcnStyleLabel, isShadcnStyle } from "@/lib/registry/styles";
 import {
   type ChangeEvent,
   getFollowedSpecifiers,
@@ -65,9 +65,9 @@ export async function generateMetadata({
 
 export default async function ChangesPage({ searchParams }: ChangesPageProps) {
   const { namespace, q, before, style: requestedStyle } = await searchParams;
-  const style = getShadcnStyle(requestedStyle);
-  // Kept in links only when it isn't the default.
-  const styleParam = style === DEFAULT_SHADCN_STYLE ? undefined : style;
+  // Every style unless one is picked, since most history is in one style.
+  const style = isShadcnStyle(requestedStyle) ? requestedStyle : undefined;
+  const styleParam = style;
 
   if (!isTrackingEnabled) {
     return (
@@ -112,10 +112,10 @@ export default async function ChangesPage({ searchParams }: ChangesPageProps) {
 
   return (
     <ChangesLayout feedHref={feedHref}>
-      <label className="flex items-center gap-2 self-start text-sm">
+      <div className="flex items-center gap-2 self-start text-sm">
         <span className="text-muted-foreground">shadcn style</span>
-        <StylePicker value={style} />
-      </label>
+        <StylePicker value={style ?? ALL_STYLES} allowAll />
+      </div>
 
       {followed ? (
         <p className="text-sm text-muted-foreground">
@@ -175,6 +175,11 @@ export default async function ChangesPage({ searchParams }: ChangesPageProps) {
                     <span className="truncate font-mono text-sm">
                       {change.specifier}
                     </span>
+                    {change.style && !style ? (
+                      <span className="shrink-0 text-xs text-muted-foreground">
+                        {getShadcnStyleLabel(change.style)}
+                      </span>
+                    ) : null}
                     <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
                       {change.summary}
                     </span>

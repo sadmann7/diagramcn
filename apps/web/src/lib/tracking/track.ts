@@ -9,6 +9,7 @@ import { SHADCN_NAMESPACE } from "@/lib/registry/specifier";
 import { DEFAULT_SHADCN_STYLE } from "@/lib/registry/styles";
 import {
   backfillItem,
+  GIT_HISTORY_STYLE,
   GitHubRateLimitError,
   getItemsToBackfill,
 } from "@/lib/tracking/backfill";
@@ -122,25 +123,34 @@ export async function recordNodes(nodes: ResolvedNode[]) {
   );
 }
 
+// The default style, plus the legacy one most existing projects still use.
+// Other styles are tracked once someone opens or syncs an item in them.
+const SEEDED_STYLES = [DEFAULT_SHADCN_STYLE, GIT_HISTORY_STYLE];
+
 /** Makes sure every official shadcn item is tracked, even if never inspected. */
 async function seedShadcnItems(db: Db) {
-  const shadcnItems = await listRegistryItems(SHADCN_NAMESPACE);
-  if (!shadcnItems?.length) return 0;
+  let seeded = 0;
 
-  const inserted = await db
-    .insert(items)
-    .values(
-      shadcnItems.map((item) => ({
-        specifier: `${SHADCN_NAMESPACE}/${item.name}`,
-        style: DEFAULT_SHADCN_STYLE,
-        namespace: SHADCN_NAMESPACE,
-        name: item.name,
-      })),
-    )
-    .onConflictDoNothing()
-    .returning({ id: items.id });
+  for (const style of SEEDED_STYLES) {
+    const shadcnItems = await listRegistryItems(SHADCN_NAMESPACE, style);
+    if (!shadcnItems?.length) continue;
 
-  return inserted.length;
+    const inserted = await db
+      .insert(items)
+      .values(
+        shadcnItems.map((item) => ({
+          specifier: `${SHADCN_NAMESPACE}/${item.name}`,
+          style,
+          namespace: SHADCN_NAMESPACE,
+          name: item.name,
+        })),
+      )
+      .onConflictDoNothing()
+      .returning({ id: items.id });
+    seeded += inserted.length;
+  }
+
+  return seeded;
 }
 
 async function mapWithConcurrency<T, R>(

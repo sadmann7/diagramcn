@@ -15,6 +15,14 @@ describe("shadcn styles", () => {
     assert.ok(shadcnStyles.some((style) => style.name === "aria-rhea"));
   });
 
+  test("defaults to base-nova, with new-york-v4 as legacy", () => {
+    assert.equal(DEFAULT_SHADCN_STYLE, "base-nova");
+    assert.equal(
+      shadcnStyles.find((style) => style.name === "new-york-v4")?.group,
+      "Legacy",
+    );
+  });
+
   test("falls back to the default for unknown input", () => {
     assert.equal(getShadcnStyle("radix-nova"), "radix-nova");
     assert.equal(getShadcnStyle("../../etc"), DEFAULT_SHADCN_STYLE);
@@ -24,6 +32,7 @@ describe("shadcn styles", () => {
   test("labels styles by library", () => {
     assert.equal(getShadcnStyleLabel("base-nova"), "Base UI Nova");
     assert.equal(getShadcnStyleLabel("new-york"), "New York (Tailwind v3)");
+    assert.equal(getShadcnStyleLabel("new-york-v4"), "New York (Tailwind v4)");
   });
 });
 
@@ -35,8 +44,8 @@ describe("style in links", () => {
       "/@shadcn/button",
     );
     assert.equal(
-      getItemHref("@shadcn/button", "radix-nova"),
-      "/@shadcn/button?style=radix-nova",
+      getItemHref("@shadcn/button", "new-york-v4"),
+      "/@shadcn/button?style=new-york-v4",
     );
     assert.equal(
       getCanvasHref(["@shadcn/button", "@magicui/marquee"], "base-mira"),

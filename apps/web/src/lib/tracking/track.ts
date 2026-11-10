@@ -1,5 +1,5 @@
 import { blobs, items, snapshots } from "@diagramcn/db/schema";
-import { and, asc, eq, sql } from "drizzle-orm";
+import { and, asc, eq, isNotNull, ne, sql } from "drizzle-orm";
 
 import { db as defaultDb, type Db } from "@/db";
 import { env } from "@/env";
@@ -153,6 +153,45 @@ async function seedShadcnItems(db: Db) {
   return seeded;
 }
 
+// Bounds one registry's share of the daily crawl.
+const MAX_ITEMS_PER_REGISTRY = 500;
+
+/**
+ * Tracks every item of each third-party registry someone has used. Items
+ * are tracked once anyone opens, syncs or adds one, but a registry's other
+ * items would otherwise never show up in its changes.
+ */
+async function seedFollowedRegistries(db: Db) {
+  const rows = await db
+    .selectDistinct({ namespace: items.namespace })
+    .from(items)
+    .where(
+      and(isNotNull(items.namespace), ne(items.namespace, SHADCN_NAMESPACE)),
+    );
+
+  let seeded = 0;
+  for (const { namespace } of rows) {
+    if (!namespace) continue;
+    const registryItems = await listRegistryItems(namespace).catch(() => null);
+    if (!registryItems?.length) continue;
+
+    const inserted = await db
+      .insert(items)
+      .values(
+        registryItems.slice(0, MAX_ITEMS_PER_REGISTRY).map((item) => ({
+          specifier: `${namespace}/${item.name}`,
+          namespace,
+          name: item.name,
+        })),
+      )
+      .onConflictDoNothing()
+      .returning({ id: items.id });
+    seeded += inserted.length;
+  }
+
+  return seeded;
+}
+
 async function mapWithConcurrency<T, R>(
   values: T[],
   concurrency: number,
@@ -197,7 +236,8 @@ export async function crawl(
   if (!db) throw new Error("DATABASE_URL is not set");
 
   const start = Date.now();
-  const seeded = await seedShadcnItems(db);
+  const seeded =
+    (await seedShadcnItems(db)) + (await seedFollowedRegistries(db));
 
   const due = await db
     .select({ specifier: items.specifier, style: items.style })

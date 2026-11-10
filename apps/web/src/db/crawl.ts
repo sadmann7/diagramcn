@@ -8,7 +8,7 @@ async function runCrawl() {
   const result = await crawl({ limit });
 
   console.log(
-    `✅ Checked ${result.checked} items in ${result.durationMs}ms (${result.seeded} new from @shadcn)`,
+    `✅ Checked ${result.checked} items in ${result.durationMs}ms (${result.seeded} newly tracked)`,
   );
   console.log(`   ${result.changed.length} changed`);
   console.log(

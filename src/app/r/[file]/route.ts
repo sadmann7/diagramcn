@@ -19,6 +19,7 @@ export async function GET(_req: Request, { params }: RouteContext) {
   }
 
   return createStackItemResponse(stack.specifiers.join(" "), {
+    shadcnStyle: stack.style ?? undefined,
     viewUrl: `${siteConfig.url}/s/${stack.id}`,
   });
 }

@@ -8,6 +8,7 @@ import {
   resolveRegistryGraph,
 } from "@/lib/registry/resolve";
 import { parseAddInput } from "@/lib/registry/specifier";
+import { isShadcnStyle } from "@/lib/registry/styles";
 import { isTrackingEnabled, recordNodes } from "@/lib/tracking/track";
 
 export interface InspectResult {
@@ -24,12 +25,15 @@ async function inspectImpl(
   const specifiers = parseAddInput(input);
   if (specifiers.length === 0) return null;
 
-  const options: ResolveOptions = { shadcnStyle, style };
+  const options: ResolveOptions = {
+    shadcnStyle: isShadcnStyle(shadcnStyle) ? shadcnStyle : undefined,
+    style,
+  };
   const graph = await resolveRegistryGraph(specifiers, options);
 
-  // Every inspection doubles as a check for changes. Custom styles resolve
-  // different content for the same specifier, so only defaults are recorded.
-  if (isTrackingEnabled && !shadcnStyle && !style) {
+  // Every inspection doubles as a check for changes. `@shadcn` items are
+  // tracked per style; third-party `{style}` values aren't tracked.
+  if (isTrackingEnabled && !style) {
     after(() => recordNodes(graph.nodes));
   }
   return { specifiers, graph, plan: createInstallPlan(graph) };

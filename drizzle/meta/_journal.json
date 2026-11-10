@@ -29,6 +29,13 @@
       "when": 1794318274484,
       "tag": "0003_public_blindfold",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794320125919,
+      "tag": "0004_misty_magik",
+      "breakpoints": true
     }
   ]
 }

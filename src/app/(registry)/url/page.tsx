@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { getItem, ItemView } from "../components/item-view";
 
 interface UrlItemPageProps {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; style?: string }>;
 }
 
 export async function generateMetadata({
@@ -19,7 +19,7 @@ export async function generateMetadata({
 
 /** The item page for items known only by URL: `/url?q=<item url>`. */
 export default async function UrlItemPage({ searchParams }: UrlItemPageProps) {
-  const { q } = await searchParams;
+  const { q, style } = await searchParams;
   if (!q) redirect("/");
-  return <ItemView input={q} />;
+  return <ItemView input={q} style={style} />;
 }

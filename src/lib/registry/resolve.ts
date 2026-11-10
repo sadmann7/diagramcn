@@ -7,6 +7,7 @@ import {
   parseNamespacedSpecifier,
   SHADCN_NAMESPACE,
 } from "@/lib/registry/specifier";
+import { DEFAULT_SHADCN_STYLE } from "@/lib/registry/styles";
 import {
   type RegistryIndexEntry,
   type RegistryItem,
@@ -42,6 +43,11 @@ export interface ResolvedNode {
   url: string | null;
   namespace: string | null;
   depth: number;
+  /**
+   * The style an `@shadcn` item was resolved in, e.g. `radix-nova`. Empty
+   * for other registries. Items are tracked per specifier and style.
+   */
+  style: string;
   item: RegistryItem | null;
   error: string | null;
 }
@@ -145,6 +151,10 @@ async function resolveNode(
 ): Promise<ResolvedNode> {
   let url: string | null = null;
   let namespace: string | null = null;
+  const style =
+    parseNamespacedSpecifier(specifier)?.namespace === SHADCN_NAMESPACE
+      ? options.shadcnStyle
+      : "";
 
   try {
     ({ url, namespace } = await resolveSpecifierUrl(specifier, options));
@@ -158,6 +168,7 @@ async function resolveNode(
         url,
         namespace,
         depth,
+        style,
         item: null,
         error: `Invalid registry item: ${formatZodError(result.error)}`,
       };
@@ -169,6 +180,7 @@ async function resolveNode(
       url,
       namespace,
       depth,
+      style,
       item: result.data,
       error: null,
     };
@@ -179,6 +191,7 @@ async function resolveNode(
       url,
       namespace,
       depth,
+      style,
       item: null,
       error: error instanceof Error ? error.message : "Failed to resolve item",
     };
@@ -187,7 +200,7 @@ async function resolveNode(
 
 function getResolvedOptions(options: ResolveOptions): Required<ResolveOptions> {
   return {
-    shadcnStyle: options.shadcnStyle ?? "new-york-v4",
+    shadcnStyle: options.shadcnStyle ?? DEFAULT_SHADCN_STYLE,
     style: options.style ?? "new-york",
   };
 }

@@ -4,6 +4,7 @@ import { db as defaultDb, type Db } from "@/db";
 import { blobs, items, snapshots } from "@/db/schema";
 import { env } from "@/env";
 import { SHADCN_NAMESPACE } from "@/lib/registry/specifier";
+import { DEFAULT_SHADCN_STYLE } from "@/lib/registry/styles";
 import { stableStringify } from "@/lib/stable-stringify";
 import { getSnapshotFiles, type SnapshotItem } from "@/lib/tracking/compare";
 import { sha256 } from "@/lib/tracking/snapshot";
@@ -84,9 +85,16 @@ export async function backfillItem(
   const [item] = await db
     .select()
     .from(items)
-    .where(eq(items.specifier, specifier))
+    .where(
+      and(
+        eq(items.specifier, specifier),
+        eq(items.style, DEFAULT_SHADCN_STYLE),
+      ),
+    )
     .limit(1);
 
+  // Only the default style's files are in git as served. The others are
+  // generated from shared sources at build time.
   if (!item) return { status: "skipped", reason: "not tracked" };
   if (item.namespace !== SHADCN_NAMESPACE) {
     return { status: "skipped", reason: "only @shadcn has known history" };
@@ -241,7 +249,11 @@ export async function getItemsToBackfill(
     .select({ specifier: items.specifier })
     .from(items)
     .where(
-      and(eq(items.namespace, SHADCN_NAMESPACE), isNull(items.backfilledAt)),
+      and(
+        eq(items.namespace, SHADCN_NAMESPACE),
+        eq(items.style, DEFAULT_SHADCN_STYLE),
+        isNull(items.backfilledAt),
+      ),
     )
     .orderBy(asc(items.createdAt))
     .limit(limit);

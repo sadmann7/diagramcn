@@ -3,6 +3,7 @@ import { sql } from "drizzle-orm";
 import { db } from "@/db";
 import { items, snapshots } from "@/db/schema";
 import { inspectRegistry } from "@/lib/registry/inspect";
+import { DEFAULT_SHADCN_STYLE } from "@/lib/registry/styles";
 import {
   compareVersions,
   getChangeSummary,
@@ -16,6 +17,7 @@ const MAX_LIMIT = 200;
 export interface ChangeEvent {
   snapshotId: string;
   specifier: string;
+  style: string;
   namespace: string | null;
   name: string;
   fetchedAt: string;
@@ -27,6 +29,8 @@ export interface ChangesFilter {
   namespace?: string;
   /** Only these items, e.g. everything in a stack. */
   specifiers?: string[];
+  /** `@shadcn` style to show. Defaults to the default style. */
+  style?: string;
   /** Only changes before this time, for pagination. */
   before?: Date;
   limit?: number;
@@ -35,6 +39,7 @@ export interface ChangesFilter {
 interface ChangeRow extends Record<string, unknown> {
   snapshot_id: string;
   specifier: string;
+  style: string;
   namespace: string | null;
   name: string;
   fetched_at: Date | string;
@@ -52,6 +57,7 @@ interface ChangeRow extends Record<string, unknown> {
 export async function getRecentChanges({
   namespace,
   specifiers,
+  style = DEFAULT_SHADCN_STYLE,
   before,
   limit = DEFAULT_LIMIT,
 }: ChangesFilter = {}): Promise<ChangeEvent[] | null> {
@@ -60,6 +66,8 @@ export async function getRecentChanges({
 
   const conditions = [
     namespace ? sql`${items.namespace} = ${namespace}` : null,
+    // Other registries have no style; `@shadcn` shows one at a time.
+    sql`${items.style} in ('', ${style})`,
     specifiers
       ? sql`${items.specifier} in (${sql.join(
           specifiers.map((specifier) => sql`${specifier}`),
@@ -75,6 +83,7 @@ export async function getRecentChanges({
     select
       ${snapshots.id} as snapshot_id,
       ${items.specifier} as specifier,
+      ${items.style} as style,
       ${items.namespace} as namespace,
       ${items.name} as name,
       -- timestamp columns hold UTC; raw rows would otherwise parse as local time
@@ -106,6 +115,7 @@ export async function getRecentChanges({
     return {
       snapshotId: row.snapshot_id,
       specifier: row.specifier,
+      style: row.style,
       namespace: row.namespace,
       name: row.name,
       fetchedAt: new Date(row.fetched_at).toISOString(),
@@ -131,8 +141,8 @@ export async function getTrackedNamespaces(): Promise<string[]> {
  * The items a query follows: what it names plus everything those depend on,
  * since a change to `button` affects every stack that uses it.
  */
-export async function getFollowedSpecifiers(query: string) {
-  const result = await inspectRegistry(query);
+export async function getFollowedSpecifiers(query: string, style?: string) {
+  const result = await inspectRegistry(query, style);
   if (!result) return null;
 
   return {

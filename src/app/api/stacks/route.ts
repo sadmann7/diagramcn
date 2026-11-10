@@ -9,6 +9,7 @@ const LIMIT = { limit: 20, windowMs: 10 * 60 * 1000 };
 
 const requestSchema = z.object({
   q: z.string().min(1).max(10_000),
+  style: z.string().max(32).optional(),
 });
 
 export async function POST(req: Request) {
@@ -24,7 +25,7 @@ export async function POST(req: Request) {
   const rateLimit = await checkRateLimit(req, "stacks", LIMIT);
   if (!rateLimit.ok) return rateLimitedResponse(rateLimit.retryAfterSeconds);
 
-  const result = await saveStack(body.data.q);
+  const result = await saveStack(body.data.q, body.data.style);
 
   switch (result.status) {
     case "saved":

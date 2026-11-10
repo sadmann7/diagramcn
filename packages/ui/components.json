@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "base-nova",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "src/styles/globals.css",
+    "baseColor": "zinc",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "iconLibrary": "lucide",
+  "aliases": {
+    "components": "@diagramcn/ui/components",
+    "utils": "@diagramcn/ui/lib/utils",
+    "hooks": "@diagramcn/ui/hooks",
+    "lib": "@diagramcn/ui/lib",
+    "ui": "@diagramcn/ui/components"
+  },
+  "registries": {}
+}

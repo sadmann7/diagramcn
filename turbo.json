@@ -1,0 +1,43 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+    },
+    "check-types": {
+      "dependsOn": ["^check-types"]
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "start": {
+      "dependsOn": ["build"],
+      "cache": false,
+      "persistent": true
+    },
+    "db:push": { "cache": false, "interactive": true },
+    "db:generate": { "cache": false, "interactive": true },
+    "db:migrate": { "cache": false },
+    "db:studio": { "cache": false, "persistent": true }
+  },
+  "globalEnv": [
+    "CI",
+    "CRON_SECRET",
+    "DATABASE_URL",
+    "GITHUB_TOKEN",
+    "NODE_ENV",
+    "SKIP_ENV_VALIDATION",
+    "VERCEL",
+    "VERCEL_ENV",
+    "VERCEL_URL"
+  ],
+  "globalDependencies": [".env*", "apps/*/.env*", "packages/*/.env*"]
+}

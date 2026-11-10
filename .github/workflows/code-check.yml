@@ -42,7 +42,7 @@ jobs:
         uses: actions/checkout@v4
       - uses: ./.github/setup
 
-      - run: pnpm typecheck
+      - run: pnpm check-types
 
   test:
     runs-on: ubuntu-latest
@@ -53,3 +53,15 @@ jobs:
       - uses: ./.github/setup
 
       - run: pnpm test
+
+  build:
+    runs-on: ubuntu-latest
+    name: Build
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - uses: ./.github/setup
+
+      - run: pnpm build
+        env:
+          SKIP_ENV_VALIDATION: "1"

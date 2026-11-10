@@ -38,30 +38,50 @@ Update shadcn components without losing your edits, and mix items from any regis
 
 `?style=` picks the `@shadcn` style on item pages, the canvas, `/changes` and `/api/sync/versions` (default `new-york-v4`).
 
+## Project structure
+
+A [Better-T-Stack](https://better-t-stack.dev) style monorepo: pnpm workspaces, [Turborepo](https://turbo.build) and a pnpm catalog for shared versions.
+
+```
+apps/
+  web/        Next.js app: pages, API routes, registry resolving, change tracking
+packages/
+  cli/        the `diagramcn` CLI, published to npm
+  db/         Drizzle schema, client and migrations (`@diagramcn/db`)
+  ui/         shadcn/ui components in the `base-nova` style, on Base UI (`@diagramcn/ui`)
+  config/     shared TypeScript config
+```
+
+Add a shadcn component to the shared UI package:
+
+```bash
+cd packages/ui && pnpm dlx shadcn@latest add <component>
+```
+
+and import it in the app as `@diagramcn/ui/components/<component>`.
+
 ## Tech Stack
 
 - **Framework:** [Next.js](https://nextjs.org)
+- **Monorepo:** [Turborepo](https://turbo.build) with pnpm workspaces
 - **Styling:** [Tailwind CSS](https://tailwindcss.com)
-- **UI Components:** [shadcn/ui](https://ui.shadcn.com)
+- **UI Components:** [shadcn/ui](https://ui.shadcn.com) (`base-nova`) on [Base UI](https://base-ui.com)
 - **Canvas:** [React Flow](https://reactflow.dev)
 - **Database:** [PlanetScale](https://planetscale.com) Postgres with [Drizzle](https://orm.drizzle.team)
 - **Validation:** [Zod](https://zod.dev)
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
+cp apps/web/.env.example apps/web/.env
+pnpm dev                # every app, through Turborepo
+pnpm dev:web            # just the web app
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
+
+Other tasks run through Turborepo too: `pnpm build`, `pnpm test`, `pnpm check-types`. `pnpm check` runs lint, format and type checks.
 
 ## Change tracking
 
@@ -77,19 +97,19 @@ diagramcn snapshots registry items so it can show what changed upstream. It is o
 Local setup:
 
 ```bash
-cp .env.example .env    # then adjust ports or set CRON_SECRET
+cp apps/web/.env.example apps/web/.env    # then adjust ports or set CRON_SECRET
 pnpm db:start           # Postgres in Docker
-pnpm db:migrate         # apply migrations from ./drizzle
+pnpm db:migrate         # apply migrations from packages/db/drizzle
 pnpm crawl              # run a crawl now (optionally: pnpm crawl 100)
 pnpm db:studio          # browse the data
 ```
 
-After changing `src/db/schema.ts`, run `pnpm db:generate` to create a migration.
+After changing `packages/db/src/schema.ts`, run `pnpm db:generate` to create a migration. The db scripts read `DATABASE_URL` from `apps/web/.env`.
 
 ## Tests
 
 ```bash
-pnpm test               # node:test via tsx
+pnpm test               # node:test via tsx, in every package
 ```
 
 Covers the CLI's merge, version detection and dependency report, canvas conflict detection, version comparison, and input parsing. The rate-limit test runs against `DATABASE_URL` and is skipped without it.
@@ -103,9 +123,10 @@ In production, set `DATABASE_URL` (PlanetScale Postgres) and `CRON_SECRET` in th
 ```bash
 pnpm cli sync button --server http://localhost:3000   # run from source
 pnpm cli:build                                         # build to packages/cli/dist
+pnpm -F diagramcn test                                 # its tests
 ```
 
-Publishing: `cd packages/cli && npm publish` (builds first).
+Publishing: `cd packages/cli && pnpm publish` (builds first).
 
 ## Learn More
 
@@ -113,14 +134,13 @@ To learn more about the technologies used in this project:
 
 - [Next.js Documentation](https://nextjs.org/docs)
 - [shadcn/ui Documentation](https://ui.shadcn.com)
-- [Reaflow Documentation](https://github.com/reaviz/reaflow)
+- [Base UI Documentation](https://base-ui.com)
+- [Turborepo Documentation](https://turbo.build/repo/docs)
 - [Tailwind CSS Documentation](https://tailwindcss.com/docs)
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Set the Vercel project's **Root Directory** to `apps/web`. Vercel detects the pnpm workspace and Turborepo from there, and `apps/web/vercel.json` holds the daily crawl cron.
 
 ## Credits
 

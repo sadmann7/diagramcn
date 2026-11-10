@@ -1,15 +1,9 @@
 {
+  "extends": "@diagramcn/config/tsconfig.base.json",
   "compilerOptions": {
-    "target": "es2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "lib": ["ES2022"],
-    "types": ["node"],
-    "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "skipLibCheck": true,
-    "outDir": "dist",
-    "rootDir": "src"
+    "noEmit": true
   },
-  "include": ["src"]
+  "include": ["src", "test"]
 }

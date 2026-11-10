@@ -240,3 +240,29 @@ export function getChangeSummary(changes: ItemChanges) {
     .filter(Boolean)
     .join(" · ");
 }
+
+export interface StoredVersion {
+  item: SnapshotItem;
+  origin: "crawl" | "git";
+}
+
+function getFilesOnly(item: SnapshotItem): SnapshotItem {
+  return { files: item.files };
+}
+
+/**
+ * Compares two stored versions. Versions imported from git history only
+ * know their files, so against those only file changes are meaningful.
+ */
+export function compareVersions(
+  previous: StoredVersion | null,
+  next: StoredVersion,
+) {
+  if (previous && (previous.origin === "git" || next.origin === "git")) {
+    return compareSnapshots(
+      getFilesOnly(previous.item),
+      getFilesOnly(next.item),
+    );
+  }
+  return compareSnapshots(previous?.item ?? null, next.item);
+}

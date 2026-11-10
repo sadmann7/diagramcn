@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { blobs, items, snapshots } from "@/db/schema";
 import { resolveRegistryItem } from "@/lib/registry/resolve";
 import { normalizeSpecifier } from "@/lib/registry/specifier";
+import { backfillItem } from "@/lib/tracking/backfill";
 import { getSnapshotFiles, type SnapshotItem } from "@/lib/tracking/compare";
 import { recordNode } from "@/lib/tracking/track";
 
@@ -52,6 +53,15 @@ export async function getItemVersions(
       };
     }
     await recordNode(node);
+    rows = await findVersions();
+  }
+
+  // Older versions make installs from before tracking began mergeable.
+  const backfill = await backfillItem(specifier).catch((error: unknown) => {
+    console.error(`Failed to backfill ${specifier}:`, error);
+    return null;
+  });
+  if (backfill?.status === "done" && backfill.added > 0) {
     rows = await findVersions();
   }
 

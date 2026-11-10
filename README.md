@@ -71,6 +71,7 @@ diagramcn snapshots registry items so it can show what changed upstream. It is o
 - **How:** a daily Vercel cron (`/api/cron/crawl`, see `vercel.json`) re-fetches tracked items, least recently checked first, and stores a snapshot only when the content hash changes. Inspections also record the items they resolve.
 - **History:** item pages have a History tab with every version since tracking started, what changed (files, dependencies, CSS and env vars, other fields), and line diffs per file.
 - **Following changes:** `/changes` lists every change, and each item, stack and registry has an RSS feed. Feeds for items and stacks include everything they depend on, since a change to `button` affects every stack that uses it.
+- **Older versions:** `@shadcn` items also get their history imported from shadcn/ui's git repo (files only, marked `origin: git`), so projects installed before tracking began still have a merge base. A few items are imported per daily crawl; set `GITHUB_TOKEN` to raise GitHub's 60-requests-an-hour limit.
 - **Storage:** Postgres (PlanetScale in production). `items` holds one row per item, `snapshots` one row per distinct version, and `blobs` each file's content once per sha256.
 
 Local setup:

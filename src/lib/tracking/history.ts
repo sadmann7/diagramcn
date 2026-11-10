@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { blobs, items, snapshots } from "@/db/schema";
 import {
   compareSnapshots,
+  compareVersions,
   getSnapshotFiles,
   type ItemChanges,
   type SnapshotItem,
@@ -18,6 +19,9 @@ export interface HistoryVersion {
   id: string;
   hash: string;
   fetchedAt: string;
+  /** `git` versions were imported from the registry's source history. */
+  origin: "crawl" | "git";
+  commitSha: string | null;
   /** Null for the first version we saw. */
   changes: ItemChanges | null;
 }
@@ -59,6 +63,8 @@ export async function getItemHistory(
       hash: snapshots.hash,
       item: snapshots.item,
       fetchedAt: snapshots.fetchedAt,
+      origin: snapshots.origin,
+      commitSha: snapshots.commitSha,
     })
     .from(snapshots)
     .where(eq(snapshots.itemId, item.id))
@@ -72,10 +78,12 @@ export async function getItemHistory(
       id: row.id,
       hash: row.hash,
       fetchedAt: row.fetchedAt.toISOString(),
+      origin: row.origin,
+      commitSha: row.commitSha,
       changes: previous
-        ? compareSnapshots(
-            previous.item as SnapshotItem,
-            row.item as SnapshotItem,
+        ? compareVersions(
+            { item: previous.item as SnapshotItem, origin: previous.origin },
+            { item: row.item as SnapshotItem, origin: row.origin },
           )
         : null,
     };

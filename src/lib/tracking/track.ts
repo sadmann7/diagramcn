@@ -2,9 +2,15 @@ import { and, asc, eq, sql } from "drizzle-orm";
 
 import { db as defaultDb, type Db } from "@/db";
 import { blobs, items, snapshots } from "@/db/schema";
+import { env } from "@/env";
 import { listRegistryItems } from "@/lib/registry/browse";
 import { type ResolvedNode, resolveRegistryItem } from "@/lib/registry/resolve";
 import { SHADCN_NAMESPACE } from "@/lib/registry/specifier";
+import {
+  backfillItem,
+  GitHubRateLimitError,
+  getItemsToBackfill,
+} from "@/lib/tracking/backfill";
 import { createItemSnapshot } from "@/lib/tracking/snapshot";
 
 export const isTrackingEnabled = defaultDb !== null;
@@ -164,6 +170,8 @@ export interface CrawlResult {
   checked: number;
   changed: string[];
   failed: { specifier: string; error: string }[];
+  /** Items whose older versions were imported from git this run. */
+  backfilled: string[];
   durationMs: number;
 }
 
@@ -198,8 +206,27 @@ export async function crawl(
     }
   });
 
+  // Import history a few items at a time, within GitHub's rate limit.
+  const backfilled: string[] = [];
+  for (const specifier of await getItemsToBackfill(
+    env.GITHUB_TOKEN ? 50 : 5,
+    db,
+  )) {
+    try {
+      const result = await backfillItem(specifier, db);
+      if (result.status === "done") backfilled.push(specifier);
+    } catch (error) {
+      if (error instanceof GitHubRateLimitError) break;
+      failed.push({
+        specifier,
+        error: `Backfill: ${error instanceof Error ? error.message : "failed"}`,
+      });
+    }
+  }
+
   return {
     seeded,
+    backfilled,
     checked: due.length,
     changed,
     failed,

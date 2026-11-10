@@ -8,8 +8,10 @@ import { loadProject, type Project, renderVersion } from "./project.js";
 
 const DEFAULT_SERVER = "https://diagramcn.com";
 const LOCK_FILE = "diagramcn-lock.json";
-// Detecting the installed version renders each candidate, so cap the search.
-const MAX_DETECT_VERSIONS = 10;
+// Detecting the installed version renders each candidate, so cap the search
+// and how many shadcn processes run at once.
+const MAX_DETECT_VERSIONS = 20;
+const RENDER_CONCURRENCY = 4;
 
 const help = `Usage: diagramcn sync [items...] [options]
 
@@ -23,6 +25,8 @@ Arguments:
 
 Options:
   --dry-run          Show what would change without writing files
+  --adopt            When your files differ from every known version, treat
+                     the differences as your edits to the latest version
   --cwd <dir>        Project directory (default: current directory)
   --server <url>     diagramcn server (default: ${DEFAULT_SERVER})
   -h, --help         Show this help
@@ -117,15 +121,44 @@ function getDistance(rendered: Files, local: Files) {
   return distance;
 }
 
+async function mapLimit<T, R>(
+  values: T[],
+  limit: number,
+  fn: (value: T) => Promise<R>,
+) {
+  const results: R[] = [];
+  let next = 0;
+  async function worker() {
+    while (next < values.length) {
+      const index = next++;
+      results[index] = await fn(values[index] as T);
+    }
+  }
+  await Promise.all(
+    Array.from({ length: Math.min(limit, values.length) }, worker),
+  );
+  return results;
+}
+
 interface SyncContext {
   project: Project;
   server: string;
   dryRun: boolean;
+  adopt: boolean;
   lock: Lock;
 }
 
-async function syncItem(specifier: string, context: SyncContext) {
-  const { project, server, dryRun, lock } = context;
+interface SyncResult {
+  conflicts: number;
+  /** Problems that need a decision; nothing is written for them. */
+  attention: number;
+}
+
+async function syncItem(
+  specifier: string,
+  context: SyncContext,
+): Promise<SyncResult> {
+  const { project, server, dryRun, adopt, lock } = context;
   const renders = new Map<string, Promise<Files>>();
   const render = (version: Version) => {
     let files = renders.get(version.id);
@@ -149,7 +182,7 @@ async function syncItem(specifier: string, context: SyncContext) {
 
   if (!base) {
     const candidates = versions.slice(0, MAX_DETECT_VERSIONS);
-    const rendered = await Promise.all(candidates.map(render));
+    const rendered = await mapLimit(candidates, RENDER_CONCURRENCY, render);
     const paths = new Set(rendered.flatMap((files) => [...files.keys()]));
     const local = await readLocalFiles(project.cwd, paths);
 
@@ -157,9 +190,10 @@ async function syncItem(specifier: string, context: SyncContext) {
       console.log(
         `  not installed. Add it first: shadcn add ${specifier.replace(/^@shadcn\//, "")}`,
       );
-      return { conflicts: 0 };
+      return { conflicts: 0, attention: 0 };
     }
 
+    // Ties go to the newest version, since candidates are newest first.
     let best = Number.POSITIVE_INFINITY;
     for (const [index, files] of rendered.entries()) {
       const distance = getDistance(files, local);
@@ -168,7 +202,32 @@ async function syncItem(specifier: string, context: SyncContext) {
         base = candidates[index];
       }
     }
+
+    if (best > 0 && base?.id === latest.id && !adopt) {
+      // Either local edits to the latest version, or an older version we
+      // don't have. Guessing wrong would silently drop upstream changes.
+      console.log(
+        `  ! your files differ from every known version (closest: the latest, ${best} ${best === 1 ? "line differs" : "lines differ"}).`,
+      );
+      console.log(
+        "    If those differences are your own edits, run again with --adopt.",
+      );
+      console.log(
+        "    Otherwise this is an older version diagramcn doesn't have, and merging could drop upstream changes.",
+      );
+      return { conflicts: 0, attention: 1 };
+    }
+
     detected = true;
+    if (best > 0 && base) {
+      const why =
+        base.id === latest.id
+          ? "adopted as your version"
+          : "treated as your edits";
+      console.log(
+        `  installed version detected by closest match: ${best} ${best === 1 ? "line differs" : "lines differ"}, ${why}`,
+      );
+    }
   }
 
   if (!base) throw new Error("Could not determine the installed version");
@@ -179,8 +238,8 @@ async function syncItem(specifier: string, context: SyncContext) {
     console.log(
       `  up to date (${formatDate(latest.fetchedAt)}${detected ? ", detected" : ""})`,
     );
-    lock.items[specifier] = lockEntry;
-    return { conflicts: 0 };
+    if (!dryRun) lock.items[specifier] = lockEntry;
+    return { conflicts: 0, attention: 0 };
   }
 
   console.log(
@@ -195,6 +254,8 @@ async function syncItem(specifier: string, context: SyncContext) {
   const local = await readLocalFiles(project.cwd, paths);
 
   let conflicts = 0;
+  const problems: string[] = [];
+  const notes: string[] = [];
   const writes: [string, string][] = [];
 
   for (const file of [...paths].sort()) {
@@ -203,23 +264,30 @@ async function syncItem(specifier: string, context: SyncContext) {
     const after = upstreamFiles.get(file);
 
     if (after === undefined) {
-      console.log(`  - ${file}  removed upstream, kept your copy`);
+      notes.push(`  - ${file}  removed upstream, kept your copy`);
       continue;
     }
     if (ours === undefined) {
       if (before === undefined) {
-        console.log(`  + ${file}  added upstream`);
+        notes.push(`  + ${file}  added upstream`);
         writes.push([file, after]);
       } else {
-        console.log(`  · ${file}  deleted locally, skipped`);
+        notes.push(`  · ${file}  deleted locally, skipped`);
       }
       continue;
     }
     if (ours === after || before === after) {
       continue;
     }
-    if (before === undefined || ours === before) {
-      console.log(`  ✓ ${file}  updated`);
+    if (before === undefined) {
+      // Upstream now ships a file at a path you already use for something.
+      problems.push(
+        `  ! ${file}  upstream added this file, but you already have a different one here. Move or rename yours, then sync again.`,
+      );
+      continue;
+    }
+    if (ours === before) {
+      notes.push(`  ✓ ${file}  updated`);
       writes.push([file, after]);
       continue;
     }
@@ -228,14 +296,25 @@ async function syncItem(specifier: string, context: SyncContext) {
     writes.push([file, merged.content]);
     if (merged.conflicts > 0) {
       conflicts += merged.conflicts;
-      console.log(
+      notes.push(
         `  ! ${file}  ${merged.conflicts} ${merged.conflicts === 1 ? "conflict" : "conflicts"}, resolve the markers`,
       );
     } else {
-      console.log(`  ✓ ${file}  merged, kept your edits`);
+      notes.push(`  ✓ ${file}  merged, kept your edits`);
     }
   }
 
+  if (problems.length > 0) {
+    // Pinning the lock now would make the next sync merge against the
+    // wrong base, so leave the item untouched until it's resolved.
+    for (const problem of problems) console.log(problem);
+    console.log(
+      `  nothing written for this item${writes.length > 0 ? ` (${writes.length} other ${writes.length === 1 ? "file is" : "files are"} waiting)` : ""}.`,
+    );
+    return { conflicts: 0, attention: problems.length };
+  }
+
+  for (const note of notes) console.log(note);
   if (writes.length === 0) console.log("  no file changes");
 
   if (!dryRun) {
@@ -247,7 +326,7 @@ async function syncItem(specifier: string, context: SyncContext) {
     lock.items[specifier] = lockEntry;
   }
 
-  return { conflicts };
+  return { conflicts, attention: 0 };
 }
 
 async function main() {
@@ -255,6 +334,7 @@ async function main() {
     allowPositionals: true,
     options: {
       "dry-run": { type: "boolean", default: false },
+      adopt: { type: "boolean", default: false },
       cwd: { type: "string" },
       server: { type: "string" },
       help: { type: "boolean", short: "h", default: false },
@@ -280,6 +360,7 @@ async function main() {
   ).replace(/\/$/, "");
   const project = await loadProject(cwd);
   const lock = await readLock(cwd);
+  const lockBefore = JSON.stringify(lock.items);
   const dryRun = values["dry-run"];
 
   const specifiers = [
@@ -298,13 +379,20 @@ async function main() {
   }
 
   let conflicts = 0;
+  let attention = 0;
   let failed = 0;
 
   for (const specifier of specifiers) {
     try {
-      conflicts += (
-        await syncItem(specifier, { project, server, dryRun, lock })
-      ).conflicts;
+      const result = await syncItem(specifier, {
+        project,
+        server,
+        dryRun,
+        adopt: values.adopt,
+        lock,
+      });
+      conflicts += result.conflicts;
+      attention += result.attention;
     } catch (error) {
       failed++;
       console.log(
@@ -313,12 +401,14 @@ async function main() {
     }
   }
 
-  if (!dryRun) await writeLock(cwd, lock);
+  if (!dryRun && JSON.stringify(lock.items) !== lockBefore) {
+    await writeLock(cwd, lock);
+  }
 
   console.log(
-    `\n${dryRun ? "Dry run, nothing written. " : ""}${conflicts > 0 ? `${conflicts} ${conflicts === 1 ? "conflict" : "conflicts"} to resolve. ` : ""}${failed > 0 ? `${failed} failed.` : ""}`.trimEnd(),
+    `\n${dryRun ? "Dry run, nothing written. " : ""}${conflicts > 0 ? `${conflicts} ${conflicts === 1 ? "conflict" : "conflicts"} to resolve. ` : ""}${attention > 0 ? `${attention} need attention. ` : ""}${failed > 0 ? `${failed} failed.` : ""}`.trimEnd(),
   );
-  process.exitCode = conflicts > 0 || failed > 0 ? 1 : 0;
+  process.exitCode = conflicts > 0 || attention > 0 || failed > 0 ? 1 : 0;
 }
 
 main().catch((error: unknown) => {

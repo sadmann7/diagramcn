@@ -112,9 +112,9 @@ export default async function ChangesPage({ searchParams }: ChangesPageProps) {
 
   return (
     <ChangesLayout feedHref={feedHref}>
-      <div className="flex items-center gap-2 self-start text-sm">
+      <div className="flex w-full max-w-64 flex-col gap-1.5 text-sm">
         <span className="text-muted-foreground">shadcn style</span>
-        <StylePicker value={style ?? ALL_STYLES} allowAll />
+        <StylePicker value={style ?? ALL_STYLES} allowAll className="w-full" />
       </div>
 
       {followed ? (

@@ -15,9 +15,10 @@ const looks = [
   "rhea",
 ] as const;
 
+// Named like the style prefixes: `base-nova` is Base Nova.
 const libraryLabels: Record<(typeof libraries)[number], string> = {
-  base: "Base UI",
-  aria: "React Aria",
+  base: "Base",
+  aria: "Aria",
   radix: "Radix",
 };
 
@@ -61,7 +62,7 @@ export function getShadcnStyle(value: unknown) {
   return isShadcnStyle(value) ? value : DEFAULT_SHADCN_STYLE;
 }
 
-/** e.g. `Base UI Nova`, or `New York (Tailwind v4)` for legacy styles. */
+/** e.g. `Base Nova`, or `New York (Tailwind v4)` for legacy styles. */
 export function getShadcnStyleLabel(name: string) {
   const style = shadcnStyles.find((style) => style.name === name);
   if (!style) return name;

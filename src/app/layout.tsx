@@ -23,9 +23,8 @@ export const metadata: Metadata = {
     "react server components",
     "shadcn ui",
     "shadcn registry",
-    "shadcn registry diagram",
-    "json diagram",
-    "json editor",
+    "shadcn registry sync",
+    "shadcn registry canvas",
   ],
   authors: [
     {

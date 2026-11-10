@@ -1,16 +1,13 @@
 import type { Metadata } from "next";
 
-import { getInspectSummary, inspectRegistry } from "@/lib/registry/inspect";
-
-import { InspectView } from "../components/inspect-view";
+import { getItem, ItemView } from "../components/item-view";
 
 interface ItemPageProps {
   params: Promise<{ slug: string[] }>;
-  searchParams: Promise<{ style?: string; shadcnStyle?: string; tab?: string }>;
 }
 
 /** `/@acme/data-table` → `@acme/data-table`, `/button` → `button`. */
-async function getSpecifier(params: ItemPageProps["params"]) {
+async function getInput(params: ItemPageProps["params"]) {
   const { slug } = await params;
   return slug.map((segment) => decodeURIComponent(segment)).join("/");
 }
@@ -18,30 +15,15 @@ async function getSpecifier(params: ItemPageProps["params"]) {
 export async function generateMetadata({
   params,
 }: ItemPageProps): Promise<Metadata> {
-  const result = await inspectRegistry(await getSpecifier(params));
-  if (!result) return {};
-
-  const summary = getInspectSummary(result);
-  const image = `/api/og?q=${encodeURIComponent(result.specifiers.join(" "))}`;
+  const { specifier, item } = await getItem(await getInput(params));
   return {
-    title: result.specifiers.join(" + "),
-    openGraph: { images: [image] },
-    twitter: { card: "summary_large_image", images: [image] },
-    description: `What shadcn add ${result.specifiers.join(" ")} installs: ${summary.items} items, ${summary.files} files, ${summary.dependencies} packages, ${summary.errors} errors, ${summary.warnings} warnings.`,
+    title: specifier,
+    description:
+      item?.description ??
+      `Version history of ${specifier}, and how to pull its upstream changes into your copy.`,
   };
 }
 
-export default async function ItemPage({
-  params,
-  searchParams,
-}: ItemPageProps) {
-  const { style, shadcnStyle, tab } = await searchParams;
-  return (
-    <InspectView
-      input={await getSpecifier(params)}
-      style={style}
-      shadcnStyle={shadcnStyle}
-      tab={tab}
-    />
-  );
+export default async function ItemPage({ params }: ItemPageProps) {
+  return <ItemView input={await getInput(params)} />;
 }

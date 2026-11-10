@@ -14,10 +14,10 @@ export function SiteHeader() {
         </Link>
         <nav className="ml-4 flex items-center gap-4 text-sm">
           <Link
-            href="/stack"
+            href="/canvas"
             className="text-muted-foreground transition-colors hover:text-foreground"
           >
-            Stack
+            Canvas
           </Link>
           <Link
             href="/changes"

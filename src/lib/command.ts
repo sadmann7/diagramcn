@@ -24,36 +24,3 @@ export function getPackageManagerCommands(packageManager: string) {
       };
   }
 }
-
-export function getIsPackageManagerCommand(
-  content: string | null | undefined,
-): boolean {
-  if (!content) return false;
-  const words = content.toLowerCase().split(" ");
-
-  const startsWithPackageManager = packageManagers.some(
-    (pm) => words[0] === pm,
-  );
-
-  const packageManagerCommands = [
-    "add",
-    "install",
-    "remove",
-    "rm",
-    "uninstall",
-    "update",
-    "upgrade",
-    "link",
-    "unlink",
-    "audit",
-    "dlx",
-    "create",
-    "exec",
-    "nx",
-  ] as const;
-
-  return (
-    packageManagerCommands.some((cmd) => words.includes(cmd)) ||
-    startsWithPackageManager
-  );
-}

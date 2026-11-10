@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { Rss } from "lucide-react";
 import Link from "next/link";
 
-import { getItemHistoryHref } from "@/lib/registry/specifier";
+import { getItemHref } from "@/lib/registry/specifier";
 import {
   type ChangeEvent,
   getFollowedSpecifiers,
@@ -152,7 +152,7 @@ export default async function ChangesPage({ searchParams }: ChangesPageProps) {
               {dayChanges.map((change) => (
                 <li key={change.snapshotId}>
                   <Link
-                    href={getItemHistoryHref(change.specifier)}
+                    href={getItemHref(change.specifier)}
                     className="flex flex-col gap-0.5 px-3 py-2 hover:bg-accent/50 sm:flex-row sm:items-baseline sm:gap-3"
                   >
                     <span className="truncate font-mono text-sm">

@@ -5,35 +5,34 @@ import { notFound } from "next/navigation";
 import { inspectRegistry } from "@/lib/registry/inspect";
 import { getStack } from "@/lib/stacks";
 
-import { StackBuilder } from "../../components/stack-builder";
+import { CanvasBuilder } from "../../components/canvas-builder";
 
-interface SavedStackPageProps {
+interface SavedCanvasPageProps {
   params: Promise<{ id: string }>;
 }
 
 export async function generateMetadata({
   params,
-}: SavedStackPageProps): Promise<Metadata> {
+}: SavedCanvasPageProps): Promise<Metadata> {
   const stack = await getStack((await params).id);
   if (!stack) return {};
 
-  const image = `/api/og?q=${encodeURIComponent(stack.specifiers.join(" "))}`;
   return {
-    title: `Stack: ${stack.specifiers.join(" + ")}`,
-    description: `Install ${stack.specifiers.length} shadcn registry items with one command.`,
-    openGraph: { images: [image] },
-    twitter: { card: "summary_large_image", images: [image] },
+    title: `Canvas: ${stack.specifiers.join(" + ")}`,
+    description: `${stack.specifiers.length} shadcn registry items, how they fit together, and one command to install them.`,
   };
 }
 
-export default async function SavedStackPage({ params }: SavedStackPageProps) {
+export default async function SavedCanvasPage({
+  params,
+}: SavedCanvasPageProps) {
   const stack = await getStack((await params).id);
   if (!stack) notFound();
 
   const result = await inspectRegistry(stack.specifiers.join(" "));
 
   return (
-    <StackBuilder
+    <CanvasBuilder
       specifiers={result?.specifiers ?? stack.specifiers}
       result={result}
       savedId={stack.id}

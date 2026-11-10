@@ -11,6 +11,9 @@ async function runCrawl() {
     `✅ Checked ${result.checked} items in ${result.durationMs}ms (${result.seeded} new from @shadcn)`,
   );
   console.log(`   ${result.changed.length} changed`);
+  console.log(
+    `   ${result.backfilled.length} items got older versions from git history`,
+  );
   for (const failure of result.failed) {
     console.log(`   ✗ ${failure.specifier}: ${failure.error}`);
   }

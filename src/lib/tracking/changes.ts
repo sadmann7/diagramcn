@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { items, snapshots } from "@/db/schema";
 import { inspectRegistry } from "@/lib/registry/inspect";
 import {
-  compareSnapshots,
+  compareVersions,
   getChangeSummary,
   type ItemChanges,
   type SnapshotItem,
@@ -39,7 +39,9 @@ interface ChangeRow extends Record<string, unknown> {
   name: string;
   fetched_at: Date | string;
   item: SnapshotItem;
+  origin: "crawl" | "git";
   previous_item: SnapshotItem;
+  previous_origin: "crawl" | "git";
 }
 
 /**
@@ -78,11 +80,13 @@ export async function getRecentChanges({
       -- timestamp columns hold UTC; raw rows would otherwise parse as local time
       ${snapshots.fetchedAt} at time zone 'UTC' as fetched_at,
       ${snapshots.item} as item,
-      previous.item as previous_item
+      ${snapshots.origin} as origin,
+      previous.item as previous_item,
+      previous.origin as previous_origin
     from ${snapshots}
     inner join ${items} on ${items.id} = ${snapshots.itemId}
     inner join lateral (
-      select p.item
+      select p.item, p.origin
       from ${snapshots} p
       where p.item_id = ${snapshots.itemId}
         and p.fetched_at < ${snapshots.fetchedAt}
@@ -95,7 +99,10 @@ export async function getRecentChanges({
   `);
 
   return rows.map((row) => {
-    const changes = compareSnapshots(row.previous_item, row.item);
+    const changes = compareVersions(
+      { item: row.previous_item, origin: row.previous_origin },
+      { item: row.item, origin: row.origin },
+    );
     return {
       snapshotId: row.snapshot_id,
       specifier: row.specifier,

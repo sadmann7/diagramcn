@@ -17,7 +17,7 @@ npx diagramcn sync button @magicui/marquee
 ## How it works
 
 1. [diagramcn.com](https://diagramcn.com) keeps every version of tracked registry items.
-2. The installed version comes from `diagramcn-lock.json`. On the first sync, it's detected by comparing your files to each stored version.
+2. The installed version comes from `diagramcn-lock.json`. On the first sync, it's detected by comparing your files to each stored version. `@shadcn` items have versions back to early 2025, imported from shadcn/ui's git history. If your files match no version closely and the nearest is the latest, sync stops rather than guess: run again with `--adopt` if the differences are your own edits.
 3. The shadcn CLI installs both the installed and the latest version into a throwaway copy of your project config (`components.json`, `tsconfig.json`, and so on), so both come out with your aliases and formatting. Nothing is installed in your project.
 4. `git merge-file` merges your file with upstream's changes.
 5. `diagramcn-lock.json` records the version you're now on. Commit it.
@@ -33,10 +33,14 @@ Arguments:
 
 Options:
   --dry-run          Show what would change without writing files
+  --adopt            When your files differ from every known version, treat
+                     the differences as your edits to the latest version
   --cwd <dir>        Project directory (default: current directory)
   --server <url>     diagramcn server (default: https://diagramcn.com)
 ```
 
 Bare names like `button` mean `@shadcn/button`. Items are tracked from the first time anyone inspects or syncs them, so history (and merging) starts then.
+
+If upstream adds a file at a path where you already have a different file, sync leaves the whole item untouched and tells you, rather than overwrite yours.
 
 Requires Node 20+ and git. Commit your work before syncing, so you can review the merge with `git diff`.

@@ -28,6 +28,8 @@ export const items = pgTable(
     lastChangedAt: timestamp("last_changed_at"),
     lastError: text("last_error"),
     failureCount: integer("failure_count").notNull().default(0),
+    // When older versions were imported from the registry's git history.
+    backfilledAt: timestamp("backfilled_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .default(sql`current_timestamp`)
@@ -53,6 +55,13 @@ export const snapshots = pgTable(
     hash: varchar("hash", { length: 64 }).notNull(),
     item: jsonb("item").notNull(),
     fetchedAt: timestamp("fetched_at").defaultNow().notNull(),
+    // `crawl` versions are full items. `git` versions come from the
+    // registry's source history and only know the files, so dependency
+    // and CSS changes can't be compared against them.
+    origin: varchar("origin", { length: 16, enum: ["crawl", "git"] })
+      .notNull()
+      .default("crawl"),
+    commitSha: varchar("commit_sha", { length: 40 }),
   },
   (table) => [
     index("diagramcn_snapshots_item_id_fetched_at_idx").on(

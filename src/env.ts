@@ -11,12 +11,15 @@ export const env = createEnv({
     DATABASE_URL: z.url().optional(),
     // Vercel sends it as a bearer token on cron requests.
     CRON_SECRET: z.string().min(16).optional(),
+    // Optional: raises GitHub's API limit (60/hour) for history backfills.
+    GITHUB_TOKEN: z.string().optional(),
   },
   client: {},
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
     DATABASE_URL: process.env.DATABASE_URL,
     CRON_SECRET: process.env.CRON_SECRET,
+    GITHUB_TOKEN: process.env.GITHUB_TOKEN,
   },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
   emptyStringAsUndefined: true,

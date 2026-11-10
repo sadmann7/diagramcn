@@ -116,33 +116,48 @@ function VersionRow({ version }: { version: HistoryVersion }) {
 
   return (
     <li>
-      <button
-        type="button"
-        aria-expanded={isOpen}
-        disabled={!changes}
-        onClick={() => setIsOpen((open) => !open)}
-        className="flex w-full items-center gap-3 px-3 py-2.5 text-left enabled:hover:bg-accent/50"
-      >
-        <ChevronRight
-          aria-hidden="true"
-          className={cn(
-            "size-4 shrink-0 text-muted-foreground transition-transform",
-            isOpen && "rotate-90",
-            !changes && "invisible",
-          )}
-        />
-        <span className="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-3">
-          <span className="text-sm whitespace-nowrap">
-            {formatDate(version.fetchedAt)}
+      <div className="flex items-center">
+        <button
+          type="button"
+          aria-expanded={isOpen}
+          disabled={!changes}
+          onClick={() => setIsOpen((open) => !open)}
+          className="flex min-w-0 flex-1 items-center gap-3 px-3 py-2.5 text-left enabled:hover:bg-accent/50"
+        >
+          <ChevronRight
+            aria-hidden="true"
+            className={cn(
+              "size-4 shrink-0 text-muted-foreground transition-transform",
+              isOpen && "rotate-90",
+              !changes && "invisible",
+            )}
+          />
+          <span className="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-3">
+            <span className="text-sm whitespace-nowrap">
+              {formatDate(version.fetchedAt)}
+            </span>
+            <span className="truncate text-xs text-muted-foreground">
+              {changes ? getChangeSummary(changes) : "First version seen"}
+            </span>
           </span>
-          <span className="truncate text-xs text-muted-foreground">
-            {changes ? getChangeSummary(changes) : "First version seen"}
-          </span>
-        </span>
-        <code className="shrink-0 font-mono text-xs text-muted-foreground">
-          {version.hash.slice(0, 7)}
-        </code>
-      </button>
+          {version.origin === "crawl" ? (
+            <code className="shrink-0 font-mono text-xs text-muted-foreground">
+              {version.hash.slice(0, 7)}
+            </code>
+          ) : null}
+        </button>
+        {version.origin === "git" && version.commitSha ? (
+          <a
+            href={`https://github.com/shadcn-ui/ui/commit/${version.commitSha}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Imported from shadcn/ui's git history (files only)"
+            className="shrink-0 px-3 font-mono text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+          >
+            git {version.commitSha.slice(0, 7)}
+          </a>
+        ) : null}
+      </div>
       {isOpen && changes ? (
         <VersionDetails versionId={version.id} changes={changes} />
       ) : null}

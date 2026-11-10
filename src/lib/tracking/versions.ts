@@ -5,7 +5,12 @@ import { blobs, items, snapshots } from "@/db/schema";
 import { resolveRegistryItem } from "@/lib/registry/resolve";
 import { normalizeSpecifier } from "@/lib/registry/specifier";
 import { backfillItem } from "@/lib/tracking/backfill";
-import { getSnapshotFiles, type SnapshotItem } from "@/lib/tracking/compare";
+import {
+  compareVersions,
+  getSnapshotFiles,
+  type ItemChanges,
+  type SnapshotItem,
+} from "@/lib/tracking/compare";
 import { recordNode } from "@/lib/tracking/track";
 
 export interface ItemVersion {
@@ -120,5 +125,75 @@ export async function getVersionRegistryItem(id: string) {
       ...(file.target ? { target: file.target } : {}),
       content: (file.contentHash && contents.get(file.contentHash)) ?? "",
     })),
+  };
+}
+
+export interface VersionRequirements {
+  dependencies: string[];
+  devDependencies: string[];
+  registryDependencies: string[];
+  envVars: string[];
+}
+
+export interface VersionChanges {
+  /**
+   * False when either version was imported from git history. Those only
+   * know their files, so `changes` then covers files only.
+   */
+  complete: boolean;
+  changes: ItemChanges;
+  /** What `to` needs installed. Null when `to` was imported from git. */
+  requires: VersionRequirements | null;
+}
+
+function getStrings(item: SnapshotItem, key: string) {
+  const value = item[key];
+  return Array.isArray(value)
+    ? value.filter((entry): entry is string => typeof entry === "string")
+    : [];
+}
+
+/** What changed between two stored versions of the same item. */
+export async function getVersionChanges(
+  fromId: string,
+  toId: string,
+): Promise<VersionChanges | null> {
+  if (!db) return null;
+
+  const rows = await db
+    .select({
+      id: snapshots.id,
+      itemId: snapshots.itemId,
+      item: snapshots.item,
+      origin: snapshots.origin,
+    })
+    .from(snapshots)
+    .where(inArray(snapshots.id, [fromId, toId]));
+
+  const from = rows.find((row) => row.id === fromId);
+  const to = rows.find((row) => row.id === toId);
+  if (!from || !to || from.itemId !== to.itemId) return null;
+
+  const item = to.item as SnapshotItem;
+  const envVars = item.envVars;
+
+  return {
+    complete: from.origin === "crawl" && to.origin === "crawl",
+    changes: compareVersions(
+      { item: from.item as SnapshotItem, origin: from.origin },
+      { item, origin: to.origin },
+    ),
+    requires:
+      to.origin === "crawl"
+        ? {
+            dependencies: getStrings(item, "dependencies"),
+            devDependencies: getStrings(item, "devDependencies"),
+            registryDependencies: getStrings(item, "registryDependencies"),
+            envVars:
+              envVars && typeof envVars === "object" && !Array.isArray(envVars)
+                ? Object.keys(envVars)
+                : [],
+          }
+        : null,
   };
 }

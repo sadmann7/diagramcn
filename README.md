@@ -32,9 +32,12 @@ Paste a command, an item, or a URL and get the fully resolved install plan for a
 | `/api/registries/items?namespace=@ns` | Items a registry publishes in its index |
 | `/api/history/diff?snapshot=<id>` | File diffs between a version and the one before it |
 | `/api/sync/versions?specifier=@ns/item` | Stored versions of an item, for the CLI |
+| `/api/sync/changes?from=<id>&to=<id>` | Dependency, CSS and env var changes between two versions, and what the newer one needs |
 | `/r/v/<versionId>.json` | One exact stored version as an installable item |
 | `/api/badge?q=<input>`      | SVG badge with the error or warning count     |
 | `/api/og?q=<input>`         | Open Graph image                              |
+
+`/api/inspect`, `POST /api/stacks` and `/api/sync/versions` are rate-limited per client IP (counters in Postgres, cleared by the daily crawl) and return `429` with `Retry-After` when over the limit.
 
 Optional `?style=` (third-party `{style}` URLs, default `new-york`) and `?shadcnStyle=` (`@shadcn` items, default `new-york-v4`) are supported on every route.
 
@@ -72,7 +75,7 @@ diagramcn snapshots registry items so it can show what changed upstream. It is o
 - **History:** item pages have a History tab with every version since tracking started, what changed (files, dependencies, CSS and env vars, other fields), and line diffs per file.
 - **Following changes:** `/changes` lists every change, and each item, stack and registry has an RSS feed. Feeds for items and stacks include everything they depend on, since a change to `button` affects every stack that uses it.
 - **Older versions:** `@shadcn` items also get their history imported from shadcn/ui's git repo (files only, marked `origin: git`), so projects installed before tracking began still have a merge base. A few items are imported per daily crawl; set `GITHUB_TOKEN` to raise GitHub's 60-requests-an-hour limit.
-- **Storage:** Postgres (PlanetScale in production). `items` holds one row per item, `snapshots` one row per distinct version, and `blobs` each file's content once per sha256.
+- **Storage:** Postgres (PlanetScale in production). `items` holds one row per item, `snapshots` one row per distinct version, and `blobs` each file's content once per sha256. `rate_limits` holds the API's request counters.
 
 Local setup:
 
@@ -85,6 +88,14 @@ pnpm db:studio          # browse the data
 ```
 
 After changing `src/db/schema.ts`, run `pnpm db:generate` to create a migration.
+
+## Tests
+
+```bash
+pnpm test               # node:test via tsx
+```
+
+Covers the CLI's merge, version detection and dependency report, version comparison, and input parsing. The rate-limit test runs against `DATABASE_URL` and is skipped without it.
 
 In production, set `DATABASE_URL` (PlanetScale Postgres) and `CRON_SECRET` in the Vercel project, then run `pnpm db:migrate` against the production database once.
 

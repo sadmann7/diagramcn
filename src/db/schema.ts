@@ -90,6 +90,14 @@ export const stacks = pgTable("stacks", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Fixed-window request counters for the public API, keyed by route and a
+// hash of the client IP. Expired rows are deleted by the daily crawl.
+export const rateLimits = pgTable("rate_limits", {
+  key: varchar("key", { length: 128 }).primaryKey(),
+  count: integer("count").notNull(),
+  resetAt: timestamp("reset_at").notNull(),
+});
+
 export type Item = typeof items.$inferSelect;
 export type NewItem = typeof items.$inferInsert;
 export type Snapshot = typeof snapshots.$inferSelect;

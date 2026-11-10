@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
 import { inspectRegistry } from "@/lib/registry/inspect";
+
+// Each inspection fetches the whole dependency graph and records it.
+const LIMIT = { limit: 60, windowMs: 60 * 1000 };
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -12,6 +16,9 @@ export async function GET(req: Request) {
       { status: 400 },
     );
   }
+
+  const rateLimit = await checkRateLimit(req, "inspect", LIMIT);
+  if (!rateLimit.ok) return rateLimitedResponse(rateLimit.retryAfterSeconds);
 
   const result = await inspectRegistry(
     query,

@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
 import { saveStack } from "@/lib/stacks";
+
+// Each save resolves every item and may store a new stack.
+const LIMIT = { limit: 20, windowMs: 10 * 60 * 1000 };
 
 const requestSchema = z.object({
   q: z.string().min(1).max(10_000),
@@ -16,6 +20,9 @@ export async function POST(req: Request) {
       { status: 400 },
     );
   }
+
+  const rateLimit = await checkRateLimit(req, "stacks", LIMIT);
+  if (!rateLimit.ok) return rateLimitedResponse(rateLimit.retryAfterSeconds);
 
   const result = await saveStack(body.data.q);
 

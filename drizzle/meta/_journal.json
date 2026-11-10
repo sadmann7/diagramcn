@@ -22,6 +22,13 @@
       "when": 1794317195846,
       "tag": "0002_moaning_iron_patriot",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794318274484,
+      "tag": "0003_public_blindfold",
+      "breakpoints": true
     }
   ]
 }

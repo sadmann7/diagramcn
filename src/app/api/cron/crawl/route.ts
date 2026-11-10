@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { env } from "@/env";
+import { deleteExpiredRateLimits } from "@/lib/rate-limit";
 import { crawl, isTrackingEnabled } from "@/lib/tracking/track";
 
 export const maxDuration = 300;
@@ -23,6 +24,7 @@ export async function GET(req: Request) {
   }
 
   const result = await crawl();
+  await deleteExpiredRateLimits();
   console.log(
     `Crawled ${result.checked} items in ${result.durationMs}ms: ${result.changed.length} changed, ${result.failed.length} failed`,
   );

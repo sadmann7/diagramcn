@@ -2,25 +2,10 @@ import { createHash } from "node:crypto";
 
 import type { RegistryItem } from "@/lib/validations/registry";
 
+import { stableStringify } from "@/lib/stable-stringify";
+
 export function sha256(value: string) {
   return createHash("sha256").update(value).digest("hex");
-}
-
-/** JSON with sorted keys and no `undefined`, so equal items hash equally. */
-export function stableStringify(value: unknown): string {
-  if (Array.isArray(value)) {
-    return `[${value.map((entry) => stableStringify(entry ?? null)).join(",")}]`;
-  }
-  if (value && typeof value === "object") {
-    const entries = Object.entries(value)
-      .filter(([, entry]) => entry !== undefined)
-      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-      .map(
-        ([key, entry]) => `${JSON.stringify(key)}:${stableStringify(entry)}`,
-      );
-    return `{${entries.join(",")}}`;
-  }
-  return JSON.stringify(value);
 }
 
 export interface ItemSnapshot {

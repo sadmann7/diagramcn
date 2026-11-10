@@ -9,6 +9,8 @@ import { getRecentChanges } from "@/lib/tracking/changes";
 
 import { RegistryInput } from "./components/registry-input";
 
+export const revalidate = 3600;
+
 const sampleOutput = `@shadcn/button
   installed Dec 12, 2025 (detected) → upstream Nov 10, 2026
   ✓ components/ui/button.tsx  merged, kept your edits
@@ -35,9 +37,6 @@ const steps = [
       "Upstream's changes land on top of yours with git merge-file. Overlapping edits get conflict markers, and new packages are listed.",
   },
 ];
-
-// Recent changes come from the daily crawl, so hourly is fresh enough.
-export const revalidate = 3600;
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   dateStyle: "medium",

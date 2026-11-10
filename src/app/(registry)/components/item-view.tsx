@@ -4,6 +4,7 @@ import { after } from "next/server";
 import { cache } from "react";
 
 import { InstallCommand } from "@/components/install-command";
+import { StylePicker } from "@/components/style-picker";
 import { Button } from "@/components/ui/button";
 import { resolveRegistryItem } from "@/lib/registry/resolve";
 import {
@@ -11,6 +12,7 @@ import {
   normalizeSpecifier,
   SHADCN_NAMESPACE,
 } from "@/lib/registry/specifier";
+import { getShadcnStyle } from "@/lib/registry/styles";
 import { getItemHistory } from "@/lib/tracking/history";
 import { isTrackingEnabled, recordNode } from "@/lib/tracking/track";
 
@@ -18,8 +20,10 @@ import { ItemHistory } from "./item-history";
 import { RegistryInput } from "./registry-input";
 
 /** Deduped per request, so the page and its metadata share one fetch. */
-export const getItem = cache((input: string) =>
-  resolveRegistryItem(normalizeSpecifier(input)),
+export const getItem = cache((input: string, style?: string) =>
+  resolveRegistryItem(normalizeSpecifier(input), {
+    shadcnStyle: getShadcnStyle(style),
+  }),
 );
 
 /** `@shadcn/button` → `button`, the way people type it. */
@@ -27,8 +31,14 @@ function getShortSpecifier(specifier: string) {
   return specifier.replace(new RegExp(`^${SHADCN_NAMESPACE}/`), "");
 }
 
-export async function ItemView({ input }: { input: string }) {
-  const node = await getItem(input);
+interface ItemViewProps {
+  input: string;
+  /** `@shadcn` style to show, from `?style=`. */
+  style?: string;
+}
+
+export async function ItemView({ input, style }: ItemViewProps) {
+  const node = await getItem(input, style);
   const { specifier, item } = node;
 
   if (!item) {
@@ -46,10 +56,12 @@ export async function ItemView({ input }: { input: string }) {
     );
   }
 
-  const history = await getItemHistory(specifier).catch((error: unknown) => {
-    console.error(`Failed to load history for ${specifier}:`, error);
-    return { status: "unavailable" } as const;
-  });
+  const history = await getItemHistory(specifier, node.style).catch(
+    (error: unknown) => {
+      console.error(`Failed to load history for ${specifier}:`, error);
+      return { status: "unavailable" } as const;
+    },
+  );
 
   // Visiting an item starts tracking it, so it can be synced later.
   if (isTrackingEnabled && history.status === "untracked") {
@@ -76,12 +88,15 @@ export async function ItemView({ input }: { input: string }) {
               {item.title ?? item.name}
             </h1>
           </div>
-          <Button variant="outline" size="sm" asChild>
-            <Link href={getCanvasHref([specifier])}>
-              <Layers />
-              Open in canvas
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            {node.style ? <StylePicker value={node.style} /> : null}
+            <Button variant="outline" size="sm" asChild>
+              <Link href={getCanvasHref([specifier], node.style)}>
+                <Layers />
+                Open in canvas
+              </Link>
+            </Button>
+          </div>
         </div>
         {item.description ? (
           <p className="max-w-2xl text-balance text-muted-foreground">
@@ -120,6 +135,9 @@ export async function ItemView({ input }: { input: string }) {
           <InstallCommand command={`diagramcn sync ${short}`} />
           <p className="text-xs text-muted-foreground">
             Merges what changed upstream into your copy and keeps your edits.
+            {node.style
+              ? " Both commands use the style in your components.json."
+              : null}
           </p>
         </section>
       </div>

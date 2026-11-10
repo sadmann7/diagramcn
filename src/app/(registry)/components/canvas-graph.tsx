@@ -274,10 +274,8 @@ export function CanvasGraph({
 
   // Fit again whenever the panel changes size, e.g. when sidebars stack.
   const containerRef = React.useRef<HTMLDivElement>(null);
-  const [instance, setInstance] = React.useState<ReactFlowInstance<
-    ItemNodeType,
-    Edge
-  > | null>(null);
+  const [instance, setInstance] =
+    React.useState<ReactFlowInstance<ItemNodeType> | null>(null);
   React.useEffect(() => {
     const container = containerRef.current;
     if (!container || !instance) return;

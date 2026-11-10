@@ -43,15 +43,17 @@ export type ItemHistoryResult =
   | { status: "untracked" }
   | { status: "tracked"; history: ItemHistory };
 
+/** History of one item in one style (`""` outside `@shadcn`). */
 export async function getItemHistory(
   specifier: string,
+  style = "",
 ): Promise<ItemHistoryResult> {
   if (!db) return { status: "disabled" };
 
   const [item] = await db
     .select()
     .from(items)
-    .where(eq(items.specifier, specifier))
+    .where(and(eq(items.specifier, specifier), eq(items.style, style)))
     .limit(1);
 
   if (!item) return { status: "untracked" };

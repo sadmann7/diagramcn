@@ -6,6 +6,7 @@ import { env } from "@/env";
 import { listRegistryItems } from "@/lib/registry/browse";
 import { type ResolvedNode, resolveRegistryItem } from "@/lib/registry/resolve";
 import { SHADCN_NAMESPACE } from "@/lib/registry/specifier";
+import { DEFAULT_SHADCN_STYLE } from "@/lib/registry/styles";
 import {
   backfillItem,
   GitHubRateLimitError,
@@ -42,7 +43,9 @@ export async function recordNode(
         lastError: node.error ?? "Unknown error",
         failureCount: sql`${items.failureCount} + 1`,
       })
-      .where(eq(items.specifier, node.specifier));
+      .where(
+        and(eq(items.specifier, node.specifier), eq(items.style, node.style)),
+      );
     return "failed";
   }
 
@@ -53,13 +56,14 @@ export async function recordNode(
       .insert(items)
       .values({
         specifier: node.specifier,
+        style: node.style,
         namespace: node.namespace,
         name: getItemName(node),
         url: node.url,
         lastCheckedAt: now,
       })
       .onConflictDoUpdate({
-        target: items.specifier,
+        target: [items.specifier, items.style],
         set: {
           name: getItemName(node),
           url: node.url,
@@ -128,6 +132,7 @@ async function seedShadcnItems(db: Db) {
     .values(
       shadcnItems.map((item) => ({
         specifier: `${SHADCN_NAMESPACE}/${item.name}`,
+        style: DEFAULT_SHADCN_STYLE,
         namespace: SHADCN_NAMESPACE,
         name: item.name,
       })),
@@ -185,7 +190,7 @@ export async function crawl(
   const seeded = await seedShadcnItems(db);
 
   const due = await db
-    .select({ specifier: items.specifier })
+    .select({ specifier: items.specifier, style: items.style })
     .from(items)
     .orderBy(sql`${items.lastCheckedAt} asc nulls first`, asc(items.id))
     .limit(limit);
@@ -193,8 +198,10 @@ export async function crawl(
   const changed: string[] = [];
   const failed: CrawlResult["failed"] = [];
 
-  await mapWithConcurrency(due, concurrency, async ({ specifier }) => {
-    const node = await resolveRegistryItem(specifier);
+  await mapWithConcurrency(due, concurrency, async ({ specifier, style }) => {
+    const node = await resolveRegistryItem(specifier, {
+      shadcnStyle: style || undefined,
+    });
     const result = await recordNode(node, db).catch((error: unknown) => {
       node.error = error instanceof Error ? error.message : "Failed to record";
       return "failed" as const;

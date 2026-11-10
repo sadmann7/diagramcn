@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { stacks } from "@/db/schema";
 import { inspectRegistry } from "@/lib/registry/inspect";
 import { parseAddInput } from "@/lib/registry/specifier";
+import { DEFAULT_SHADCN_STYLE, isShadcnStyle } from "@/lib/registry/styles";
 import { sha256 } from "@/lib/tracking/snapshot";
 
 export const MAX_STACK_ITEMS = 50;
@@ -18,7 +19,10 @@ export type SaveStackResult =
  * saving twice doesn't create duplicates. Every item must resolve, so links
  * never point at stacks the CLI can't install.
  */
-export async function saveStack(input: string): Promise<SaveStackResult> {
+export async function saveStack(
+  input: string,
+  requestedStyle?: string,
+): Promise<SaveStackResult> {
   if (!db) return { status: "disabled" };
 
   const specifiers = parseAddInput(input);
@@ -32,7 +36,16 @@ export async function saveStack(input: string): Promise<SaveStackResult> {
     };
   }
 
-  const result = await inspectRegistry(specifiers.join(" "));
+  // The default style is stored as null, so older stacks keep their hash.
+  const style =
+    isShadcnStyle(requestedStyle) && requestedStyle !== DEFAULT_SHADCN_STYLE
+      ? requestedStyle
+      : null;
+
+  const result = await inspectRegistry(
+    specifiers.join(" "),
+    style ?? undefined,
+  );
   const unresolved = (result?.graph.nodes ?? [])
     .filter((node) => node.depth === 0 && !node.item)
     .map((node) => node.specifier);
@@ -45,11 +58,13 @@ export async function saveStack(input: string): Promise<SaveStackResult> {
     };
   }
 
-  const hash = sha256(JSON.stringify(specifiers));
+  const hash = sha256(
+    JSON.stringify(style ? { specifiers, style } : specifiers),
+  );
 
   const [inserted] = await db
     .insert(stacks)
-    .values({ hash, specifiers })
+    .values({ hash, specifiers, style })
     .onConflictDoNothing({ target: stacks.hash })
     .returning({ id: stacks.id });
 

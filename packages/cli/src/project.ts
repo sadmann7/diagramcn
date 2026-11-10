@@ -21,6 +21,25 @@ export interface Project {
   configFiles: string[];
   /** Directories whose existence changes where files are written. */
   layoutDirs: string[];
+  /** The style `@shadcn` items are served in for this project. */
+  style: string;
+}
+
+/**
+ * The registry style `shadcn add` fetches for a components.json. Tailwind
+ * v4 projects (no `tailwind.config`) on `new-york` or `default` get
+ * `new-york-v4`; every other style is served under its own name.
+ */
+export function getRegistryStyle(config: {
+  style?: string;
+  tailwind?: { config?: string };
+}) {
+  const style = config.style ?? "new-york";
+  const isTailwindV4 = !config.tailwind?.config;
+  if ((style === "new-york" || style === "default") && isTailwindV4) {
+    return "new-york-v4";
+  }
+  return style;
 }
 
 const configFilePattern =
@@ -55,6 +74,7 @@ export async function loadProject(cwd: string): Promise<Project> {
   }
 
   const config = JSON.parse(await readFile(componentsJsonPath, "utf8")) as {
+    style?: string;
     tailwind?: { css?: string; config?: string };
   };
 
@@ -75,6 +95,7 @@ export async function loadProject(cwd: string): Promise<Project> {
     ...(await getPackageManager(cwd)),
     configFiles: [...new Set([...rootFiles, ...extraFiles])],
     layoutDirs,
+    style: getRegistryStyle(config),
   };
 }
 

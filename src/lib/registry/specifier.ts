@@ -1,3 +1,5 @@
+import { DEFAULT_SHADCN_STYLE } from "@/lib/registry/styles";
+
 export const SHADCN_NAMESPACE = "@shadcn";
 
 // CLI flags of `shadcn add` that consume the next token as their value.
@@ -82,19 +84,24 @@ export function parseAddInput(input: string): string[] {
  * An item's page: `/@acme/foo`. Items from unlisted registries are known by
  * their URL, which can't be a path, so theirs takes it as a query.
  */
-export function getItemHref(specifier: string) {
+export function getItemHref(specifier: string, style?: string) {
+  const query =
+    style && style !== DEFAULT_SHADCN_STYLE ? `style=${style}` : null;
   return parseNamespacedSpecifier(specifier)
-    ? `/${specifier}`
-    : `/url?q=${encodeURIComponent(specifier)}`;
+    ? `/${specifier}${query ? `?${query}` : ""}`
+    : `/url?q=${encodeURIComponent(specifier)}${query ? `&${query}` : ""}`;
 }
 
 export function getAddCommand(dlx: string, specifiers: string[]) {
   return `${dlx} shadcn@latest add ${specifiers.join(" ")}`;
 }
 
-export function getCanvasHref(specifiers: string[]) {
-  if (specifiers.length === 0) return "/canvas";
-  return `/canvas?q=${encodeURIComponent(specifiers.join(" "))}`;
+export function getCanvasHref(specifiers: string[], style?: string) {
+  const search = new URLSearchParams();
+  if (specifiers.length > 0) search.set("q", specifiers.join(" "));
+  if (style && style !== DEFAULT_SHADCN_STYLE) search.set("style", style);
+  const query = search.toString().replaceAll("+", "%20");
+  return query ? `/canvas?${query}` : "/canvas";
 }
 
 /** URL of the single registry item that installs the whole stack. */

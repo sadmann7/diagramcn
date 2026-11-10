@@ -7,7 +7,8 @@ import { getItemVersions } from "@/lib/tracking/versions";
 const LIMIT = { limit: 120, windowMs: 10 * 60 * 1000 };
 
 export async function GET(req: Request) {
-  const specifier = new URL(req.url).searchParams.get("specifier")?.trim();
+  const { searchParams } = new URL(req.url);
+  const specifier = searchParams.get("specifier")?.trim();
 
   if (!specifier) {
     return NextResponse.json(
@@ -19,12 +20,16 @@ export async function GET(req: Request) {
   const rateLimit = await checkRateLimit(req, "sync-versions", LIMIT);
   if (!rateLimit.ok) return rateLimitedResponse(rateLimit.retryAfterSeconds);
 
-  const result = await getItemVersions(specifier);
+  const result = await getItemVersions(
+    specifier,
+    searchParams.get("style") ?? undefined,
+  );
 
   switch (result.status) {
     case "ok":
       return NextResponse.json({
         specifier: result.specifier,
+        style: result.style,
         versions: result.versions,
       });
     case "not-found":

@@ -1,9 +1,14 @@
-import { asc, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray } from "drizzle-orm";
 
 import { db } from "@/db";
 import { blobs, items, snapshots } from "@/db/schema";
 import { resolveRegistryItem } from "@/lib/registry/resolve";
-import { normalizeSpecifier } from "@/lib/registry/specifier";
+import {
+  normalizeSpecifier,
+  parseNamespacedSpecifier,
+  SHADCN_NAMESPACE,
+} from "@/lib/registry/specifier";
+import { getShadcnStyle } from "@/lib/registry/styles";
 import { backfillItem } from "@/lib/tracking/backfill";
 import {
   compareVersions,
@@ -22,18 +27,30 @@ export interface ItemVersion {
 export type ItemVersionsResult =
   | { status: "disabled" }
   | { status: "not-found"; error: string }
-  | { status: "ok"; specifier: string; versions: ItemVersion[] };
+  | {
+      status: "ok";
+      specifier: string;
+      /** The `@shadcn` style the versions are in; empty elsewhere. */
+      style: string;
+      versions: ItemVersion[];
+    };
 
 /**
  * Every stored version of an item, newest first. Untracked items are
- * fetched and recorded first, so syncing starts tracking them.
+ * fetched and recorded first, so syncing starts tracking them. `@shadcn`
+ * items are tracked per style, since each style serves different files.
  */
 export async function getItemVersions(
   input: string,
+  requestedStyle?: string,
 ): Promise<ItemVersionsResult> {
   if (!db) return { status: "disabled" };
 
   const specifier = normalizeSpecifier(input);
+  const style =
+    parseNamespacedSpecifier(specifier)?.namespace === SHADCN_NAMESPACE
+      ? getShadcnStyle(requestedStyle)
+      : "";
 
   const findVersions = () =>
     db!
@@ -44,13 +61,15 @@ export async function getItemVersions(
       })
       .from(snapshots)
       .innerJoin(items, eq(items.id, snapshots.itemId))
-      .where(eq(items.specifier, specifier))
+      .where(and(eq(items.specifier, specifier), eq(items.style, style)))
       .orderBy(desc(snapshots.fetchedAt));
 
   let rows = await findVersions();
 
   if (rows.length === 0) {
-    const node = await resolveRegistryItem(specifier);
+    const node = await resolveRegistryItem(specifier, {
+      shadcnStyle: style || undefined,
+    });
     if (!node.item) {
       return {
         status: "not-found",
@@ -73,6 +92,7 @@ export async function getItemVersions(
   return {
     status: "ok",
     specifier,
+    style,
     versions: rows.map((row) => ({
       id: row.id,
       hash: row.hash,

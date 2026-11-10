@@ -1,5 +1,6 @@
 import { siteConfig } from "@/config/site";
 import { getItemHref } from "@/lib/registry/specifier";
+import { getShadcnStyle } from "@/lib/registry/styles";
 import {
   type ChangeEvent,
   getFollowedSpecifiers,
@@ -43,7 +44,7 @@ function renderFeed({
   changes: ChangeEvent[];
 }) {
   const items = changes.map((change) => {
-    const href = `${siteConfig.url}${getItemHref(change.specifier)}`;
+    const href = `${siteConfig.url}${getItemHref(change.specifier, change.style)}`;
     return `    <item>
       <title>${escapeXml(`${change.specifier}: ${change.summary}`)}</title>
       <link>${escapeXml(href)}</link>
@@ -77,6 +78,7 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const namespace = searchParams.get("namespace")?.trim() || undefined;
   const query = searchParams.get("q")?.trim();
+  const style = getShadcnStyle(searchParams.get("style"));
 
   let title = "diagramcn: shadcn registry changes";
   let description = "Changes to tracked shadcn registry items.";
@@ -84,7 +86,7 @@ export async function GET(req: Request) {
   let specifiers: string[] | undefined;
 
   if (query) {
-    const followed = await getFollowedSpecifiers(query);
+    const followed = await getFollowedSpecifiers(query, style);
     if (!followed) {
       return new Response("No registry items found in the query", {
         status: 400,
@@ -100,7 +102,7 @@ export async function GET(req: Request) {
     link = `${siteConfig.url}/changes?namespace=${encodeURIComponent(namespace)}`;
   }
 
-  const changes = await getRecentChanges({ namespace, specifiers });
+  const changes = await getRecentChanges({ namespace, specifiers, style });
 
   return new Response(
     renderFeed({ title, description, link, changes: changes ?? [] }),

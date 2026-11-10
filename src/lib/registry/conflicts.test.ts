@@ -14,6 +14,7 @@ function node(id: string, item: Partial<RegistryItem>): ResolvedNode {
     url: id,
     namespace: id.split("/")[0] ?? null,
     depth: 0,
+    style: "",
     item: { name: id, type: "registry:component", ...item } as RegistryItem,
     error: null,
   };

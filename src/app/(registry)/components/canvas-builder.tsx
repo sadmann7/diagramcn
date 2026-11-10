@@ -23,6 +23,7 @@ import type { PlannedFile } from "@/lib/registry/plan";
 import type { ResolvedNode } from "@/lib/registry/resolve";
 
 import { InstallCommand } from "@/components/install-command";
+import { StylePicker } from "@/components/style-picker";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -46,6 +47,7 @@ import {
   parseAddInput,
   SHADCN_NAMESPACE,
 } from "@/lib/registry/specifier";
+import { DEFAULT_SHADCN_STYLE } from "@/lib/registry/styles";
 import { cn } from "@/lib/utils";
 
 import { getNodeLabel, getRegistryColor } from "./canvas-graph";
@@ -102,6 +104,8 @@ function getShortSpecifier(specifier: string) {
 interface CanvasBuilderProps {
   specifiers: string[];
   result: InspectResult | null;
+  /** Style `@shadcn` items are shown in. */
+  shadcnStyle: string;
   /** Set on a saved canvas's page (`/s/<id>`). */
   savedId?: string;
   /** Whether canvases can be saved to short links on this deployment. */
@@ -111,6 +115,7 @@ interface CanvasBuilderProps {
 export function CanvasBuilder({
   specifiers,
   result,
+  shadcnStyle,
   savedId,
   canSave,
 }: CanvasBuilderProps) {
@@ -128,11 +133,12 @@ export function CanvasBuilder({
       startTransition(() => {
         setOptimisticSpecifiers(next);
         // Saved canvases never change, so editing one leaves its page.
-        if (savedId) router.push(getCanvasHref(next), { scroll: false });
-        else router.replace(getCanvasHref(next), { scroll: false });
+        const href = getCanvasHref(next, shadcnStyle);
+        if (savedId) router.push(href, { scroll: false });
+        else router.replace(href, { scroll: false });
       });
     },
-    [router, savedId, setOptimisticSpecifiers],
+    [router, savedId, setOptimisticSpecifiers, shadcnStyle],
   );
 
   const onAdd = React.useCallback(
@@ -200,6 +206,15 @@ export function CanvasBuilder({
         </div>
 
         <AddItems onAdd={onAdd} specifiers={optimisticSpecifiers} />
+
+        <label className="flex items-center justify-between gap-2 text-sm">
+          <span className="text-muted-foreground">shadcn style</span>
+          {savedId ? (
+            <span className="font-mono text-xs">{shadcnStyle}</span>
+          ) : (
+            <StylePicker value={shadcnStyle} className="min-w-0 flex-1" />
+          )}
+        </label>
 
         {optimisticSpecifiers.length > 0 ? (
           <section className="flex flex-col gap-2">
@@ -332,6 +347,7 @@ export function CanvasBuilder({
           <PlanPanel
             result={result}
             specifiers={optimisticSpecifiers}
+            shadcnStyle={shadcnStyle}
             conflicts={conflicts}
             nodesById={nodesById}
             highlight={highlight}
@@ -472,6 +488,7 @@ function ItemList({
 interface PlanPanelProps {
   result: InspectResult;
   specifiers: string[];
+  shadcnStyle: string;
   conflicts: Conflict[];
   nodesById: Map<string, ResolvedNode>;
   highlight: string[] | null;
@@ -485,6 +502,7 @@ interface PlanPanelProps {
 function PlanPanel({
   result,
   specifiers,
+  shadcnStyle,
   conflicts,
   nodesById,
   highlight,
@@ -623,13 +641,14 @@ function PlanPanel({
         <div className="flex flex-wrap gap-2">
           <ShareButton
             specifiers={specifiers}
+            shadcnStyle={shadcnStyle}
             savedId={savedId}
             canSave={canSave}
             disabled={isStale}
           />
           <Button variant="outline" size="sm" asChild>
             <Link
-              href={`/changes?q=${encodeURIComponent(specifiers.join(" "))}`}
+              href={`/changes?q=${encodeURIComponent(specifiers.join(" "))}${shadcnStyle === DEFAULT_SHADCN_STYLE ? "" : `&style=${shadcnStyle}`}`}
               title="Changes to these items and everything they depend on"
             >
               <Rss />
@@ -717,7 +736,7 @@ function ItemDetails({
         <div className="flex flex-wrap gap-2">
           {item ? (
             <Button variant="outline" size="sm" asChild>
-              <Link href={getItemHref(node.specifier)}>
+              <Link href={getItemHref(node.specifier, node.style)}>
                 <ExternalLink />
                 History
               </Link>
@@ -850,6 +869,7 @@ function RelatedItems({ label, nodes, onSelect }: RelatedItemsProps) {
 
 interface ShareButtonProps {
   specifiers: string[];
+  shadcnStyle: string;
   savedId?: string;
   canSave: boolean;
   disabled: boolean;
@@ -861,6 +881,7 @@ interface ShareButtonProps {
  */
 function ShareButton({
   specifiers,
+  shadcnStyle,
   savedId,
   canSave,
   disabled,
@@ -888,7 +909,10 @@ function ShareButton({
     }
 
     if (!canSave) {
-      await copy(`${origin}${getCanvasHref(specifiers)}`, "Canvas link copied");
+      await copy(
+        `${origin}${getCanvasHref(specifiers, shadcnStyle)}`,
+        "Canvas link copied",
+      );
       return;
     }
 
@@ -897,7 +921,7 @@ function ShareButton({
       const response = await fetch("/api/stacks", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ q: specifiers.join(" ") }),
+        body: JSON.stringify({ q: specifiers.join(" "), style: shadcnStyle }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Failed to save canvas");
@@ -911,7 +935,7 @@ function ShareButton({
     } finally {
       setIsSaving(false);
     }
-  }, [canSave, copy, origin, router, savedId, specifiers]);
+  }, [canSave, copy, origin, router, savedId, shadcnStyle, specifiers]);
 
   return (
     <Button

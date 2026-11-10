@@ -3,7 +3,9 @@ import type { Metadata } from "next";
 import { Rss } from "lucide-react";
 import Link from "next/link";
 
+import { StylePicker } from "@/components/style-picker";
 import { getItemHref } from "@/lib/registry/specifier";
+import { DEFAULT_SHADCN_STYLE, getShadcnStyle } from "@/lib/registry/styles";
 import {
   type ChangeEvent,
   getFollowedSpecifiers,
@@ -25,7 +27,12 @@ const timeFormatter = new Intl.DateTimeFormat("en-US", {
 });
 
 interface ChangesPageProps {
-  searchParams: Promise<{ namespace?: string; q?: string; before?: string }>;
+  searchParams: Promise<{
+    namespace?: string;
+    q?: string;
+    style?: string;
+    before?: string;
+  }>;
 }
 
 function getChangesHref(params: Record<string, string | undefined>) {
@@ -57,7 +64,10 @@ export async function generateMetadata({
 }
 
 export default async function ChangesPage({ searchParams }: ChangesPageProps) {
-  const { namespace, q, before } = await searchParams;
+  const { namespace, q, before, style: requestedStyle } = await searchParams;
+  const style = getShadcnStyle(requestedStyle);
+  // Kept in links only when it isn't the default.
+  const styleParam = style === DEFAULT_SHADCN_STYLE ? undefined : style;
 
   if (!isTrackingEnabled) {
     return (
@@ -69,13 +79,14 @@ export default async function ChangesPage({ searchParams }: ChangesPageProps) {
     );
   }
 
-  const followed = q ? await getFollowedSpecifiers(q) : null;
+  const followed = q ? await getFollowedSpecifiers(q, style) : null;
   const beforeDate = before ? new Date(before) : undefined;
 
   const [changes, namespaces] = await Promise.all([
     getRecentChanges({
       namespace: followed ? undefined : namespace,
       specifiers: followed?.specifiers,
+      style,
       before:
         beforeDate && !Number.isNaN(beforeDate.getTime())
           ? beforeDate
@@ -85,13 +96,11 @@ export default async function ChangesPage({ searchParams }: ChangesPageProps) {
     getTrackedNamespaces(),
   ]);
 
-  const feedHref = `/changes/feed.xml${
-    followed
-      ? `?q=${encodeURIComponent(followed.roots.join(" "))}`
-      : namespace
-        ? `?namespace=${encodeURIComponent(namespace)}`
-        : ""
-  }`;
+  const feedHref = getChangesHref({
+    q: followed ? followed.roots.join(" ") : undefined,
+    namespace: followed ? undefined : namespace,
+    style: styleParam,
+  }).replace("/changes", "/changes/feed.xml");
 
   const days = new Map<string, ChangeEvent[]>();
   for (const change of changes ?? []) {
@@ -103,6 +112,11 @@ export default async function ChangesPage({ searchParams }: ChangesPageProps) {
 
   return (
     <ChangesLayout feedHref={feedHref}>
+      <label className="flex items-center gap-2 self-start text-sm">
+        <span className="text-muted-foreground">shadcn style</span>
+        <StylePicker value={style} />
+      </label>
+
       {followed ? (
         <p className="text-sm text-muted-foreground">
           Following{" "}
@@ -111,7 +125,10 @@ export default async function ChangesPage({ searchParams }: ChangesPageProps) {
           </span>{" "}
           and the {followed.specifiers.length - followed.roots.length} items
           they depend on.{" "}
-          <Link href="/changes" className="underline underline-offset-4">
+          <Link
+            href={getChangesHref({ style: styleParam })}
+            className="underline underline-offset-4"
+          >
             Show all
           </Link>
         </p>
@@ -123,7 +140,7 @@ export default async function ChangesPage({ searchParams }: ChangesPageProps) {
           {[undefined, ...namespaces].map((value) => (
             <Link
               key={value ?? "all"}
-              href={getChangesHref({ namespace: value })}
+              href={getChangesHref({ namespace: value, style: styleParam })}
               aria-current={value === namespace ? "page" : undefined}
               className={cn(
                 "rounded-sm border px-2 py-0.5 font-mono transition-colors hover:border-ring",
@@ -152,7 +169,7 @@ export default async function ChangesPage({ searchParams }: ChangesPageProps) {
               {dayChanges.map((change) => (
                 <li key={change.snapshotId}>
                   <Link
-                    href={getItemHref(change.specifier)}
+                    href={getItemHref(change.specifier, change.style)}
                     className="flex flex-col gap-0.5 px-3 py-2 hover:bg-accent/50 sm:flex-row sm:items-baseline sm:gap-3"
                   >
                     <span className="truncate font-mono text-sm">
@@ -177,6 +194,7 @@ export default async function ChangesPage({ searchParams }: ChangesPageProps) {
           href={getChangesHref({
             namespace: followed ? undefined : namespace,
             q: followed ? followed.roots.join(" ") : undefined,
+            style: styleParam,
             before: lastChange.fetchedAt,
           })}
           className="self-start text-sm underline underline-offset-4"

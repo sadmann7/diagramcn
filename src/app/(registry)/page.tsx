@@ -114,7 +114,7 @@ export default async function IndexPage() {
             {changes.map((change) => (
               <li key={change.snapshotId}>
                 <Link
-                  href={getItemHref(change.specifier)}
+                  href={getItemHref(change.specifier, change.style)}
                   className="flex flex-col gap-0.5 px-3 py-2.5 hover:bg-accent/50 sm:flex-row sm:items-baseline sm:gap-3"
                 >
                   <span className="font-mono text-sm">{change.specifier}</span>

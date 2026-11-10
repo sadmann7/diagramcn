@@ -33,7 +33,7 @@ Options:
   --server <url>     diagramcn server (default: https://diagramcn.com)
 ```
 
-Bare names like `button` mean `@shadcn/button`. Items are tracked from the first time anyone inspects or syncs them, so history (and merging) starts then.
+Bare names like `button` mean `@shadcn/button`. `@shadcn` items are synced in your project's style, read from `components.json` (`new-york` on Tailwind v4 means `new-york-v4`; `radix-nova`, `base-lyra` and the other styles are used as is). History for `new-york-v4` goes back to early 2025; for the other styles it starts when diagramcn first tracks them. Items are tracked from the first time anyone inspects or syncs them, so history (and merging) starts then.
 
 Sync only writes files. When the new version needs npm packages your `package.json` doesn't have, adds a registry dependency, or changes CSS or env variables, it lists them and ends with the install command:
 

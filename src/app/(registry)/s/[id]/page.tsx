@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { inspectRegistry } from "@/lib/registry/inspect";
+import { getShadcnStyle } from "@/lib/registry/styles";
 import { getStack } from "@/lib/stacks";
 
 import { CanvasBuilder } from "../../components/canvas-builder";
@@ -29,12 +30,14 @@ export default async function SavedCanvasPage({
   const stack = await getStack((await params).id);
   if (!stack) notFound();
 
-  const result = await inspectRegistry(stack.specifiers.join(" "));
+  const shadcnStyle = getShadcnStyle(stack.style);
+  const result = await inspectRegistry(stack.specifiers.join(" "), shadcnStyle);
 
   return (
     <CanvasBuilder
       specifiers={result?.specifiers ?? stack.specifiers}
       result={result}
+      shadcnStyle={shadcnStyle}
       savedId={stack.id}
       canSave
     />

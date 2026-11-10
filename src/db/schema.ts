@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   index,
+  uniqueIndex,
   integer,
   jsonb,
   text,
@@ -19,7 +20,10 @@ export const items = pgTable(
       .$defaultFn(() => generateId())
       .primaryKey(),
     // `@shadcn/button`, `@acme/foo`, or a full URL for unlisted registries.
-    specifier: varchar("specifier", { length: 512 }).notNull().unique(),
+    specifier: varchar("specifier", { length: 512 }).notNull(),
+    // The style `@shadcn` items are tracked in, e.g. `radix-nova`; each
+    // style serves different files. Empty for other registries.
+    style: varchar("style", { length: 32 }).notNull().default(""),
     namespace: varchar("namespace", { length: 128 }),
     name: varchar("name", { length: 256 }).notNull(),
     url: text("url"),
@@ -36,6 +40,10 @@ export const items = pgTable(
       .$onUpdate(() => new Date()),
   },
   (table) => [
+    uniqueIndex("diagramcn_items_specifier_style_idx").on(
+      table.specifier,
+      table.style,
+    ),
     index("diagramcn_items_last_checked_at_idx").on(table.lastCheckedAt),
     index("diagramcn_items_namespace_idx").on(table.namespace),
   ],
@@ -87,6 +95,8 @@ export const stacks = pgTable("stacks", {
   // sha256 of the specifier list, so identical stacks share a link.
   hash: varchar("hash", { length: 64 }).notNull().unique(),
   specifiers: jsonb("specifiers").$type<string[]>().notNull(),
+  // The style `@shadcn` items were shown in. Null for the default.
+  style: varchar("style", { length: 32 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

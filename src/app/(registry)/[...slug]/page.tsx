@@ -4,6 +4,7 @@ import { getItem, ItemView } from "../components/item-view";
 
 interface ItemPageProps {
   params: Promise<{ slug: string[] }>;
+  searchParams: Promise<{ style?: string }>;
 }
 
 /** `/@acme/data-table` → `@acme/data-table`, `/button` → `button`. */
@@ -14,8 +15,10 @@ async function getInput(params: ItemPageProps["params"]) {
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: ItemPageProps): Promise<Metadata> {
-  const { specifier, item } = await getItem(await getInput(params));
+  const { style } = await searchParams;
+  const { specifier, item } = await getItem(await getInput(params), style);
   return {
     title: specifier,
     description:
@@ -24,6 +27,10 @@ export async function generateMetadata({
   };
 }
 
-export default async function ItemPage({ params }: ItemPageProps) {
-  return <ItemView input={await getInput(params)} />;
+export default async function ItemPage({
+  params,
+  searchParams,
+}: ItemPageProps) {
+  const { style } = await searchParams;
+  return <ItemView input={await getInput(params)} style={style} />;
 }

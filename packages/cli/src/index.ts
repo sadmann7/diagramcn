@@ -103,7 +103,7 @@ async function main() {
     getVersions: async (specifier) =>
       (
         await getJson<{ versions: Version[] }>(
-          `${server}/api/sync/versions?specifier=${encodeURIComponent(specifier)}`,
+          `${server}/api/sync/versions?specifier=${encodeURIComponent(specifier)}&style=${encodeURIComponent(project.style)}`,
         )
       ).versions,
     getChanges: (from, to) =>
@@ -128,6 +128,8 @@ async function main() {
     );
     return;
   }
+
+  console.log(`shadcn style: ${project.style} (from components.json)`);
 
   const installed = await readInstalled(cwd);
   const missing: Missing = { dependencies: [], devDependencies: [] };

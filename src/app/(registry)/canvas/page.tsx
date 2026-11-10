@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 
 import { inspectRegistry } from "@/lib/registry/inspect";
 import { parseAddInput } from "@/lib/registry/specifier";
+import { getShadcnStyle } from "@/lib/registry/styles";
 import { isTrackingEnabled } from "@/lib/tracking/track";
 
 import { CanvasBuilder } from "../components/canvas-builder";
 
 interface CanvasPageProps {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; style?: string }>;
 }
 
 export async function generateMetadata({
@@ -24,13 +25,15 @@ export async function generateMetadata({
 }
 
 export default async function CanvasPage({ searchParams }: CanvasPageProps) {
-  const { q = "" } = await searchParams;
-  const result = q ? await inspectRegistry(q) : null;
+  const { q = "", style } = await searchParams;
+  const shadcnStyle = getShadcnStyle(style);
+  const result = q ? await inspectRegistry(q, shadcnStyle) : null;
 
   return (
     <CanvasBuilder
       specifiers={result?.specifiers ?? []}
       result={result}
+      shadcnStyle={shadcnStyle}
       canSave={isTrackingEnabled}
     />
   );

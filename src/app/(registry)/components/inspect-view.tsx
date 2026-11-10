@@ -1,4 +1,5 @@
 import { inspectRegistry } from "@/lib/registry/inspect";
+import { getItemHistory } from "@/lib/tracking/history";
 
 import { Inspector } from "./inspector";
 import { RegistryInput } from "./registry-input";
@@ -33,5 +34,19 @@ export async function InspectView({
     );
   }
 
-  return <Inspector result={result} />;
+  // History only makes sense for one item that resolved, since unresolved
+  // items are never recorded.
+  const [specifier] = result.specifiers;
+  const isSingleResolvedItem =
+    result.specifiers.length === 1 &&
+    result.graph.nodes.some((node) => node.depth === 0 && node.item);
+  const history =
+    isSingleResolvedItem && specifier
+      ? await getItemHistory(specifier).catch((error: unknown) => {
+          console.error(`Failed to load history for ${specifier}:`, error);
+          return { status: "unavailable" } as const;
+        })
+      : undefined;
+
+  return <Inspector result={result} history={history} />;
 }

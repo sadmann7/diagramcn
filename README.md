@@ -25,6 +25,7 @@ Paste a command, an item, or a URL and get the fully resolved install plan for a
 | `/api/stack?q=<input>`      | One registry item that installs every item, for `shadcn add <url>` |
 | `/api/registries`          | Registries in the shadcn directory, ranked |
 | `/api/registries/items?namespace=@ns` | Items a registry publishes in its index |
+| `/api/history/diff?snapshot=<id>` | File diffs between a version and the one before it |
 | `/api/badge?q=<input>`      | SVG badge with the error or warning count     |
 | `/api/og?q=<input>`         | Open Graph image                              |
 
@@ -61,6 +62,7 @@ diagramcn snapshots registry items so it can show what changed upstream. It is o
 
 - **What's tracked:** every `@shadcn` item in the default style, plus any item someone inspects or adds to a stack.
 - **How:** a daily Vercel cron (`/api/cron/crawl`, see `vercel.json`) re-fetches tracked items, least recently checked first, and stores a snapshot only when the content hash changes. Inspections also record the items they resolve.
+- **History:** item pages have a History tab with every version since tracking started, what changed (files, dependencies, CSS and env vars, other fields), and line diffs per file.
 - **Storage:** Postgres (PlanetScale in production). `items` holds one row per item, `snapshots` one row per distinct version, and `blobs` each file's content once per sha256.
 
 Local setup:

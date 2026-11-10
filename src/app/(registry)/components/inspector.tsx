@@ -6,6 +6,7 @@ import * as React from "react";
 import { toast } from "sonner";
 
 import type { InspectResult } from "@/lib/registry/inspect";
+import type { ItemHistoryResult } from "@/lib/tracking/history";
 
 import { CodeBlock } from "@/components/code-block";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ import { getAddCommand, getInspectHref } from "@/lib/registry/specifier";
 import { cn } from "@/lib/utils";
 
 import { InstallPlan } from "./install-plan";
+import { ItemHistory } from "./item-history";
 import { RegistryInput } from "./registry-input";
 
 // Both renderers touch the DOM at import time.
@@ -31,9 +33,11 @@ const MermaidDiagram = dynamic(
 
 interface InspectorProps {
   result: InspectResult;
+  /** Present on single-item pages. */
+  history?: ItemHistoryResult;
 }
 
-export function Inspector({ result }: InspectorProps) {
+export function Inspector({ result, history }: InspectorProps) {
   const { specifiers } = result;
 
   return (
@@ -55,7 +59,7 @@ export function Inspector({ result }: InspectorProps) {
 
       <InstallCommand getCommand={(dlx) => getAddCommand(dlx, specifiers)} />
 
-      <InspectTabs result={result} />
+      <InspectTabs result={result} history={history} />
     </div>
   );
 }
@@ -142,7 +146,12 @@ export function InstallCommand({ getCommand }: InstallCommandProps) {
   );
 }
 
-export function InspectTabs({ result }: { result: InspectResult }) {
+interface InspectTabsProps {
+  result: InspectResult;
+  history?: ItemHistoryResult;
+}
+
+export function InspectTabs({ result, history }: InspectTabsProps) {
   const { specifiers, plan } = result;
 
   return (
@@ -152,6 +161,7 @@ export function InspectTabs({ result }: { result: InspectResult }) {
         <TabsTrigger value="items">Item graph</TabsTrigger>
         <TabsTrigger value="files">File graph</TabsTrigger>
         <TabsTrigger value="json">JSON</TabsTrigger>
+        {history ? <TabsTrigger value="history">History</TabsTrigger> : null}
       </TabsList>
       <TabsContent value="plan">
         <InstallPlan result={result} />
@@ -183,6 +193,11 @@ export function InspectTabs({ result }: { result: InspectResult }) {
       <TabsContent value="json">
         <ItemJson result={result} />
       </TabsContent>
+      {history ? (
+        <TabsContent value="history">
+          <ItemHistory result={history} />
+        </TabsContent>
+      ) : null}
     </Tabs>
   );
 }

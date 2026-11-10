@@ -50,7 +50,8 @@ function CodeBlockImpl({
       borderRadius: "0.5rem",
       fontFamily: "var(--font-mono)",
       fontSize: "0.875rem",
-      backgroundColor: "var(--canvas)",
+      // The shorthand, so it replaces the theme's own `background` key.
+      background: "var(--canvas)",
       color: "var(--canvas-foreground)",
       ...style,
     };

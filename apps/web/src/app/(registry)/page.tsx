@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { InstallCommand } from "@/components/install-command";
 import { getItemHref } from "@/lib/registry/specifier";
+import { getShadcnStyleLabel } from "@/lib/registry/styles";
 import { getRecentChanges } from "@/lib/tracking/changes";
 
 import { RegistryInput } from "./components/registry-input";
@@ -118,6 +119,11 @@ export default async function IndexPage() {
                   className="flex flex-col gap-0.5 px-3 py-2.5 hover:bg-accent/50 sm:flex-row sm:items-baseline sm:gap-3"
                 >
                   <span className="font-mono text-sm">{change.specifier}</span>
+                  {change.style ? (
+                    <span className="text-xs text-muted-foreground">
+                      {getShadcnStyleLabel(change.style)}
+                    </span>
+                  ) : null}
                   <span className="flex-1 truncate text-xs text-muted-foreground">
                     {change.summary}
                   </span>

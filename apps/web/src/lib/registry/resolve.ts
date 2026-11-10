@@ -23,7 +23,7 @@ const MAX_DEPTH = 15;
 const REGISTRIES_INDEX_TTL_MS = 60 * 60 * 1000;
 
 export interface ResolveOptions {
-  /** Style used for `@shadcn` items, e.g. `new-york-v4`. */
+  /** Style used for `@shadcn` items, e.g. `base-nova`. */
   shadcnStyle?: string;
   /** Value for `{style}` in third-party registry URL templates. */
   style?: string;

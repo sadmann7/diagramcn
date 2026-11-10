@@ -95,7 +95,7 @@ export const stacks = pgTable("stacks", {
   // sha256 of the specifier list, so identical stacks share a link.
   hash: varchar("hash", { length: 64 }).notNull().unique(),
   specifiers: jsonb("specifiers").$type<string[]>().notNull(),
-  // The style `@shadcn` items were shown in. Null for the default.
+  // The style `@shadcn` items were shown in.
   style: varchar("style", { length: 32 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

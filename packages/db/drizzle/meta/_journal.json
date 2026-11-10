@@ -36,6 +36,13 @@
       "when": 1794320125919,
       "tag": "0004_misty_magik",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794321540255,
+      "tag": "0005_legacy_stack_style",
+      "breakpoints": true
     }
   ]
 }

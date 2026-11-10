@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { inspectRegistry } from "@/lib/registry/inspect";
 import { parseAddInput } from "@/lib/registry/specifier";
-import { DEFAULT_SHADCN_STYLE, isShadcnStyle } from "@/lib/registry/styles";
+import { getShadcnStyle } from "@/lib/registry/styles";
 import { sha256 } from "@/lib/tracking/snapshot";
 
 export const MAX_STACK_ITEMS = 50;
@@ -36,16 +36,10 @@ export async function saveStack(
     };
   }
 
-  // The default style is stored as null, so older stacks keep their hash.
-  const style =
-    isShadcnStyle(requestedStyle) && requestedStyle !== DEFAULT_SHADCN_STYLE
-      ? requestedStyle
-      : null;
+  // Stored explicitly, so a saved link keeps its style if the default changes.
+  const style = getShadcnStyle(requestedStyle);
 
-  const result = await inspectRegistry(
-    specifiers.join(" "),
-    style ?? undefined,
-  );
+  const result = await inspectRegistry(specifiers.join(" "), style);
   const unresolved = (result?.graph.nodes ?? [])
     .filter((node) => node.depth === 0 && !node.item)
     .map((node) => node.specifier);
@@ -58,9 +52,7 @@ export async function saveStack(
     };
   }
 
-  const hash = sha256(
-    JSON.stringify(style ? { specifiers, style } : specifiers),
-  );
+  const hash = sha256(JSON.stringify({ specifiers, style }));
 
   const [inserted] = await db
     .insert(stacks)

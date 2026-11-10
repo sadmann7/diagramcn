@@ -4,7 +4,6 @@ import { and, asc, eq, isNull } from "drizzle-orm";
 import { db as defaultDb, type Db } from "@/db";
 import { env } from "@/env";
 import { SHADCN_NAMESPACE } from "@/lib/registry/specifier";
-import { DEFAULT_SHADCN_STYLE } from "@/lib/registry/styles";
 import { stableStringify } from "@/lib/stable-stringify";
 import { getSnapshotFiles, type SnapshotItem } from "@/lib/tracking/compare";
 import { sha256 } from "@/lib/tracking/snapshot";
@@ -13,6 +12,9 @@ import { sha256 } from "@/lib/tracking/snapshot";
 // served exactly as they appear in the source tree, so their git history is
 // the item's history.
 const REPO = "shadcn-ui/ui";
+// Only this style's files are in git as served; the newer styles are
+// generated from shared sources at build time.
+export const GIT_HISTORY_STYLE = "new-york-v4";
 const SOURCE_ROOT = "apps/v4/";
 const MAX_COMMITS_PER_FILE = 100;
 const TIMEOUT_MS = 10_000;
@@ -86,15 +88,10 @@ export async function backfillItem(
     .select()
     .from(items)
     .where(
-      and(
-        eq(items.specifier, specifier),
-        eq(items.style, DEFAULT_SHADCN_STYLE),
-      ),
+      and(eq(items.specifier, specifier), eq(items.style, GIT_HISTORY_STYLE)),
     )
     .limit(1);
 
-  // Only the default style's files are in git as served. The others are
-  // generated from shared sources at build time.
   if (!item) return { status: "skipped", reason: "not tracked" };
   if (item.namespace !== SHADCN_NAMESPACE) {
     return { status: "skipped", reason: "only @shadcn has known history" };
@@ -251,7 +248,7 @@ export async function getItemsToBackfill(
     .where(
       and(
         eq(items.namespace, SHADCN_NAMESPACE),
-        eq(items.style, DEFAULT_SHADCN_STYLE),
+        eq(items.style, GIT_HISTORY_STYLE),
         isNull(items.backfilledAt),
       ),
     )

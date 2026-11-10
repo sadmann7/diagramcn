@@ -3,7 +3,8 @@ import { NextResponse } from "next/server";
 import { listRegistryItems } from "@/lib/registry/browse";
 
 export async function GET(req: Request) {
-  const namespace = new URL(req.url).searchParams.get("namespace");
+  const { searchParams } = new URL(req.url);
+  const namespace = searchParams.get("namespace");
 
   if (!namespace?.startsWith("@")) {
     return NextResponse.json(
@@ -12,7 +13,10 @@ export async function GET(req: Request) {
     );
   }
 
-  const items = await listRegistryItems(namespace).catch(() => null);
+  const items = await listRegistryItems(
+    namespace,
+    searchParams.get("style") ?? undefined,
+  ).catch(() => null);
 
   if (!items) {
     return NextResponse.json(

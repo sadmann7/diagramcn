@@ -3,7 +3,6 @@ import { sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import { inspectRegistry } from "@/lib/registry/inspect";
-import { DEFAULT_SHADCN_STYLE } from "@/lib/registry/styles";
 import {
   compareVersions,
   getChangeSummary,
@@ -29,7 +28,7 @@ export interface ChangesFilter {
   namespace?: string;
   /** Only these items, e.g. everything in a stack. */
   specifiers?: string[];
-  /** `@shadcn` style to show. Defaults to the default style. */
+  /** Only this `@shadcn` style. Every style when unset. */
   style?: string;
   /** Only changes before this time, for pagination. */
   before?: Date;
@@ -57,7 +56,7 @@ interface ChangeRow extends Record<string, unknown> {
 export async function getRecentChanges({
   namespace,
   specifiers,
-  style = DEFAULT_SHADCN_STYLE,
+  style,
   before,
   limit = DEFAULT_LIMIT,
 }: ChangesFilter = {}): Promise<ChangeEvent[] | null> {
@@ -66,8 +65,8 @@ export async function getRecentChanges({
 
   const conditions = [
     namespace ? sql`${items.namespace} = ${namespace}` : null,
-    // Other registries have no style; `@shadcn` shows one at a time.
-    sql`${items.style} in ('', ${style})`,
+    // Other registries have no style, so they always match.
+    style ? sql`${items.style} in ('', ${style})` : null,
     specifiers
       ? sql`${items.specifier} in (${sql.join(
           specifiers.map((specifier) => sql`${specifier}`),

@@ -3,10 +3,12 @@ import { z } from "zod";
 import { fetchPublicJson } from "@/lib/registry/fetch";
 import { getRegistriesIndex } from "@/lib/registry/resolve";
 import { SHADCN_NAMESPACE } from "@/lib/registry/specifier";
+import { getShadcnStyle } from "@/lib/registry/styles";
 
-// Lists every item in the default style, including blocks, unlike r/index.json.
+// Lists every item in a style, including blocks, unlike r/index.json. Each
+// style ships its own set of items.
 const SHADCN_REGISTRY_URL =
-  "https://ui.shadcn.com/r/styles/new-york-v4/registry.json";
+  "https://ui.shadcn.com/r/styles/{style}/registry.json";
 
 // Types that aren't meant to be added on their own.
 const hiddenTypes = new Set([
@@ -70,8 +72,9 @@ export async function listRegistries(): Promise<BrowseRegistry[]> {
  */
 export async function listRegistryItems(
   namespace: string,
+  shadcnStyle?: string,
 ): Promise<BrowseItem[] | null> {
-  let url = SHADCN_REGISTRY_URL;
+  let url = SHADCN_REGISTRY_URL.replace("{style}", getShadcnStyle(shadcnStyle));
 
   if (namespace !== SHADCN_NAMESPACE) {
     const entry = (await getRegistriesIndex()).get(namespace);

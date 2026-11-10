@@ -48,7 +48,10 @@ import {
   parseAddInput,
   SHADCN_NAMESPACE,
 } from "@/lib/registry/specifier";
-import { DEFAULT_SHADCN_STYLE } from "@/lib/registry/styles";
+import {
+  DEFAULT_SHADCN_STYLE,
+  getShadcnStyleLabel,
+} from "@/lib/registry/styles";
 
 import { getNodeLabel, getRegistryColor } from "./canvas-graph";
 import { FileDialog } from "./file-dialog";
@@ -205,16 +208,20 @@ export function CanvasBuilder({
           </p>
         </div>
 
-        <AddItems onAdd={onAdd} specifiers={optimisticSpecifiers} />
+        <AddItems
+          onAdd={onAdd}
+          specifiers={optimisticSpecifiers}
+          shadcnStyle={shadcnStyle}
+        />
 
-        <label className="flex items-center justify-between gap-2 text-sm">
+        <div className="flex items-center justify-between gap-2 text-sm">
           <span className="text-muted-foreground">shadcn style</span>
           {savedId ? (
-            <span className="font-mono text-xs">{shadcnStyle}</span>
+            <span className="text-xs">{getShadcnStyleLabel(shadcnStyle)}</span>
           ) : (
             <StylePicker value={shadcnStyle} className="min-w-0 flex-1" />
           )}
-        </label>
+        </div>
 
         {optimisticSpecifiers.length > 0 ? (
           <section className="flex flex-col gap-2">
@@ -379,10 +386,11 @@ function CanvasStatus({ children }: React.PropsWithChildren) {
 
 interface AddItemsProps {
   specifiers: string[];
+  shadcnStyle: string;
   onAdd: (specifiers: string[]) => void;
 }
 
-function AddItems({ specifiers, onAdd }: AddItemsProps) {
+function AddItems({ specifiers, shadcnStyle, onAdd }: AddItemsProps) {
   const [input, setInput] = React.useState("");
   const [isBrowsing, setIsBrowsing] = React.useState(false);
 
@@ -442,6 +450,7 @@ function AddItems({ specifiers, onAdd }: AddItemsProps) {
           </DialogHeader>
           <RegistryBrowser
             specifiers={specifiers}
+            shadcnStyle={shadcnStyle}
             onAdd={(specifier) => onAdd([specifier])}
           />
         </DialogContent>

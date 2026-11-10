@@ -7,7 +7,11 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getInspectHref, parseAddInput } from "@/lib/registry/specifier";
+import {
+  getCanvasHref,
+  getItemHref,
+  parseAddInput,
+} from "@/lib/registry/specifier";
 import { cn } from "@/lib/utils";
 
 interface RegistryInputProps extends React.ComponentProps<"div"> {
@@ -50,7 +54,13 @@ export function RegistryInput({
     }
 
     startTransition(() => {
-      router.push(getInspectHref(specifiers));
+      // One item opens its page; several go on the canvas together.
+      const [first] = specifiers;
+      router.push(
+        specifiers.length === 1 && first
+          ? getItemHref(first)
+          : getCanvasHref(specifiers),
+      );
     });
   }, [input, router]);
 
@@ -85,7 +95,7 @@ export function RegistryInput({
       <Input
         ref={inputRef}
         aria-label="Registry items"
-        placeholder="npx shadcn@latest add @acme/data-table"
+        placeholder="@shadcn/button, @magicui/marquee, or a shadcn add command"
         className="h-full pr-10 font-mono text-sm"
         value={input}
         onChange={onInputChange}
@@ -95,7 +105,7 @@ export function RegistryInput({
         autoComplete="off"
       />
       <Button
-        aria-label="Inspect"
+        aria-label="Look up"
         variant="ghost"
         size="icon"
         className="absolute top-0 right-0 h-full rounded-l-none text-muted-foreground hover:text-foreground hover:dark:bg-transparent"

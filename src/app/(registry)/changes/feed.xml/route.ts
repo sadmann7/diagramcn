@@ -1,5 +1,5 @@
 import { siteConfig } from "@/config/site";
-import { getItemHistoryHref } from "@/lib/registry/specifier";
+import { getItemHref } from "@/lib/registry/specifier";
 import {
   type ChangeEvent,
   getFollowedSpecifiers,
@@ -43,7 +43,7 @@ function renderFeed({
   changes: ChangeEvent[];
 }) {
   const items = changes.map((change) => {
-    const href = `${siteConfig.url}${getItemHistoryHref(change.specifier)}`;
+    const href = `${siteConfig.url}${getItemHref(change.specifier)}`;
     return `    <item>
       <title>${escapeXml(`${change.specifier}: ${change.summary}`)}</title>
       <link>${escapeXml(href)}</link>

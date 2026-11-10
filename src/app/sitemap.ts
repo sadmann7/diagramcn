@@ -5,10 +5,10 @@ import { SITE_URL } from "@/lib/site";
 export default function sitemap(): MetadataRoute.Sitemap {
   const routes = [
     "",
-    "/stack",
+    "/canvas",
     "/changes",
+    "/@shadcn/button",
     "/@shadcn/sidebar-07",
-    "/@shadcn/dashboard-01",
   ].map((route) => ({
     url: `${SITE_URL}${route}`,
     lastModified: new Date().toISOString(),

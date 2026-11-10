@@ -1,5 +1,5 @@
-import { InspectSkeleton } from "../components/inspect-skeleton";
+import { ItemSkeleton } from "../components/item-view";
 
 export default function Loading() {
-  return <InspectSkeleton />;
+  return <ItemSkeleton />;
 }

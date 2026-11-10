@@ -58,17 +58,17 @@ export async function createStackItemResponse(
 
   const url =
     viewUrl ??
-    `${siteConfig.url}/stack?q=${encodeURIComponent(result.specifiers.join(" "))}`;
+    `${siteConfig.url}/canvas?q=${encodeURIComponent(result.specifiers.join(" "))}`;
 
   return NextResponse.json(
     {
       $schema: "https://ui.shadcn.com/schema/registry-item.json",
       name: "stack",
       type: "registry:item",
-      title: "diagramcn stack",
+      title: "diagramcn canvas",
       description: result.specifiers.join(", "),
       registryDependencies,
-      docs: `Installed a diagramcn stack of ${roots.length} items. View it at ${url}`,
+      docs: `Installed a diagramcn canvas of ${roots.length} items. View it at ${url}`,
     },
     { headers: { "cache-control": "public, s-maxage=300" } },
   );

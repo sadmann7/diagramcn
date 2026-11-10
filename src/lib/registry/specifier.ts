@@ -79,33 +79,25 @@ export function parseAddInput(input: string): string[] {
 }
 
 /**
- * Shareable path for a set of specifiers. A single namespaced item gets a
- * pretty permalink (`/@acme/foo`), everything else goes through `/inspect`.
+ * An item's page: `/@acme/foo`. Items from unlisted registries are known by
+ * their URL, which can't be a path, so theirs takes it as a query.
  */
-export function getInspectHref(specifiers: string[]) {
-  const [first] = specifiers;
-  if (specifiers.length === 1 && first && parseNamespacedSpecifier(first)) {
-    return `/${first}`;
-  }
-  return `/inspect?q=${encodeURIComponent(specifiers.join(" "))}`;
+export function getItemHref(specifier: string) {
+  return parseNamespacedSpecifier(specifier)
+    ? `/${specifier}`
+    : `/url?q=${encodeURIComponent(specifier)}`;
 }
 
 export function getAddCommand(dlx: string, specifiers: string[]) {
   return `${dlx} shadcn@latest add ${specifiers.join(" ")}`;
 }
 
-export function getStackHref(specifiers: string[]) {
-  if (specifiers.length === 0) return "/stack";
-  return `/stack?q=${encodeURIComponent(specifiers.join(" "))}`;
+export function getCanvasHref(specifiers: string[]) {
+  if (specifiers.length === 0) return "/canvas";
+  return `/canvas?q=${encodeURIComponent(specifiers.join(" "))}`;
 }
 
 /** URL of the single registry item that installs the whole stack. */
 export function getStackItemUrl(origin: string, specifiers: string[]) {
   return `${origin}/api/stack?q=${encodeURIComponent(specifiers.join(" "))}`;
-}
-
-/** Item page opened on its History tab. */
-export function getItemHistoryHref(specifier: string) {
-  const href = getInspectHref([specifier]);
-  return `${href}${href.includes("?") ? "&" : "?"}tab=history`;
 }

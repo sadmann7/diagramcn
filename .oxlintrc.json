@@ -82,6 +82,12 @@
         "diagramcn/comment-style": "off",
         "diagramcn/no-low-value-comments": "off"
       }
+    },
+    {
+      "files": ["**/*.test.ts"],
+      "rules": {
+        "typescript/no-floating-promises": "off"
+      }
     }
   ]
 }

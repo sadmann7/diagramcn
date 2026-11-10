@@ -15,6 +15,8 @@ export interface Project {
   cwd: string;
   /** Command prefix that runs a package without installing it. */
   dlx: string[];
+  /** Command prefix that adds packages to the project. */
+  install: string[];
   /** Root files the shadcn CLI reads to decide how to transform items. */
   configFiles: string[];
   /** Directories whose existence changes where files are written. */
@@ -31,15 +33,17 @@ async function exists(file: string) {
   );
 }
 
-async function getDlx(cwd: string) {
-  if (await exists(path.join(cwd, "pnpm-lock.yaml"))) return ["pnpm", "dlx"];
+async function getPackageManager(cwd: string) {
+  if (await exists(path.join(cwd, "pnpm-lock.yaml"))) {
+    return { dlx: ["pnpm", "dlx"], install: ["pnpm", "add"] };
+  }
   if (
     (await exists(path.join(cwd, "bun.lock"))) ||
     (await exists(path.join(cwd, "bun.lockb")))
   ) {
-    return ["bunx"];
+    return { dlx: ["bunx"], install: ["bun", "add"] };
   }
-  return ["npx", "--yes"];
+  return { dlx: ["npx", "--yes"], install: ["npm", "install"] };
 }
 
 export async function loadProject(cwd: string): Promise<Project> {
@@ -68,10 +72,26 @@ export async function loadProject(cwd: string): Promise<Project> {
 
   return {
     cwd,
-    dlx: await getDlx(cwd),
+    ...(await getPackageManager(cwd)),
     configFiles: [...new Set([...rootFiles, ...extraFiles])],
     layoutDirs,
   };
+}
+
+/** Names of every package in the project's package.json. */
+export async function readInstalled(cwd: string) {
+  try {
+    const pkg = JSON.parse(
+      await readFile(path.join(cwd, "package.json"), "utf8"),
+    ) as Record<string, unknown>;
+    return new Set(
+      ["dependencies", "devDependencies", "peerDependencies"].flatMap((key) =>
+        Object.keys((pkg[key] as Record<string, string> | undefined) ?? {}),
+      ),
+    );
+  } catch {
+    return new Set<string>();
+  }
 }
 
 function run(command: string[], cwd: string) {

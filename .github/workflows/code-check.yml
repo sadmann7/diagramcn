@@ -43,3 +43,13 @@ jobs:
       - uses: ./.github/setup
 
       - run: pnpm typecheck
+
+  test:
+    runs-on: ubuntu-latest
+    name: Test
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - uses: ./.github/setup
+
+      - run: pnpm test

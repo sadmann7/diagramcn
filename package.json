@@ -12,6 +12,7 @@
     "format": "oxfmt --write",
     "format:check": "oxfmt --check",
     "typecheck": "tsc --noEmit",
+    "test": "dotenv -- tsx --test 'src/**/*.test.ts' 'packages/cli/test/*.test.ts'",
     "check": "pnpm lint && pnpm format:check && pnpm typecheck",
     "shadcn": "pnpm dlx shadcn@latest",
     "db:start": "docker compose up -d",

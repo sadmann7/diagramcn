@@ -8,12 +8,6 @@ Pull upstream changes to [shadcn](https://ui.shadcn.com) registry items into you
 npx diagramcn sync button @magicui/marquee
 ```
 
-```
-@shadcn/button
-  installed Nov 3, 2026 (detected) → upstream Nov 10, 2026
-  ✓ components/ui/button.tsx  merged, kept your edits
-```
-
 ## How it works
 
 1. [diagramcn.com](https://diagramcn.com) keeps every version of tracked registry items.
@@ -40,6 +34,19 @@ Options:
 ```
 
 Bare names like `button` mean `@shadcn/button`. Items are tracked from the first time anyone inspects or syncs them, so history (and merging) starts then.
+
+Sync only writes files. When the new version needs npm packages your `package.json` doesn't have, adds a registry dependency, or changes CSS or env variables, it lists them and ends with the install command:
+
+```
+@shadcn/button
+  installed Dec 12, 2025 (detected) → upstream Nov 10, 2026
+  ✓ components/ui/button.tsx  merged, kept your edits
+  + cn  needed upstream, not installed
+  + radix-ui  needed upstream, not installed
+
+Install the new dependencies:
+  npm install cn radix-ui
+```
 
 If upstream adds a file at a path where you already have a different file, sync leaves the whole item untouched and tells you, rather than overwrite yours.
 

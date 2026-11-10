@@ -31,6 +31,8 @@ Paste a command, an item, or a URL and get the fully resolved install plan for a
 | `/api/registries`          | Registries in the shadcn directory, ranked |
 | `/api/registries/items?namespace=@ns` | Items a registry publishes in its index |
 | `/api/history/diff?snapshot=<id>` | File diffs between a version and the one before it |
+| `/api/sync/versions?specifier=@ns/item` | Stored versions of an item, for the CLI |
+| `/r/v/<versionId>.json` | One exact stored version as an installable item |
 | `/api/badge?q=<input>`      | SVG badge with the error or warning count     |
 | `/api/og?q=<input>`         | Open Graph image                              |
 
@@ -84,6 +86,17 @@ pnpm db:studio          # browse the data
 After changing `src/db/schema.ts`, run `pnpm db:generate` to create a migration.
 
 In production, set `DATABASE_URL` (PlanetScale Postgres) and `CRON_SECRET` in the Vercel project, then run `pnpm db:migrate` against the production database once.
+
+## CLI
+
+`packages/cli` is the `diagramcn` CLI. `diagramcn sync button` merges upstream changes into an edited component instead of overwriting it, using the stored versions as the merge base. See [its README](packages/cli/README.md).
+
+```bash
+pnpm cli sync button --server http://localhost:3000   # run from source
+pnpm cli:build                                         # build to packages/cli/dist
+```
+
+Publishing: `cd packages/cli && npm publish` (builds first).
 
 ## Learn More
 

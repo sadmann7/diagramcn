@@ -34,7 +34,7 @@ Update shadcn components without losing your edits, and mix items from any regis
 | `/api/sync/changes?from=<id>&to=<id>` | Dependency, CSS and env var changes between two versions, and what the newer one needs |
 | `/r/v/<versionId>.json`     | One exact stored version as an installable item |
 
-`POST /api/stacks` and `/api/sync/versions` are rate-limited per client IP (counters in Postgres, cleared by the daily crawl) and return `429` with `Retry-After` when over the limit.
+`POST /api/stacks` and `/api/sync/versions` are rate-limited per client IP (counters in Postgres, cleared by the crawl) and return `429` with `Retry-After` when over the limit.
 
 `?style=` picks the `@shadcn` style on item pages, the canvas and `/api/sync/versions` (default `base-nova`). On `/changes` and its feeds it filters, and every style is shown without it.
 
@@ -88,10 +88,10 @@ Other tasks run through Turborepo too: `pnpm build`, `pnpm test`, `pnpm check-ty
 diagramcn snapshots registry items so it can show what changed upstream. It is optional: without `DATABASE_URL` the rest of the app works and tracking is skipped.
 
 - **What's tracked:** every `@shadcn` item in every current style (Base, Aria and Radix in each look, plus `new-york-v4`), every item of any third-party registry someone has used, and anything someone opens, syncs, or puts on a canvas, including the Tailwind v3 styles. `@shadcn` items are tracked per style, since each style serves different files; other styles start being tracked the first time someone uses them.
-- **How:** a daily Vercel cron (`/api/cron/crawl`, see `vercel.json`) re-fetches tracked items, least recently checked first, and stores a snapshot only when the content hash changes. Item pages and canvases also record the items they resolve.
+- **How:** an hourly Vercel cron (`/api/cron/crawl`, see `apps/web/vercel.json`) re-fetches the 500 least recently checked items, 4 at a time, and stores a snapshot only when the content hash changes. Runs rotate through everything, so at ~4,000 items each is checked about every 8 hours. Registry indexes are re-read for new items once a day, in the 06:00 UTC run. Hourly crons need a Vercel Pro plan; on Hobby, change the schedule to daily and raise `CRAWL_BATCH_SIZE` to cover every item. Item pages and canvases also record the items they resolve.
 - **History:** item pages have a History tab with every version since tracking started, what changed (files, dependencies, CSS and env vars, other fields), and line diffs per file.
 - **Following changes:** `/changes` lists every change, and each item, canvas and registry has an RSS feed. Feeds for items and canvases include everything they depend on, since a change to `button` affects every canvas that uses it.
-- **Older versions:** `@shadcn` items in `new-york-v4` also get their history imported from shadcn/ui's git repo (files only, marked `origin: git`), so projects installed before tracking began still have a merge base. The other styles are generated from shared sources at build time, so their history starts when tracking does. A few items are imported per daily crawl; set `GITHUB_TOKEN` to raise GitHub's 60-requests-an-hour limit.
+- **Older versions:** `@shadcn` items in `new-york-v4` also get their history imported from shadcn/ui's git repo (files only, marked `origin: git`), so projects installed before tracking began still have a merge base. The other styles are generated from shared sources at build time, so their history starts when tracking does. A few items are imported per crawl run; set `GITHUB_TOKEN` to raise GitHub's 60-requests-an-hour limit.
 - **Storage:** Postgres (PlanetScale in production). `items` holds one row per item, `snapshots` one row per distinct version, and `blobs` each file's content once per sha256. `rate_limits` holds the API's request counters.
 
 Local setup:
@@ -140,7 +140,7 @@ To learn more about the technologies used in this project:
 
 ## Deploy on Vercel
 
-Set the Vercel project's **Root Directory** to `apps/web`. Vercel detects the pnpm workspace and Turborepo from there, and `apps/web/vercel.json` holds the daily crawl cron.
+Set the Vercel project's **Root Directory** to `apps/web`. Vercel detects the pnpm workspace and Turborepo from there, and `apps/web/vercel.json` holds the hourly crawl cron.
 
 ## Credits
 

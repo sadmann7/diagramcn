@@ -53,6 +53,9 @@ export const shadcnStyles: ShadcnStyle[] = [
 
 const styleNames = new Set(shadcnStyles.map((style) => style.name));
 
+/** Styles for Tailwind v3 projects, which shadcn no longer develops. */
+export const TAILWIND_V3_STYLES = new Set(["new-york", "default"]);
+
 export function isShadcnStyle(value: unknown): value is string {
   return typeof value === "string" && styleNames.has(value);
 }

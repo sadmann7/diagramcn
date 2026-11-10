@@ -6,10 +6,9 @@ import { env } from "@/env";
 import { listRegistryItems } from "@/lib/registry/browse";
 import { type ResolvedNode, resolveRegistryItem } from "@/lib/registry/resolve";
 import { SHADCN_NAMESPACE } from "@/lib/registry/specifier";
-import { DEFAULT_SHADCN_STYLE } from "@/lib/registry/styles";
+import { shadcnStyles, TAILWIND_V3_STYLES } from "@/lib/registry/styles";
 import {
   backfillItem,
-  GIT_HISTORY_STYLE,
   GitHubRateLimitError,
   getItemsToBackfill,
 } from "@/lib/tracking/backfill";
@@ -17,7 +16,8 @@ import { createItemSnapshot } from "@/lib/tracking/snapshot";
 
 export const isTrackingEnabled = defaultDb !== null;
 
-type RecordResult = "changed" | "unchanged" | "failed";
+/** `added` is an item's first version; `changed` a new one after that. */
+type RecordResult = "added" | "changed" | "unchanged" | "failed";
 
 function getItemName(node: ResolvedNode) {
   return node.item?.name ?? node.specifier.split("/").pop() ?? node.specifier;
@@ -73,7 +73,8 @@ export async function recordNode(
           failureCount: 0,
         },
       })
-      .returning({ id: items.id });
+      // The upsert leaves latestHash alone, so this is the previous one.
+      .returning({ id: items.id, latestHash: items.latestHash });
 
     if (!row) throw new Error(`Failed to upsert ${node.specifier}`);
 
@@ -106,7 +107,7 @@ export async function recordNode(
       fetchedAt: now,
     });
 
-    return "changed";
+    return row.latestHash === null ? "added" : "changed";
   });
 }
 
@@ -123,9 +124,11 @@ export async function recordNodes(nodes: ResolvedNode[]) {
   );
 }
 
-// The default style, plus the legacy one most existing projects still use.
-// Other styles are tracked once someone opens or syncs an item in them.
-const SEEDED_STYLES = [DEFAULT_SHADCN_STYLE, GIT_HISTORY_STYLE];
+// Every current style, so any project can sync against real history. The
+// Tailwind v3 styles are tracked once someone opens or syncs an item in them.
+const SEEDED_STYLES = shadcnStyles
+  .map((style) => style.name)
+  .filter((name) => !TAILWIND_V3_STYLES.has(name));
 
 /** Makes sure every official shadcn item is tracked, even if never inspected. */
 async function seedShadcnItems(db: Db) {
@@ -222,6 +225,9 @@ export interface CrawlOptions {
 export interface CrawlResult {
   seeded: number;
   checked: number;
+  /** Items whose first version was stored this run. */
+  added: number;
+  /** Items that changed upstream, e.g. `@shadcn/button (base-nova)`. */
   changed: string[];
   failed: { specifier: string; error: string }[];
   /** Items whose older versions were imported from git this run. */
@@ -230,7 +236,7 @@ export interface CrawlResult {
 }
 
 export async function crawl(
-  { limit = 1000, concurrency = 8 }: CrawlOptions = {},
+  { limit = 5000, concurrency = 8 }: CrawlOptions = {},
   db: Db | null = defaultDb,
 ): Promise<CrawlResult> {
   if (!db) throw new Error("DATABASE_URL is not set");
@@ -247,8 +253,10 @@ export async function crawl(
 
   const changed: string[] = [];
   const failed: CrawlResult["failed"] = [];
+  let added = 0;
 
   await mapWithConcurrency(due, concurrency, async ({ specifier, style }) => {
+    const label = style ? `${specifier} (${style})` : specifier;
     const node = await resolveRegistryItem(specifier, {
       shadcnStyle: style || undefined,
     });
@@ -257,9 +265,10 @@ export async function crawl(
       return "failed" as const;
     });
 
-    if (result === "changed") changed.push(specifier);
+    if (result === "added") added++;
+    if (result === "changed") changed.push(label);
     if (result === "failed") {
-      failed.push({ specifier, error: node.error ?? "Unknown error" });
+      failed.push({ specifier: label, error: node.error ?? "Unknown error" });
     }
   });
 
@@ -285,6 +294,7 @@ export async function crawl(
     seeded,
     backfilled,
     checked: due.length,
+    added,
     changed,
     failed,
     durationMs: Date.now() - start,

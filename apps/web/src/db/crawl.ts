@@ -10,7 +10,9 @@ async function runCrawl() {
   console.log(
     `✅ Checked ${result.checked} items in ${result.durationMs}ms (${result.seeded} newly tracked)`,
   );
-  console.log(`   ${result.changed.length} changed`);
+  console.log(`   ${result.added} first versions stored`);
+  console.log(`   ${result.changed.length} changed upstream`);
+  for (const specifier of result.changed) console.log(`   ~ ${specifier}`);
   console.log(
     `   ${result.backfilled.length} items got older versions from git history`,
   );

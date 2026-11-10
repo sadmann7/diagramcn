@@ -1,7 +1,8 @@
 import { crawl } from "@/lib/tracking/track";
 
 async function runCrawl() {
-  const limit = Number(process.argv[2]) || undefined;
+  // Locally, check everything unless a limit is given.
+  const limit = Number(process.argv[2]) || 100_000;
 
   console.log("⏳ Crawling registry items...");
 

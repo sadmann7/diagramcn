@@ -219,8 +219,19 @@ async function mapWithConcurrency<T, R>(
 export interface CrawlOptions {
   /** Most items to check in one run, least recently checked first. */
   limit?: number;
+  /** Requests in flight at once, kept low to go easy on registries. */
   concurrency?: number;
+  /** Re-read registry indexes for new items first. Once a day is plenty. */
+  seed?: boolean;
 }
+
+/**
+ * Items per hourly run. Runs rotate through everything, least recently
+ * checked first, so this sets how often each item is checked (about every
+ * 8 hours at ~4,000 items) and keeps each run well inside the function
+ * time limit as more registries are followed.
+ */
+export const CRAWL_BATCH_SIZE = 500;
 
 export interface CrawlResult {
   seeded: number;
@@ -236,14 +247,15 @@ export interface CrawlResult {
 }
 
 export async function crawl(
-  { limit = 5000, concurrency = 8 }: CrawlOptions = {},
+  { limit = CRAWL_BATCH_SIZE, concurrency = 4, seed = true }: CrawlOptions = {},
   db: Db | null = defaultDb,
 ): Promise<CrawlResult> {
   if (!db) throw new Error("DATABASE_URL is not set");
 
   const start = Date.now();
-  const seeded =
-    (await seedShadcnItems(db)) + (await seedFollowedRegistries(db));
+  const seeded = seed
+    ? (await seedShadcnItems(db)) + (await seedFollowedRegistries(db))
+    : 0;
 
   const due = await db
     .select({ specifier: items.specifier, style: items.style })

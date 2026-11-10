@@ -20,7 +20,9 @@
     "db:push": "dotenv drizzle-kit push",
     "db:migrate": "dotenv tsx src/db/migrate.ts",
     "db:studio": "dotenv drizzle-kit studio",
-    "crawl": "dotenv tsx src/db/crawl.ts"
+    "crawl": "dotenv tsx src/db/crawl.ts",
+    "cli:build": "tsc -p packages/cli/tsconfig.json",
+    "cli": "tsx packages/cli/src/index.ts"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",

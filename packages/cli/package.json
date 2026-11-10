@@ -1,0 +1,25 @@
+{
+  "name": "diagramcn",
+  "version": "0.1.0",
+  "description": "Pull upstream shadcn registry changes into your edited components with a three-way merge",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "diagramcn": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prepublishOnly": "cd ../.. && pnpm cli:build"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sadmann7/diagramcn.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://diagramcn.com"
+}

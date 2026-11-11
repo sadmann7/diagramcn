@@ -74,7 +74,7 @@ function traverseWithChildren(
   let parentId: string | undefined;
 
   if (type !== "property" && states.parentName !== "") {
-    // add last brothers node and add parent node
+    // add last brothers node and add parent node.
 
     if (states.brothersNode.length > 0) {
       const findBrothersNode = states.brothersNodeProps.find(
@@ -148,12 +148,12 @@ function traverseWithChildren(
       }
     }
 
-    // Add parent node
+    // Add parent node.
     parentId = addNodeToDiagram({ diagram, type, text: states.parentName });
     states.bracketOpen.push({ id: parentId, type });
     states.parentName = "";
 
-    // Add edges from parent node
+    // Add edges from parent node.
     const brothersProps = states.brothersNodeProps.filter(
       (e) =>
         e.parentId === myParentId &&
@@ -215,7 +215,7 @@ function traverseWithChildren(
   }
 
   if (type !== "property") {
-    // Add or concatenate brothers node when it is the last parent node
+    // Add or concatenate brothers node when it is the last parent node.
     if (states.brothersNode.length > 0) {
       const findBrothersNode = states.brothersNodeProps.find(
         (e) =>
@@ -279,7 +279,7 @@ function traverseWithChildren(
       }
     }
 
-    // Close brackets
+    // Close brackets.
     if (parentType === "array") {
       if (states.objectsFromArray.length > 0) {
         states.objectsFromArray.pop();

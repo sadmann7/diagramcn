@@ -94,7 +94,7 @@ export function calculateWidthAndHeight(str: string, single = false) {
   const lines = str.split("\n").length;
 
   const width = clientRect.width + 4;
-  // Use parent height for single line nodes that are parents
+  // Use parent height for single line nodes that are parents.
   const height = single
     ? NODE_DIMENSIONS.PARENT_HEIGHT
     : lines * NODE_DIMENSIONS.ROW_HEIGHT;
@@ -105,7 +105,7 @@ export function calculateWidthAndHeight(str: string, single = false) {
 
 const sizeCache = new Map<Text, Size>();
 
-// clear cache every 2 mins
+// clear cache every 2 mins.
 setInterval(() => sizeCache.clear(), 120_000);
 
 export function calculateNodeSize({
@@ -119,7 +119,7 @@ export function calculateNodeSize({
 
   const cacheKey = [text, isParent].toString();
 
-  // check cache if data already exists
+  // check cache if data already exists.
   if (sizeCache.has(cacheKey)) {
     const size = sizeCache.get(cacheKey);
     if (size) return size;

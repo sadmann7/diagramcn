@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["typescript", "unicorn", "oxc", "react", "import", "nextjs"],
+  "jsPlugins": ["./lint/plugin.ts"],
   "categories": {
     "correctness": "error",
     "suspicious": "warn"
@@ -70,6 +71,17 @@
     ],
     "unicorn/no-new-array": "warn",
     "unicorn/no-invalid-remove-event-listener": "warn",
-    "unicorn/no-array-sort": "off"
-  }
+    "unicorn/no-array-sort": "off",
+    "diagramcn/comment-style": "error",
+    "diagramcn/no-low-value-comments": "error"
+  },
+  "overrides": [
+    {
+      "files": ["src/components/ui/**"],
+      "rules": {
+        "diagramcn/comment-style": "off",
+        "diagramcn/no-low-value-comments": "off"
+      }
+    }
+  ]
 }

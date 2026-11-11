@@ -53,7 +53,7 @@ export function jsonParser(jsonStr: string): Diagram {
     }
 
     // filter parent nodes that have no children
-    // not the best way to do this, but it works
+    // not the best way to do this, but it works.
     const filteredNodes = diagram.nodes.filter((node) => {
       if (node.data.isParent && node.data.childrenCount === 0) {
         return false;
@@ -62,7 +62,7 @@ export function jsonParser(jsonStr: string): Diagram {
       return true;
     });
 
-    // add path to nodes
+    // add path to nodes.
     diagram.nodes = filteredNodes.map((node) => ({
       ...node,
       path: getNodePath({
@@ -72,7 +72,7 @@ export function jsonParser(jsonStr: string): Diagram {
       }),
     }));
 
-    // filter edges that have no from or to node (since we filtered empty parent nodes)
+    // Edges can point at the empty parent nodes removed above, so those are dropped.
     diagram.edges = diagram.edges.filter((edge) => {
       const fromNode = diagram.nodes.find((node) => node.id === edge.from);
       const toNode = diagram.nodes.find((node) => node.id === edge.to);

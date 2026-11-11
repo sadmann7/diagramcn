@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 
 import { SiteHeader } from "@/components/layouts/site-header";
 import { ThemeProvider } from "@/components/providers";
+import { MAIN_CONTENT_ID, SkipNav } from "@/components/skip-nav";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
 import { Toaster } from "@/components/ui/sonner";
 import "@/styles/globals.css";
@@ -82,9 +83,12 @@ export default function RootLayout({ children }: React.PropsWithChildren) {
           enableSystem
           disableTransitionOnChange
         >
+          <SkipNav />
           <div className="relative flex min-h-screen flex-col">
             <SiteHeader />
-            <main className="flex-1">{children}</main>
+            <main id={MAIN_CONTENT_ID} className="flex-1 scroll-mt-14">
+              {children}
+            </main>
           </div>
           <TailwindIndicator />
         </ThemeProvider>

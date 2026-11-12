@@ -12,7 +12,7 @@ import {
 import { generateId } from "./id";
 import { pgTable } from "./utils";
 
-// Every registry item we've seen, from the crawler or from someone inspecting it.
+// Every registry item seen by the crawler or by someone inspecting it.
 export const items = pgTable(
   "items",
   {

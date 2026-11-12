@@ -241,8 +241,8 @@ export async function syncItem(
     const lines = pluralize(best, "line differs", "lines differ");
 
     if (best > 0 && base?.id === latest.id && !adopt) {
-      // Either local edits to the latest version, or an older version we
-      // don't have. Guessing wrong would silently drop upstream changes.
+      // Either local edits to the latest version, or an older version missing
+      // from the history. Guessing wrong would silently drop upstream changes.
       log(
         `  ! your files differ from every known version (closest: the latest, ${lines}).`,
       );

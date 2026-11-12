@@ -11,13 +11,8 @@ interface StackItemOptions {
   viewUrl?: string;
 }
 
-/**
- * Serves a set of registry items as a single registry item, so one
- * `shadcn add <url>` installs all of them. Items are listed as
- * `registryDependencies`: `@shadcn` items by bare name so the CLI uses the
- * project's own style, everything else by resolved URL so it works without
- * configuring namespaces in components.json.
- */
+// `@shadcn` items go in by bare name so the CLI uses the project's own style, and
+// every other item by URL so it installs without namespaces in components.json.
 export async function createStackItemResponse(
   query: string,
   { shadcnStyle, style, viewUrl }: StackItemOptions = {},

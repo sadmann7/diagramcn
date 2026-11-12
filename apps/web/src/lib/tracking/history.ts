@@ -22,7 +22,7 @@ export interface HistoryVersion {
   /** `git` versions were imported from the registry's source history. */
   origin: "crawl" | "git";
   commitSha: string | null;
-  /** Null for the first version we saw. */
+  // Null for the first version recorded.
   changes: ItemChanges | null;
 }
 

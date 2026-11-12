@@ -20,18 +20,45 @@ function getIsColorFormat(colorString: string) {
   );
 }
 
-function renderLink(text: string) {
-  function addMarkup(word: string) {
-    return getIsURL(word)
-      ? `<a onclick="event.stopPropagation()" href="${word}" style="text-decoration: underline; pointer-events: all;" target="_blank" rel="noopener noreferrer">${word}</a>`
-      : word;
+function getHref(word: string) {
+  try {
+    const url = new URL(/^https?:\/\//i.test(word) ? word : `https://${word}`);
+    return url.protocol === "http:" || url.protocol === "https:"
+      ? url.href
+      : null;
+  } catch {
+    return null;
   }
+}
 
-  const words = text.split(" ");
-  const formatedWords = words.map((w) => addMarkup(w));
-  const html = formatedWords.join(" ");
+function renderLink(text: string) {
+  return (
+    <span>
+      {text.split(" ").map((word, index) => {
+        const href = getIsURL(word) ? getHref(word) : null;
 
-  return <span dangerouslySetInnerHTML={{ __html: html }} />;
+        return (
+          <React.Fragment key={index}>
+            {index > 0 && " "}
+            {href ? (
+              <a
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+                style={{ pointerEvents: "all" }}
+                onClick={(event) => event.stopPropagation()}
+              >
+                {word}
+              </a>
+            ) : (
+              word
+            )}
+          </React.Fragment>
+        );
+      })}
+    </span>
+  );
 }
 
 interface NodeContentImplProps {

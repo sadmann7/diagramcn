@@ -49,7 +49,7 @@ function getIsPrivateAddress(address: string) {
 }
 
 async function assertPublicUrl(url: URL) {
-  if (url.protocol !== "https:" && url.protocol !== "http:") {
+  if (url.protocol !== "https:") {
     throw new RegistryFetchError(`Unsupported protocol: ${url.protocol}`);
   }
   if (url.username || url.password) {
@@ -95,7 +95,7 @@ async function readBody(response: Response) {
 }
 
 /**
- * Fetches JSON from a public URL. Blocks private networks, follows a limited
+ * Fetches JSON from a public https URL. Blocks private networks, follows a limited
  * number of redirects (re-validating each hop), and caps time and size.
  */
 export async function fetchPublicJson(input: string): Promise<unknown> {

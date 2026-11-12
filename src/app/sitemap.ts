@@ -1,10 +1,10 @@
 import type { MetadataRoute } from "next";
 
-import { siteConfig } from "@/config/site";
+import { SITE_URL } from "@/lib/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const routes = ["", "/editor"].map((route) => ({
-    url: `${siteConfig.url}${route}`,
+    url: `${SITE_URL}${route}`,
     lastModified: new Date().toISOString(),
   }));
 

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
-import { siteConfig } from "@/config/site";
 import { inspectRegistry } from "@/lib/registry/inspect";
 import { SHADCN_NAMESPACE } from "@/lib/registry/specifier";
+import { SITE_URL } from "@/lib/site";
 
 interface StackItemOptions {
   shadcnStyle?: string;
@@ -58,7 +58,7 @@ export async function createStackItemResponse(
 
   const url =
     viewUrl ??
-    `${siteConfig.url}/canvas?q=${encodeURIComponent(result.specifiers.join(" "))}`;
+    `${SITE_URL}/canvas?q=${encodeURIComponent(result.specifiers.join(" "))}`;
 
   return NextResponse.json(
     {

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { siteConfig } from "@/config/site";
 import { createStackItemResponse } from "@/lib/registry/stack-item";
+import { SITE_URL } from "@/lib/site";
 import { getStack } from "@/lib/stacks";
 
 interface RouteContext {
@@ -20,6 +20,6 @@ export async function GET(_req: Request, { params }: RouteContext) {
 
   return createStackItemResponse(stack.specifiers.join(" "), {
     shadcnStyle: stack.style ?? undefined,
-    viewUrl: `${siteConfig.url}/s/${stack.id}`,
+    viewUrl: `${SITE_URL}/s/${stack.id}`,
   });
 }

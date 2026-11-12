@@ -4,8 +4,6 @@
 
 import { z } from "zod";
 
-// Mirrors apps/www/public/schema/registry-item.json, so edit both together.
-
 export const registryItemTypeSchema = z.enum([
   "registry:lib",
   "registry:block",
@@ -23,7 +21,6 @@ export const registryItemTypeSchema = z.enum([
 ]);
 
 export const registryItemFileSchema = z.discriminatedUnion("type", [
-  // Target is required for registry:file and registry:page.
   z.object({
     path: z.string(),
     content: z.string().optional(),

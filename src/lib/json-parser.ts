@@ -52,8 +52,6 @@ export function jsonParser(jsonStr: string): Diagram {
       });
     }
 
-    // filter parent nodes that have no children
-    // not the best way to do this, but it works.
     const filteredNodes = diagram.nodes.filter((node) => {
       if (node.data.isParent && node.data.childrenCount === 0) {
         return false;
@@ -62,7 +60,6 @@ export function jsonParser(jsonStr: string): Diagram {
       return true;
     });
 
-    // add path to nodes.
     diagram.nodes = filteredNodes.map((node) => ({
       ...node,
       path: getNodePath({

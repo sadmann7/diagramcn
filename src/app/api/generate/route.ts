@@ -2,10 +2,13 @@ import { openai } from "@ai-sdk/openai";
 import { generateText } from "ai";
 import { z } from "zod";
 
+import { fetchRegistryJson, RegistryFetchError } from "@/lib/registry-fetch";
 import {
   type RegistryItem,
   registryItemSchema,
 } from "@/lib/validations/registry";
+
+const MAX_EXTERNAL_DEPENDENCIES = 10;
 
 const requestSchema = z.object({
   url: z.url({
@@ -17,13 +20,7 @@ export async function POST(req: Request) {
   try {
     const { url } = requestSchema.parse(await req.json());
 
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch registry data: HTTP ${response.status}`);
-    }
-
-    const registryResponse = await response.json();
-    const registry = registryItemSchema.parse(registryResponse);
+    const registry = registryItemSchema.parse(await fetchRegistryJson(url));
 
     const registries: RegistryItem[] = [registry];
 
@@ -33,18 +30,18 @@ export async function POST(req: Request) {
         registryDependency.endsWith(".json"),
     );
 
+    if (externalDependencies.length > MAX_EXTERNAL_DEPENDENCIES) {
+      throw new RegistryFetchError(
+        `Registry items can link at most ${MAX_EXTERNAL_DEPENDENCIES} external dependencies`,
+        400,
+      );
+    }
+
     if (externalDependencies.length > 0) {
       const externalResults = await Promise.all(
-        externalDependencies.map(async (registryDependency) => {
-          const externalResponse = await fetch(registryDependency);
-          if (!externalResponse.ok) {
-            throw new Error(
-              `Failed to fetch external dependency: HTTP ${externalResponse.status}`,
-            );
-          }
-          const externalData = await externalResponse.json();
-          return registryItemSchema.parse(externalData);
-        }),
+        externalDependencies.map(async (registryDependency) =>
+          registryItemSchema.parse(await fetchRegistryJson(registryDependency)),
+        ),
       );
 
       registries.push(...externalResults);
@@ -137,6 +134,15 @@ export async function POST(req: Request) {
       },
     });
   } catch (error) {
+    if (error instanceof RegistryFetchError) {
+      return new Response(error.message, {
+        status: error.status,
+        headers: {
+          "Content-Type": "text/plain",
+        },
+      });
+    }
+
     console.error("Error generating Mermaid.js code:", error);
     return new Response("Failed to generate Mermaid.js code", {
       status: 500,

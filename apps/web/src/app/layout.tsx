@@ -8,8 +8,8 @@ import { ThemeProvider } from "@/components/providers";
 import { MAIN_CONTENT_ID, SkipNav } from "@/components/skip-nav";
 import "@/styles/globals.css";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
-import { SITE_NAME, SITE_DESCRIPTION, SITE_URL } from "@/lib/site";
 import { fontMono, fontSans } from "@/lib/fonts";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

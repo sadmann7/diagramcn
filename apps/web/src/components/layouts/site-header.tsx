@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { Icons } from "@/components/icons";
 import { ModeToggle } from "@/components/layouts/mode-toggle";
-import { SITE_NAME, GITHUB_URL } from "@/lib/site";
+import { GITHUB_URL, SITE_NAME } from "@/lib/site";
 
 export function SiteHeader() {
   return (

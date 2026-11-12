@@ -34,7 +34,6 @@ import type { ResolvedNode } from "@/lib/registry/resolve";
 
 import { InstallCommand } from "@/components/install-command";
 import { StylePicker } from "@/components/style-picker";
-import { siteConfig } from "@/config/site";
 import {
   type Conflict,
   type ConflictKind,
@@ -52,6 +51,7 @@ import {
   DEFAULT_SHADCN_STYLE,
   getShadcnStyleLabel,
 } from "@/lib/registry/styles";
+import { SITE_URL } from "@/lib/site";
 
 import { getNodeLabel, getRegistryColor } from "./canvas-graph";
 import { FileDialog } from "./file-dialog";
@@ -89,7 +89,7 @@ function useOrigin() {
   return React.useSyncExternalStore(
     subscribeToNothing,
     () => window.location.origin,
-    () => siteConfig.url,
+    () => SITE_URL,
   );
 }
 

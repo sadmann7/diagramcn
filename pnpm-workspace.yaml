@@ -4,10 +4,13 @@ allowBuilds:
 minimumReleaseAge: 1440
 
 overrides:
-  dompurify: "3.4.15"
+  dompurify: "3.4.17"
   postcss: "8.5.28"
   nanoid: "3.3.19"
   sharp: "0.35.5"
   "lodash-es": "4.18.1"
   "minimatch@3>brace-expansion": "^1.1.17"
   "minimatch@10>brace-expansion": "^5.0.7"
+  "source-map-js@<1.2.2": "^1.2.2"
+  "undici@>=7.0.0 <7.30.1": "^7.30.1"
+  "zod@>=4.0.0 <4.6.6": "^4.6.7"

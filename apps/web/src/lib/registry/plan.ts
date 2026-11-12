@@ -152,11 +152,8 @@ function getIsLocalImport(specifier: string) {
   );
 }
 
-/**
- * Links each file's local imports to other files in the plan. Registry files
- * use their author's aliases (`@/registry/new-york/ui/button`), so we match
- * on the trailing path segments rather than exact paths.
- */
+// Registry files import through their author's aliases (`@/registry/new-york/ui/button`),
+// so imports match on trailing path segments rather than exact paths.
 function linkImports(files: PlannedFile[]) {
   const byStem = new Map<string, PlannedFile[]>();
   for (const file of files) {

@@ -158,13 +158,8 @@ async function listFiles(dir: string, root = dir): Promise<string[]> {
   return files.flat();
 }
 
-/**
- * Installs one exact version of an item into a throwaway copy of the
- * project's config and returns the files the shadcn CLI wrote, keyed by
- * project-relative path. Because the real CLI does the work, the output
- * matches what `shadcn add` writes in this project: same aliases, same
- * transforms, same paths.
- */
+// Runs the real shadcn CLI against a throwaway copy of the project's config, so
+// the files match what `shadcn add` writes here: same aliases, transforms and paths.
 export async function renderVersion(project: Project, itemUrl: string) {
   const dir = await mkdtemp(path.join(tmpdir(), "diagramcn-"));
 

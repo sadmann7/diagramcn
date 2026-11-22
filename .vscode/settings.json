@@ -31,7 +31,5 @@
     "src/styles/globals.css": ["src/**"]
   },
   "tailwindCSS.classFunctions": ["cn", "cva", "clsx", "twMerge"],
-  "css.lint.unknownAtRules": "ignore",
-  "js/ts.tsdk.path": "node_modules/typescript/lib",
-  "js/ts.tsdk.promptToUseWorkspaceVersion": true
+  "css.lint.unknownAtRules": "ignore"
 }
